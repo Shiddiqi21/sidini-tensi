@@ -1,0 +1,21 @@
+{
+  "name": "SiDini-Tensi Koto Tangah",
+  "short_name": "SiDini-Tensi",
+  "description": "Sistem Skrining & Pendataan Hipertensi Puskesmas - Nagari Koto Tangah.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "assets/LogoKKN.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/LogoKKN.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
