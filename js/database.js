@@ -7,6 +7,8 @@
 
 const DB_KEYS = {
     PATIENTS: 'sidini_patients',
+    FOLLOW_UPS: 'sidini_followups',
+    CUSTOM_JORONGS: 'sidini_custom_jorongs',
     SCREENINGS: 'sidini_screenings'
 };
 
@@ -17,6 +19,25 @@ const JORONG_LIST = [
     'Jorong Balai Gurah',
     'Jorong Galuang'
 ];
+
+window.getCustomJorongs = function() {
+    try { return JSON.parse(localStorage.getItem(DB_KEYS.CUSTOM_JORONGS)) || []; } 
+    catch(e) { return []; }
+};
+
+window.addCustomJorong = function(name) {
+    name = name.trim();
+    if (!name) return;
+    const list = window.getCustomJorongs();
+    if (!list.includes(name) && !JORONG_LIST.includes(name)) {
+        list.push(name);
+        localStorage.setItem(DB_KEYS.CUSTOM_JORONGS, JSON.stringify(list));
+    }
+};
+
+window.getAllJorongs = function() {
+    return [...JORONG_LIST, ...window.getCustomJorongs()];
+};
 
 // ===================== HELPER =====================
 function generateId() {
@@ -514,7 +535,8 @@ const ScreeningDB = {
         };
 
         const perJorong = {};
-        JORONG_LIST.forEach(j => {
+        const allJorongs = typeof window.getAllJorongs === 'function' ? window.getAllJorongs() : JORONG_LIST;
+        allJorongs.forEach(j => {
             perJorong[j] = { total: 0, sehat: 0, htTerkontrol: 0, htTidakTerkontrol: 0, totalRiskScore: 0, faktorRisiko: { ...faktorRisikoCount } };
         });
 

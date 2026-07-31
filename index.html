@@ -112,10 +112,6 @@
                         <label>Jorong <span class="required">*</span></label>
                         <select id="jorong" name="jorong" class="form-select" required>
                             <option value="" disabled selected>Pilih Jorong...</option>
-                            <option value="Jorong Koto Tangah">Jorong Koto Tangah</option>
-                            <option value="Jorong Padang Laweh">Jorong Padang Laweh</option>
-                            <option value="Jorong Balai Gurah">Jorong Balai Gurah</option>
-                            <option value="Jorong Galuang">Jorong Galuang</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -338,13 +334,12 @@
                     <p>Rekapitulasi data skrining hipertensi warga Nagari Koto Tangah.</p>
                 </div>
                 <div>
-                    <select id="filter-jorong" class="form-select" style="min-width: 200px; padding-top: 10px; padding-bottom: 10px;">
-                        <option value="">Semua Jorong</option>
-                        <option value="Jorong Koto Tangah">Jorong Koto Tangah</option>
-                        <option value="Jorong Padang Laweh">Jorong Padang Laweh</option>
-                        <option value="Jorong Balai Gurah">Jorong Balai Gurah</option>
-                        <option value="Jorong Galuang">Jorong Galuang</option>
-                    </select>
+                    <div style="display:flex; gap: 8px;">
+                        <select id="filter-jorong" class="form-select" style="min-width: 200px; padding-top: 10px; padding-bottom: 10px;">
+                            <option value="">Semua Jorong</option>
+                        </select>
+                        <button onclick="if(typeof window.promptTambahJorong === 'function') window.promptTambahJorong()" class="btn btn-outline" style="padding: 10px;" title="Tambah Jorong Baru"><i class="ph-bold ph-plus"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -537,10 +532,6 @@
                             <label>Jorong</label>
                             <select id="tw-jorong" class="form-select">
                                 <option value="">Pilih Jorong...</option>
-                                <option value="Jorong Koto Tangah">Jorong Koto Tangah</option>
-                                <option value="Jorong Padang Laweh">Jorong Padang Laweh</option>
-                                <option value="Jorong Balai Gurah">Jorong Balai Gurah</option>
-                                <option value="Jorong Galuang">Jorong Galuang</option>
                             </select>
                         </div>
                         <div class="form-group" style="display: flex; align-items: flex-end;">

@@ -54,6 +54,54 @@ window.showConfirm = function(title, message, okText = 'Hapus', okClass = 'btn b
     });
 };
 
+window.renderJorongDropdowns = function() {
+    if (typeof window.getAllJorongs !== 'function') return;
+    const jorongs = window.getAllJorongs();
+    
+    const filterSelect = document.getElementById('filter-jorong');
+    if (filterSelect) {
+        const currentVal = filterSelect.value;
+        filterSelect.innerHTML = '<option value="">Semua Jorong</option>';
+        jorongs.forEach(j => {
+            const opt = document.createElement('option');
+            opt.value = j; opt.textContent = j;
+            filterSelect.appendChild(opt);
+        });
+        if (currentVal && (jorongs.includes(currentVal) || currentVal === '')) filterSelect.value = currentVal;
+    }
+
+    const jorongSelects = [document.getElementById('jorong'), document.getElementById('tw-jorong')];
+    jorongSelects.forEach(select => {
+        if (select) {
+            const currentVal = select.value;
+            select.innerHTML = '<option value="" disabled selected>Pilih Jorong...</option>';
+            jorongs.forEach(j => {
+                const opt = document.createElement('option');
+                opt.value = j; opt.textContent = j;
+                select.appendChild(opt);
+            });
+            if (currentVal && jorongs.includes(currentVal)) select.value = currentVal;
+        }
+    });
+};
+
+window.promptTambahJorong = function() {
+    const nama = prompt('Masukkan nama jorong baru:');
+    if (nama && nama.trim() !== '') {
+        if (typeof window.addCustomJorong === 'function') {
+            window.addCustomJorong(nama);
+            window.renderJorongDropdowns();
+            const filter = document.getElementById('filter-jorong');
+            if (filter) {
+                filter.value = nama.trim();
+                window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+                if (typeof renderDashboard === 'function') renderDashboard();
+            }
+            showToast('Jorong berhasil ditambahkan', 'success');
+        }
+    }
+};
+
 let statusChartInstance = null;
 let risikoChartInstance = null;
 let demografiChartInstance = null;
@@ -68,6 +116,8 @@ window.statePage = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
+
     // Helper to safely add event listener (element might not exist)
     function safeOn(id, event, handler) {
         const el = document.getElementById(id);
@@ -699,13 +749,30 @@ function handleExcelExport() {
         return;
     }
 
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+
     let latestPerPatient = {};
     allScreenings.forEach(s => {
         if (!latestPerPatient[s.patientId] || new Date(s.tanggalSkrining) > new Date(latestPerPatient[s.patientId].tanggalSkrining)) {
             latestPerPatient[s.patientId] = s;
         }
     });
-    const screenings = Object.values(latestPerPatient).sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
+    let screenings = Object.values(latestPerPatient).sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
+
+    if (filterJorong && filterJorong !== 'Semua Jorong') {
+        screenings = screenings.filter(s => {
+            let jorong = s.jorong;
+            if (typeof PatientDB !== 'undefined' && s.patientId) {
+                const patient = PatientDB.getById(s.patientId);
+                if (patient && patient.jorong) jorong = patient.jorong;
+            }
+            return jorong === filterJorong;
+        });
+        if (screenings.length === 0) {
+            alert(`Tidak ada data untuk diexport untuk ${filterJorong}`);
+            return;
+        }
+    }
 
     const exportData = screenings.map((s, i) => {
         let nik = s.nik || '-';
@@ -803,12 +870,16 @@ function showAlert(containerId, message, type = 'info') {
 function downloadTemplate() {
     if (typeof XLSX === 'undefined') return;
 
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Koto Tangah';
+    const exampleJorong2 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Padang Laweh';
+
     // Sheet 1: Data Warga
     const wsData = XLSX.utils.aoa_to_sheet([
-        ['No', 'NIK', 'Nama', 'Umur', 'Jenis Kelamin', 'Jorong'],
-        [1, '1305201001800001', 'Ahmad Contoh', 55, 'L', 'Jorong Koto Tangah'],
-        [2, '1305201002750002', 'Siti Contoh', 48, 'P', 'Jorong Padang Laweh'],
-        ['', '', '', '', '', '']
+        ['No', 'NIK', 'Nama', 'Umur', 'Jenis Kelamin', 'Jorong', 'Tanggal Lahir'],
+        [1, '1305201001800001', 'Ahmad Contoh', 55, 'L', exampleJorong1, '1969-05-20'],
+        [2, '1305201002750002', 'Siti Contoh', 48, 'P', exampleJorong2, '1976-02-14'],
+        ['', '', '', '', '', '', '']
     ]);
     
     wsData['!cols'] = [
@@ -817,7 +888,8 @@ function downloadTemplate() {
         {wch: 25},
         {wch: 8},
         {wch: 15},
-        {wch: 22}
+        {wch: 22},
+        {wch: 15}
     ];
     
     // Sheet 2: Petunjuk
@@ -828,7 +900,8 @@ function downloadTemplate() {
         ['Kolom Nama: Isi nama lengkap warga'],
         ['Kolom Umur: Isi umur dalam tahun'],
         ['Kolom Jenis Kelamin: Isi L (Laki-laki) atau P (Perempuan)'],
-        ['Kolom Jorong: Isi nama Jorong (Jorong Koto Tangah / Jorong Padang Laweh / Jorong Balai Gurah / Jorong Galuang)'],
+        ['Kolom Jorong: Isi sesuai nama jorong (misal: ' + exampleJorong1 + ')'],
+        ['Kolom Tanggal Lahir: Opsional, format YYYY-MM-DD'],
         [''],
         ['PENTING: Jangan mengubah nama kolom (header) pada baris pertama!']
     ]);
@@ -1493,7 +1566,11 @@ window.exportWarga = function() {
 window.exportHT = function() {
     if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
     let hts = [];
-    const patients = PatientDB.getAll();
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    let patients = PatientDB.getAll();
+    if (filterJorong && filterJorong !== 'Semua Jorong') {
+        patients = patients.filter(p => p.jorong === filterJorong);
+    }
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
         if (latest && latest.hasil && (latest.hasil.statusHT === 'Tidak Terkontrol' || latest.hasil.statusHT === 'Terkontrol' || (latest.riwayatHT && latest.riwayatHT.toLowerCase() === 'ya'))) {
@@ -1530,7 +1607,11 @@ window.exportHT = function() {
 window.exportRisk = function() {
     if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
     let risks = [];
-    const patients = PatientDB.getAll();
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    let patients = PatientDB.getAll();
+    if (filterJorong && filterJorong !== 'Semua Jorong') {
+        patients = patients.filter(p => p.jorong === filterJorong);
+    }
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
         if (latest && latest.hasil && latest.hasil.riskScore >= 5) { // Sedang ke atas
