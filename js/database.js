@@ -662,7 +662,7 @@ async function syncFromFirestore() {
 }
 
 // Auto-load: localStorage/memory first (instant), then Firestore (async)
-loadDummyData();
+// loadDummyData(); // Dinonaktifkan sesuai permintaan pengguna untuk mencegah duplikasi
 
 // ===================== ONE-TIME CLEANUP SCRIPT =====================
 (function cleanupOldData() {

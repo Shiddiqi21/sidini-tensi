@@ -647,21 +647,21 @@ function handleExcelExport() {
             // Status Hipertensi & Komplikasi
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
-            'Hipertensi (Kondisi)': isHT ? 'TRUE' : 'FALSE',
-            'Hipertensi Terkontrol (Ada minum obat)': isHTTerkontrol ? 'TRUE' : 'FALSE',
-            'Hipertensi Tidak Terkontrol': isHTTidakTerkontrol ? 'TRUE' : 'FALSE',
+            'Hipertensi (Kondisi)': isHT ? '☑' : '☐',
+            'Hipertensi Terkontrol (Ada minum obat)': isHTTerkontrol ? '☑' : '☐',
+            'Hipertensi Tidak Terkontrol': isHTTidakTerkontrol ? '☑' : '☐',
             'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
             'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)': s.penyakitPenyerta || '-',
             
             // Faktor Risiko Detail
-            'Faktor genetik (Orang tua riwayat HT)': s.riwayatKeluarga === 'yes' ? 'YA' : 'TIDAK',
-            'Kelebihan berat badan dan obesitas': isOverweight ? 'YA' : 'TIDAK',
-            'Merokok': s.merokok === 'active' ? 'YA (AKTIF)' : (s.merokok === 'passive' ? 'YA (PASIF)' : 'TIDAK'),
-            'Konsumsi garam yang terlalu banyak': s.polaGaram === 'high' ? 'YA' : 'TIDAK',
-            'Konsumsi alkohol': s.alkohol === 'ya' ? 'YA' : 'TIDAK',
-            'Kurang aktivitas fisik dan olahraga': s.aktivitasFisik === 'rare' ? 'YA' : 'TIDAK',
-            'Stress': s.stress === 'ya' ? 'YA' : 'TIDAK',
-            'Degeneratif (pertambahan usia) > 60 tahun': isDegeneratif ? 'YA' : 'TIDAK',
+            'Faktor genetik (Orang tua riwayat HT)': s.riwayatKeluarga === 'yes' ? '☑' : '☐',
+            'Kelebihan berat badan dan obesitas': isOverweight ? '☑' : '☐',
+            'Merokok': s.merokok === 'active' ? '☑ (Aktif)' : (s.merokok === 'passive' ? '☑ (Pasif)' : '☐'),
+            'Konsumsi garam yang terlalu banyak': s.polaGaram === 'high' ? '☑' : '☐',
+            'Konsumsi alkohol': s.alkohol === 'ya' ? '☑' : '☐',
+            'Kurang aktivitas fisik dan olahraga': s.aktivitasFisik === 'rare' ? '☑' : '☐',
+            'Stress': s.stress === 'ya' ? '☑' : '☐',
+            'Degeneratif (pertambahan usia) > 60 tahun': isDegeneratif ? '☑' : '☐',
             
             // Output Sistem Tambahan
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
