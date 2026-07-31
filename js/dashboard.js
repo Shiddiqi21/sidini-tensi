@@ -438,134 +438,160 @@ function renderTable(filterJorong = '', searchQuery = '') {
         `;
         tableBody.appendChild(tr);
     });
-}
-
-window.showHistoryModal = function(patientId) {
-    const modal = document.getElementById('history-modal');
-    const tbody = document.getElementById('modal-history-body');
-    const nameSpan = document.getElementById('modal-patient-name');
-    
-    // Normalisasi ID ke string untuk perbandingan yang konsisten
-    const pid = String(patientId);
-    const patient = PatientDB.getById(pid) || PatientDB.getAll().find(p => String(p.id) === pid || String(p.nik) === pid);
-    if(patient) nameSpan.textContent = patient.nama;
-
-    let history = ScreeningDB.getAll().filter(s => String(s.patientId) === pid);
-    
-    // Sort oldest first to calculate index
-    history.sort((a, b) => new Date(a.tanggalSkrining) - new Date(b.tanggalSkrining));
-    history.forEach((s, idx) => { s._ke = idx + 1; });
-    
-    // Sort newest first for display
-    history.sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
-
-    tbody.innerHTML = '';
-    
-    history.forEach(s => {
-        const tr = document.createElement('tr');
-        const dateStr = s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-';
+}window.showHistoryModal = function(patientId) {
+    try {
+        const modal = document.getElementById('history-modal');
+        const tbody = document.getElementById('modal-history-body');
+        const nameSpan = document.getElementById('modal-patient-name');
         
-        // IMT Badge
-        const imtVal = (s.hasil?.imt?.nilai !== undefined && s.hasil?.imt?.nilai !== null) ? s.hasil.imt.nilai : '-';
-        const imtKat = (s.hasil?.imt?.kategori || '').toLowerCase();
-        let imtClass = 'status-badge';
-        if (imtKat.includes('normal')) imtClass += ' normal';
-        else if (imtKat.includes('obesitas')) imtClass += ' danger';
-        else if (imtKat.includes('pre-obese') || imtKat.includes('overweight')) imtClass += ' warning';
-        else imtClass += ' info';
+        if (!modal || !tbody) {
+            console.error('History modal elements not found');
+            alert('Elemen modal riwayat tidak ditemukan di halaman.');
+            return;
+        }
+        
+        // Normalisasi ID ke string untuk perbandingan yang konsisten
+        const pid = String(patientId);
+        const patient = PatientDB.getById(pid) || PatientDB.getAll().find(p => String(p.id) === pid || String(p.nik) === pid);
+        if(patient && nameSpan) nameSpan.textContent = patient.nama;
 
-        // Tensi
-        const sistolik = s.sistolik || '-';
-        const diastolik = s.diastolik || '-';
+        let history = ScreeningDB.getAll().filter(s => String(s.patientId) === pid);
+        
+        console.log(`showHistoryModal: pid=${pid}, found ${history.length} screenings`);
+        
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="21" style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada data skrining untuk warga ini.</td></tr>';
+            modal.classList.remove('hidden');
+            return;
+        }
+        
+        // Sort oldest first to calculate index
+        history.sort((a, b) => new Date(a.tanggalSkrining || 0) - new Date(b.tanggalSkrining || 0));
+        history.forEach((s, idx) => { s._ke = idx + 1; });
+        
+        // Sort newest first for display
+        history.sort((a, b) => new Date(b.tanggalSkrining || 0) - new Date(a.tanggalSkrining || 0));
 
-        // Status HT
-        const statusHT = s.hasil?.statusHT || 'Normal';
-        let statusHTClass = 'status-badge';
-        if (statusHT === 'Normal' || statusHT === 'Sehat') statusHTClass += ' normal';
-        else if (statusHT === 'Terkontrol') statusHTClass += ' terkontrol';
-        else statusHTClass += ' tidak-terkontrol';
+        tbody.innerHTML = '';
+        
+        history.forEach(s => {
+            try {
+                const tr = document.createElement('tr');
+                const dateStr = s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-';
+                
+                // IMT Badge (safe access)
+                const imtVal = (s.hasil && s.hasil.imt && s.hasil.imt.nilai != null) ? s.hasil.imt.nilai : '-';
+                const imtKat = (s.hasil && s.hasil.imt && s.hasil.imt.kategori ? s.hasil.imt.kategori : '').toLowerCase();
+                let imtClass = 'status-badge';
+                if (imtKat.includes('normal')) imtClass += ' normal';
+                else if (imtKat.includes('obesitas')) imtClass += ' danger';
+                else if (imtKat.includes('pre-obese') || imtKat.includes('overweight')) imtClass += ' warning';
+                else imtClass += ' info';
 
-        // Skor Risiko
-        const riskScore = s.hasil?.riskScore || 0;
-        let riskClass = 'status-badge ';
-        let riskLabel = '';
-        if (riskScore >= 9) { riskClass += 'danger'; riskLabel = `Tinggi (${riskScore})`; }
-        else if (riskScore >= 5) { riskClass += 'warning'; riskLabel = `Sedang (${riskScore})`; }
-        else { riskClass += 'normal'; riskLabel = `Rendah (${riskScore})`; }
+                // Tensi
+                const sistolik = s.sistolik || '-';
+                const diastolik = s.diastolik || '-';
 
-        // Risiko CVD (WHO)
-        let cvdRisk = '-';
-        if (s.hasil?.komplikasi && s.hasil.komplikasi.length > 0) {
-            if (typeof s.hasil.komplikasi[0] === 'object' && s.hasil.komplikasi[0].level) {
-                cvdRisk = s.hasil.komplikasi.map(k => k.level).join(', ');
-            } else if (typeof s.hasil.komplikasi[0] === 'string') {
-                cvdRisk = s.hasil.komplikasi.join(', ');
+                // Status HT (safe access)
+                const statusHT = (s.hasil && s.hasil.statusHT) ? s.hasil.statusHT : 'Normal';
+                let statusHTClass = 'status-badge';
+                if (statusHT === 'Normal' || statusHT === 'Sehat') statusHTClass += ' normal';
+                else if (statusHT === 'Terkontrol') statusHTClass += ' terkontrol';
+                else statusHTClass += ' tidak-terkontrol';
+
+                // Skor Risiko (safe access)
+                const riskScore = (s.hasil && s.hasil.riskScore) ? s.hasil.riskScore : 0;
+                let riskClass = 'status-badge ';
+                let riskLabel = '';
+                if (riskScore >= 9) { riskClass += 'danger'; riskLabel = `Tinggi (${riskScore})`; }
+                else if (riskScore >= 5) { riskClass += 'warning'; riskLabel = `Sedang (${riskScore})`; }
+                else { riskClass += 'normal'; riskLabel = `Rendah (${riskScore})`; }
+
+                // Risiko CVD (WHO) (safe access)
+                let cvdRisk = '-';
+                if (s.hasil && s.hasil.komplikasi && Array.isArray(s.hasil.komplikasi) && s.hasil.komplikasi.length > 0) {
+                    if (typeof s.hasil.komplikasi[0] === 'object' && s.hasil.komplikasi[0].level) {
+                        cvdRisk = s.hasil.komplikasi.map(k => k.level).join(', ');
+                    } else if (typeof s.hasil.komplikasi[0] === 'string') {
+                        cvdRisk = s.hasil.komplikasi.join(', ');
+                    }
+                }
+                if (s.hasil && s.hasil.komplikasiList && Array.isArray(s.hasil.komplikasiList) && s.hasil.komplikasiList.length > 0 && cvdRisk === '-') {
+                    cvdRisk = s.hasil.komplikasiList.join(', ');
+                }
+
+                // Individual columns (all safe)
+                const bbTbStr = s.beratBadan ? `${s.beratBadan}kg / ${s.tinggiBadan || '?'}cm` : '-';
+                const riwKelStr = s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak';
+                const merokokStr = s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak');
+                const garamStr = s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah');
+                const alkoholStr = s.alkohol === 'ya' ? 'Ya' : 'Tidak';
+                const fisikStr = s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang');
+                const stresStr = s.stress === 'ya' ? 'Ya' : 'Tidak';
+                const riwHtStr = s.riwayatHT === 'ya' ? 'Ya' : 'Tidak';
+                const obatHtStr = s.minumObatHT === 'ya' ? 'Ya' : 'Tidak';
+                
+                let komorbidStr = '-';
+                if (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) {
+                    komorbidStr = s.komorbiditas.join(', ');
+                } else if (s.komorbiditas === 'yes') {
+                    komorbidStr = 'Ada';
+                }
+                
+                const komplikasiStr = (s.komplikasiHT && Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-';
+                const penyertaStr = s.penyakitPenyerta || '-';
+
+                // Edukasi (safe access)
+                let edukasi = [];
+                if (s.edukasi && s.edukasi.hipertensi) edukasi.push('Penjelasan HT');
+                if (s.edukasi && s.edukasi.dashDiet) edukasi.push('DASH Diet');
+                if (s.edukasi && s.edukasi.aktivitas) edukasi.push('Akt. Fisik');
+                if (s.edukasi && s.edukasi.alkohol) edukasi.push('Batas Alkohol');
+                const eduStr = edukasi.length > 0 ? edukasi.map(str => `<div><small style="color:var(--success);">✓ ${str}</small></div>`).join('') : '-';
+
+                // Escape ID untuk onclick (hindari karakter aneh)
+                const safeId = String(s.id || '').replace(/'/g, "\\'");
+                const safePid = String(patientId).replace(/'/g, "\\'");
+
+                tr.innerHTML = `
+                    <td style="font-weight:bold;">${s._ke || '-'}</td>
+                    <td>${dateStr}</td>
+                    <td style="font-size: 0.85em;">${bbTbStr}</td>
+                    <td><span class="${imtClass}">${imtVal}</span></td>
+                    <td>${sistolik}/${diastolik}</td>
+                    <td><span class="${statusHTClass}">${statusHT}</span></td>
+                    <td><span class="${riskClass}">${riskLabel}</span></td>
+                    <td>${cvdRisk}</td>
+                    <td style="font-size: 0.85em;">${riwKelStr}</td>
+                    <td style="font-size: 0.85em;">${merokokStr}</td>
+                    <td style="font-size: 0.85em;">${garamStr}</td>
+                    <td style="font-size: 0.85em;">${alkoholStr}</td>
+                    <td style="font-size: 0.85em;">${fisikStr}</td>
+                    <td style="font-size: 0.85em;">${stresStr}</td>
+                    <td style="font-size: 0.85em;">${riwHtStr}</td>
+                    <td style="font-size: 0.85em;">${obatHtStr}</td>
+                    <td style="font-size: 0.85em;">${komorbidStr}</td>
+                    <td style="font-size: 0.85em;">${komplikasiStr}</td>
+                    <td style="font-size: 0.85em;">${penyertaStr}</td>
+                    <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
+                    <td style="text-align:center;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${safeId}', '${safePid}')" title="Hapus riwayat ini">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            } catch (rowErr) {
+                console.error('Error rendering screening row:', rowErr, s);
+                // Tetap lanjut ke baris berikutnya
             }
-        }
-        if (s.hasil?.komplikasiList && s.hasil.komplikasiList.length > 0 && cvdRisk === '-') {
-            cvdRisk = s.hasil.komplikasiList.join(', ');
-        }
+        });
 
-        // Individual columns
-        const bbTbStr = s.beratBadan ? `${s.beratBadan}kg / ${s.tinggiBadan}cm` : '-';
-        const riwKelStr = s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak';
-        const merokokStr = s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak');
-        const garamStr = s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah');
-        const alkoholStr = s.alkohol === 'ya' ? 'Ya' : 'Tidak';
-        const fisikStr = s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang');
-        const stresStr = s.stress === 'ya' ? 'Ya' : 'Tidak';
-        const riwHtStr = s.riwayatHT === 'ya' ? 'Ya' : 'Tidak';
-        const obatHtStr = s.minumObatHT === 'ya' ? 'Ya' : 'Tidak';
-        
-        let komorbidStr = '-';
-        if (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) {
-            komorbidStr = s.komorbiditas.join(', ');
-        } else if (s.komorbiditas === 'yes') {
-            komorbidStr = 'Ada';
-        }
-        
-        const komplikasiStr = (s.komplikasiHT && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-';
-        const penyertaStr = s.penyakitPenyerta || '-';
-
-        // Edukasi
-        let edukasi = [];
-        if (s.edukasi?.hipertensi) edukasi.push('Penjelasan HT');
-        if (s.edukasi?.dashDiet) edukasi.push('DASH Diet');
-        if (s.edukasi?.aktivitas) edukasi.push('Akt. Fisik');
-        if (s.edukasi?.alkohol) edukasi.push('Batas Alkohol');
-        const eduStr = edukasi.length > 0 ? edukasi.map(str => `<div><small style="color:var(--success);">✓ ${str}</small></div>`).join('') : '-';
-
-        tr.innerHTML = `
-            <td style="font-weight:bold;">${s._ke}</td>
-            <td>${dateStr}</td>
-            <td style="font-size: 0.85em;">${bbTbStr}</td>
-            <td><span class="${imtClass}">${imtVal}</span></td>
-            <td>${sistolik}/${diastolik}</td>
-            <td><span class="${statusHTClass}">${statusHT}</span></td>
-            <td><span class="${riskClass}">${riskLabel}</span></td>
-            <td>${cvdRisk}</td>
-            <td style="font-size: 0.85em;">${riwKelStr}</td>
-            <td style="font-size: 0.85em;">${merokokStr}</td>
-            <td style="font-size: 0.85em;">${garamStr}</td>
-            <td style="font-size: 0.85em;">${alkoholStr}</td>
-            <td style="font-size: 0.85em;">${fisikStr}</td>
-            <td style="font-size: 0.85em;">${stresStr}</td>
-            <td style="font-size: 0.85em;">${riwHtStr}</td>
-            <td style="font-size: 0.85em;">${obatHtStr}</td>
-            <td style="font-size: 0.85em;">${komorbidStr}</td>
-            <td style="font-size: 0.85em;">${komplikasiStr}</td>
-            <td style="font-size: 0.85em;">${penyertaStr}</td>
-            <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
-            <td style="text-align:center;">
-                <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
-                    <i class="ph-bold ph-trash"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    modal.classList.remove('hidden');
+        modal.classList.remove('hidden');
+    } catch (e) {
+        console.error('showHistoryModal error:', e);
+        alert('Gagal membuka riwayat: ' + e.message);
+    }
 };
 
 window.deleteScreeningRecord = async function(screeningId, patientId) {
