@@ -1443,8 +1443,18 @@ window.deleteWarga = async function(patientId, nama) {
         showLoading('Menghapus data...');
         setTimeout(() => {
             try {
-                PatientDB.delete(patientId);
-                ScreeningDB.deleteByPatientId(patientId);
+                // Kumpulkan ID skrining SEBELUM dihapus
+                const screeningIds = (typeof ScreeningDB !== 'undefined')
+                    ? ScreeningDB.getAll().filter(s => s.patientId === patientId).map(s => s.id)
+                    : [];
+
+                // Hapus dari memory/localStorage (skip individual Firestore sync)
+                PatientDB.delete(patientId, true);
+                ScreeningDB.deleteByPatientId(patientId, true);
+
+                // Timpa Firestore dengan batch tunggal (mengganti panggilan individual yg crash)
+                FirestoreSync.deleteWargaWithScreenings(patientId, screeningIds);
+
                 showToast(`Data warga "${nama}" berhasil dihapus.`, 'danger');
                 if (typeof renderDashboard === 'function') renderDashboard();
             } catch (e) {

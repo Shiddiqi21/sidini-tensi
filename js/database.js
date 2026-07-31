@@ -167,6 +167,27 @@ const FirestoreSync = {
         });
     },
 
+    // Batch delete: hapus 1 patient + semua screening terkait dalam 1 batch
+    deleteWargaWithScreenings(patientId, screeningIds) {
+        if (!this.db || patientId == null) return;
+        try {
+            const batch = this.db.batch();
+            batch.delete(this.db.collection('patients').doc(String(patientId)));
+            if (screeningIds && screeningIds.length > 0) {
+                screeningIds.forEach(sid => {
+                    if (sid != null) {
+                        batch.delete(this.db.collection('screenings').doc(String(sid)));
+                    }
+                });
+            }
+            batch.commit().catch(e => {
+                console.warn('Firestore batch delete failed:', e);
+            });
+        } catch (e) {
+            console.warn('Firestore batch delete setup failed:', e);
+        }
+    },
+
     // Hapus semua dokumen dalam collection
     async clearCollection(collectionName) {
         if (!this.db) return;
@@ -288,12 +309,12 @@ const PatientDB = {
         return null;
     },
 
-    delete(id) {
+    delete(id, skipFirestore) {
         const patients = this.getAll();
         const filtered = patients.filter(p => p.id !== id);
         if (filtered.length < patients.length) {
             saveToStorage(DB_KEYS.PATIENTS, filtered);
-            FirestoreSync.deletePatient(id);
+            if (!skipFirestore) FirestoreSync.deletePatient(id);
             return true;
         }
         return false;
@@ -498,13 +519,15 @@ const ScreeningDB = {
         return false;
     },
 
-    deleteByPatientId(patientId) {
+    deleteByPatientId(patientId, skipFirestore) {
         const screenings = this.getAll();
         const toDelete = screenings.filter(s => s.patientId === patientId);
         const filtered = screenings.filter(s => s.patientId !== patientId);
         if (filtered.length < screenings.length) {
             saveToStorage(DB_KEYS.SCREENINGS, filtered);
-            toDelete.forEach(s => FirestoreSync.deleteScreening(s.id));
+            if (!skipFirestore) {
+                toDelete.forEach(s => FirestoreSync.deleteScreening(s.id));
+            }
             return true;
         }
         return false;
