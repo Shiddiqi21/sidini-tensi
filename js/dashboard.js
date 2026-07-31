@@ -730,21 +730,17 @@ function handleExcelImport(e) {
                         diastolik: diastolik,
                         beratBadan: bb,
                         tinggiBadan: tb,
-                        merokok: checkStrMerokok(row['Merokok']),
-                        alkohol: checkStr(row['Konsumsi alkohol']),
-                        polaGaram: checkStr(row['Konsumsi garam yang terlalu banyak']) === 'ya' ? 'high' : 'low',
-                        aktivitasFisik: checkStr(row['Kurang aktivitas fisik dan olahraga']) === 'ya' ? 'rare' : 'active',
-                        riwayatKeluarga: checkStr(row['Faktor genetik (Orang tua riwayat HT)']) === 'ya' ? 'yes' : 'no',
-                        stress: checkStr(row['Stress']),
-                        riwayatHT: checkStr(row['Hipertensi (Kondisi)'] || row['Hipertensi']), 
-                        minumObatHT: checkStr(row['Hipertensi Terkontrol (Ada minum obat)']),
-                        komorbiditas: [
-                            checkStr(row['Komorbid Diabetes']) === 'ya' ? 'Diabetes' : null,
-                            checkStr(row['Komorbid Ginjal']) === 'ya' ? 'Ginjal' : null,
-                            checkStr(row['Komorbid Jantung']) === 'ya' ? 'Jantung' : null
-                        ].filter(Boolean),
-                        penyakitPenyerta: String(row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || row['Pemyakit penyerta (asma, kolesterol, tumor, OA, dsb'] || '').replace('-', '').trim(),
-                        komplikasiHT: (row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
+                        merokok: checkStrMerokok(row['Merokok (Aktif/Pasif/Tidak)'] || row['Merokok']),
+                        alkohol: checkStr(row['Konsumsi Alkohol (Ya/Tidak)'] || row['Konsumsi alkohol']),
+                        polaGaram: checkStr(row['Konsumsi Garam Berlebih (Ya/Tidak)'] || row['Konsumsi garam yang terlalu banyak']) === 'ya' ? 'high' : 'low',
+                        aktivitasFisik: checkStr(row['Kurang Aktivitas Fisik (Ya/Tidak)'] || row['Kurang aktivitas fisik dan olahraga']) === 'ya' ? 'rare' : 'active',
+                        riwayatKeluarga: checkStr(row['Riwayat Keluarga / Genetik HT (Ya/Tidak)'] || row['Faktor genetik (Orang tua riwayat HT)']) === 'ya' ? 'yes' : 'no',
+                        stress: checkStr(row['Stress (Ya/Tidak)'] || row['Stress']),
+                        riwayatHT: checkStr(row['Riwayat Hipertensi (Ya/Tidak)'] || row['Hipertensi (Kondisi)'] || row['Hipertensi']), 
+                        minumObatHT: checkStr(row['Rutin Minum Obat HT (Ya/Tidak)'] || row['Hipertensi Terkontrol (Ada minum obat)']),
+                        komorbiditas: (row['Komorbid (Ketik: Diabetes / Ginjal / Jantung)'] || row['Komorbid'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-'),
+                        penyakitPenyerta: String(row['Penyakit Penyerta Lainnya'] || row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || row['Pemyakit penyerta (asma, kolesterol, tumor, OA, dsb'] || '').replace('-', '').trim(),
+                        komplikasiHT: (row['Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)'] || row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
                     };
 
                     if (typeof HypertensionScreening !== 'undefined') {
@@ -878,30 +874,25 @@ function handleExcelExport() {
             'Diastolik': s.diastolik || '-',
             
             // Status Hipertensi & Komplikasi
-            'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
-            'Status HT (Sistem)': s.hasil?.statusHT || '-',
-            'Hipertensi (Kondisi)': isHT ? '☑' : '☐',
-            'Hipertensi Terkontrol (Ada minum obat)': isHTTerkontrol ? '☑' : '☐',
-            'Hipertensi Tidak Terkontrol': isHTTidakTerkontrol ? '☑' : '☐',
-            'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
-            'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)': s.penyakitPenyerta || '-',
-            
-            // Komorbid
-            'Komorbid Diabetes': (s.komorbiditas || []).includes('Diabetes') ? '☑' : '☐',
-            'Komorbid Ginjal': (s.komorbiditas || []).includes('Ginjal') ? '☑' : '☐',
-            'Komorbid Jantung': (s.komorbiditas || []).includes('Jantung') ? '☑' : '☐',
+            'Riwayat Hipertensi (Ya/Tidak)': s.riwayatHT === 'ya' ? 'Ya' : 'Tidak',
+            'Rutin Minum Obat HT (Ya/Tidak)': isHTTerkontrol ? 'Ya' : 'Tidak',
+            'Komorbid (Ketik: Diabetes / Ginjal / Jantung)': (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) ? s.komorbiditas.join(', ') : '-',
+            'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
+            'Penyakit Penyerta Lainnya': s.penyakitPenyerta || '-',
             
             // Faktor Risiko Detail
-            'Faktor genetik (Orang tua riwayat HT)': s.riwayatKeluarga === 'yes' ? '☑' : '☐',
-            'Kelebihan berat badan dan obesitas': isOverweight ? '☑' : '☐',
-            'Merokok': s.merokok === 'active' ? '☑ (Aktif)' : (s.merokok === 'passive' ? '☑ (Pasif)' : '☐'),
-            'Konsumsi garam yang terlalu banyak': s.polaGaram === 'high' ? '☑' : '☐',
-            'Konsumsi alkohol': s.alkohol === 'ya' ? '☑' : '☐',
-            'Kurang aktivitas fisik dan olahraga': s.aktivitasFisik === 'rare' ? '☑' : '☐',
-            'Stress': s.stress === 'ya' ? '☑' : '☐',
-            'Degeneratif (pertambahan usia) > 60 tahun': isDegeneratif ? '☑' : '☐',
+            'Riwayat Keluarga / Genetik HT (Ya/Tidak)': s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak',
+            'Merokok (Aktif/Pasif/Tidak)': s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak'),
+            'Konsumsi Garam Berlebih (Ya/Tidak)': s.polaGaram === 'high' ? 'Ya' : 'Tidak',
+            'Konsumsi Alkohol (Ya/Tidak)': s.alkohol === 'ya' ? 'Ya' : 'Tidak',
+            'Kurang Aktivitas Fisik (Ya/Tidak)': s.aktivitasFisik === 'rare' ? 'Ya' : 'Tidak',
+            'Stress (Ya/Tidak)': s.stress === 'ya' ? 'Ya' : 'Tidak',
             
             // Output Sistem Tambahan
+            'IMT': s.hasil?.imt?.nilai || '-',
+            'Kategori IMT': s.hasil?.imt?.kategori || '-',
+            'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
+            'Status HT (Sistem)': s.hasil?.statusHT || '-',
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
             'Skor Risiko': s.hasil?.riskScore || 0
         };
@@ -979,9 +970,9 @@ window.downloadSkriningTemplate = function() {
 
     // Sheet 1: Data Skrining
     const wsData = XLSX.utils.aoa_to_sheet([
-        ['No', 'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Hipertensi', 'Hipertensi Terkontrol (Ada minum obat)', 'Hipertensi Tidak Terkontrol', 'Komorbid Diabetes', 'Komorbid Ginjal', 'Komorbid Jantung', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)', 'Faktor genetik (Orang tua riwayat HT)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Kelebihan berat badan dan obesitas', 'Merokok', 'Konsumsi garam yang terlalu banyak', 'Konsumsi alkohol', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Degeneratif (pertambahan usia) > 60 tahun'],
-        [1, 'Ahmad Contoh', '1305201001800001', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Stroke', 'Tidak', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Ya'],
-        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+        ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Stress (Ya/Tidak)'],
+        [1, '1305201001800001', 'Ahmad Contoh', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Diabetes, Ginjal', 'Stroke', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
     ]);
     
     // Sheet 2: Petunjuk
