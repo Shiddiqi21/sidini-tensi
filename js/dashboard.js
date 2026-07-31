@@ -440,7 +440,7 @@ function renderTable(filterJorong = '', searchQuery = '') {
     });
 }
 
-function showHistoryModal(patientId) {
+window.showHistoryModal = function(patientId) {
     const modal = document.getElementById('history-modal');
     const tbody = document.getElementById('modal-history-body');
     const nameSpan = document.getElementById('modal-patient-name');
@@ -566,7 +566,7 @@ function showHistoryModal(patientId) {
     });
 
     modal.classList.remove('hidden');
-}
+};
 
 window.deleteScreeningRecord = async function(screeningId, patientId) {
     const confirmed = await showConfirm(
