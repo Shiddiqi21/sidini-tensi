@@ -1152,3 +1152,14 @@ window.editWarga = function(patientId) {
         if (titleEl) titleEl.innerHTML = '<i class="ph-fill ph-pencil" style="color:var(--primary)"></i> Edit Data Warga';
     }
 };
+
+// ===================== CLICK BACKDROP TO CLOSE MODALS =====================
+document.addEventListener('click', function(e) {
+    const modals = ['history-modal', 'followup-modal', 'category-modal', 'success-modal'];
+    modals.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal && e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+});
