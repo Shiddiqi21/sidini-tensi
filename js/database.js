@@ -569,41 +569,43 @@ function loadDummyData() {
     if (PatientDB.getAll().length > 0) return; // Jangan timpa jika sudah ada
 
     const dummyPatients = [
-        { nik: '1305201001800001', nama: 'Ahmad Rasyid', umur: 62, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201002750002', nama: 'Siti Nurhaliza', umur: 51, jenisKelamin: 'female', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201003900003', nama: 'Budi Santoso', umur: 36, jenisKelamin: 'male', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201004680004', nama: 'Hj. Mariam', umur: 58, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201005850005', nama: 'Dedi Kurniawan', umur: 41, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201006720006', nama: 'Nurlela', umur: 54, jenisKelamin: 'female', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201007880007', nama: 'Irwan Syahputra', umur: 38, jenisKelamin: 'male', jorong: 'Jorong Galuang' },
-        { nik: '1305201008650008', nama: 'Rosni', umur: 61, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
-        { nik: '1305201009780009', nama: 'Hendri Nofriandi', umur: 48, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201010920010', nama: 'Yeni Fitria', umur: 34, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201011700011', nama: 'H. Zainal Abidin', umur: 56, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201012830012', nama: 'Dewi Sartika', umur: 43, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
-        { nik: '1305201013670013', nama: 'Usman Hakim', umur: 59, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201014950014', nama: 'Linda Permata Sari', umur: 31, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201015710015', nama: 'Darwis', umur: 55, jenisKelamin: 'male', jorong: 'Jorong Galuang' }
+        { nik: '1305201001800001', nama: 'Ahmad Rasyid', tanggalLahir: '1964-05-12', umur: 62, umurBulan: 744, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
+        { nik: '1305201002750002', nama: 'Siti Nurhaliza', tanggalLahir: '1975-08-20', umur: 51, umurBulan: 612, jenisKelamin: 'female', jorong: 'Jorong Koto Tangah' },
+        { nik: '1305201003900003', nama: 'Budi Santoso', tanggalLahir: '1990-01-10', umur: 36, umurBulan: 432, jenisKelamin: 'male', jorong: 'Jorong Padang Laweh' },
+        { nik: '1305201004680004', nama: 'Hj. Mariam', tanggalLahir: '1968-11-05', umur: 58, umurBulan: 696, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
+        { nik: '1305201005850005', nama: 'Dedi Kurniawan', tanggalLahir: '1985-03-25', umur: 41, umurBulan: 492, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
+        { nik: '1305201006720006', nama: 'Nurlela', tanggalLahir: '1972-06-15', umur: 54, umurBulan: 648, jenisKelamin: 'female', jorong: 'Jorong Balai Gurah' },
+        { nik: '1305201007880007', nama: 'Irwan Syahputra', tanggalLahir: '1988-09-30', umur: 38, umurBulan: 456, jenisKelamin: 'male', jorong: 'Jorong Galuang' },
+        { nik: '1305201008650008', nama: 'Rosni', tanggalLahir: '1965-12-12', umur: 61, umurBulan: 732, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
+        { nik: '1305201009780009', nama: 'Hendri Nofriandi', tanggalLahir: '1978-02-18', umur: 48, umurBulan: 576, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
+        { nik: '1305201010920010', nama: 'Yeni Fitria', tanggalLahir: '1992-07-22', umur: 34, umurBulan: 408, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
+        { nik: '1305201011700011', nama: 'H. Zainal Abidin', tanggalLahir: '1970-04-14', umur: 56, umurBulan: 672, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
+        { nik: '1305201012830012', nama: 'Dewi Sartika', tanggalLahir: '1983-10-09', umur: 43, umurBulan: 516, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
+        { nik: '1305201013670013', nama: 'Usman Hakim', tanggalLahir: '1967-01-28', umur: 59, umurBulan: 708, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
+        { nik: '1305201014950014', nama: 'Linda Permata Sari', tanggalLahir: '1995-11-11', umur: 31, umurBulan: 372, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
+        { nik: '1305201015710015', nama: 'Darwis', tanggalLahir: '1971-08-08', umur: 55, umurBulan: 660, jenisKelamin: 'male', jorong: 'Jorong Galuang' }
     ];
 
     dummyPatients.forEach(p => PatientDB.add(p));
 
     const dummyScreeningInputs = [
-        { patientIdx: 0, sistolik: 155, diastolik: 95, beratBadan: 78, tinggiBadan: 168, merokok: 'active', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'no', riwayatHT: 'ya', minumObatHT: 'tidak' },
-        { patientIdx: 1, sistolik: 132, diastolik: 84, beratBadan: 65, tinggiBadan: 155, merokok: 'no', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'moderate', riwayatKeluarga: 'yes', komorbiditas: 'yes', riwayatHT: 'ya', minumObatHT: 'ya' },
-        { patientIdx: 2, sistolik: 118, diastolik: 76, beratBadan: 70, tinggiBadan: 172, merokok: 'no', alkohol: 'tidak', polaGaram: 'low', aktivitasFisik: 'active', riwayatKeluarga: 'no', komorbiditas: 'no', riwayatHT: 'tidak', minumObatHT: 'tidak' },
-        { patientIdx: 3, sistolik: 148, diastolik: 92, beratBadan: 82, tinggiBadan: 152, merokok: 'no', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'yes', riwayatHT: 'ya', minumObatHT: 'ya' },
-        { patientIdx: 4, sistolik: 135, diastolik: 88, beratBadan: 90, tinggiBadan: 170, merokok: 'active', alkohol: 'ya', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'no', komorbiditas: 'no', riwayatHT: 'tidak', minumObatHT: 'tidak' },
-        { patientIdx: 5, sistolik: 122, diastolik: 78, beratBadan: 58, tinggiBadan: 158, merokok: 'no', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'moderate', riwayatKeluarga: 'yes', komorbiditas: 'no', riwayatHT: 'ya', minumObatHT: 'ya' },
-        { patientIdx: 6, sistolik: 115, diastolik: 72, beratBadan: 75, tinggiBadan: 175, merokok: 'active', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'active', riwayatKeluarga: 'no', komorbiditas: 'no', riwayatHT: 'tidak', minumObatHT: 'tidak' },
-        { patientIdx: 7, sistolik: 160, diastolik: 100, beratBadan: 72, tinggiBadan: 150, merokok: 'no', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'yes', riwayatHT: 'ya', minumObatHT: 'tidak' }
+        { patientIdx: 0, sistolik: 155, diastolik: 95, beratBadan: 78, tinggiBadan: 168, merokok: 'active', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'yes', penyakitPenyerta: 'Asma', komplikasiHT: ['Penyakit Jantung', 'Penyakit Ginjal'], stress: 'ya', riwayatHT: 'ya', minumObatHT: 'tidak' },
+        { patientIdx: 1, sistolik: 132, diastolik: 84, beratBadan: 65, tinggiBadan: 155, merokok: 'no', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'moderate', riwayatKeluarga: 'yes', komorbiditas: 'no', penyakitPenyerta: '', komplikasiHT: [], stress: 'tidak', riwayatHT: 'ya', minumObatHT: 'ya' },
+        { patientIdx: 2, sistolik: 118, diastolik: 76, beratBadan: 70, tinggiBadan: 172, merokok: 'no', alkohol: 'tidak', polaGaram: 'low', aktivitasFisik: 'active', riwayatKeluarga: 'no', komorbiditas: 'no', penyakitPenyerta: '', komplikasiHT: [], stress: 'tidak', riwayatHT: 'tidak', minumObatHT: 'tidak' },
+        { patientIdx: 3, sistolik: 148, diastolik: 92, beratBadan: 82, tinggiBadan: 152, merokok: 'no', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'yes', penyakitPenyerta: 'Kolesterol', komplikasiHT: ['Stroke'], stress: 'ya', riwayatHT: 'ya', minumObatHT: 'ya' },
+        { patientIdx: 4, sistolik: 135, diastolik: 88, beratBadan: 90, tinggiBadan: 170, merokok: 'active', alkohol: 'ya', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'no', komorbiditas: 'no', penyakitPenyerta: '', komplikasiHT: [], stress: 'tidak', riwayatHT: 'tidak', minumObatHT: 'tidak' },
+        { patientIdx: 5, sistolik: 122, diastolik: 78, beratBadan: 58, tinggiBadan: 158, merokok: 'no', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'moderate', riwayatKeluarga: 'yes', komorbiditas: 'no', penyakitPenyerta: '', komplikasiHT: [], stress: 'tidak', riwayatHT: 'ya', minumObatHT: 'ya' },
+        { patientIdx: 6, sistolik: 115, diastolik: 72, beratBadan: 75, tinggiBadan: 175, merokok: 'active', alkohol: 'tidak', polaGaram: 'medium', aktivitasFisik: 'active', riwayatKeluarga: 'no', komorbiditas: 'no', penyakitPenyerta: '', komplikasiHT: [], stress: 'tidak', riwayatHT: 'tidak', minumObatHT: 'tidak' },
+        { patientIdx: 7, sistolik: 160, diastolik: 100, beratBadan: 72, tinggiBadan: 150, merokok: 'no', alkohol: 'tidak', polaGaram: 'high', aktivitasFisik: 'rare', riwayatKeluarga: 'yes', komorbiditas: 'yes', penyakitPenyerta: 'Asam Urat', komplikasiHT: ['Gangguan Mata'], stress: 'ya', riwayatHT: 'ya', minumObatHT: 'tidak' }
     ];
 
     dummyScreeningInputs.forEach(input => {
         const p = dummyPatients[input.patientIdx];
         const formData = {
             ...input,
+            tanggalLahir: p.tanggalLahir,
             umur: p.umur,
+            umurBulan: p.umurBulan,
             jenisKelamin: p.jenisKelamin
         };
 
@@ -619,7 +621,9 @@ function loadDummyData() {
             patientId: p.id,
             jorong: p.jorong,
             nama: p.nama,
+            tanggalLahir: p.tanggalLahir,
             umur: p.umur,
+            umurBulan: p.umurBulan,
             jenisKelamin: p.jenisKelamin,
             beratBadan: input.beratBadan,
             tinggiBadan: input.tinggiBadan,
@@ -631,6 +635,9 @@ function loadDummyData() {
             aktivitasFisik: input.aktivitasFisik,
             riwayatKeluarga: input.riwayatKeluarga,
             komorbiditas: input.komorbiditas,
+            penyakitPenyerta: input.penyakitPenyerta,
+            komplikasiHT: input.komplikasiHT,
+            stress: input.stress,
             riwayatHT: input.riwayatHT,
             minumObatHT: input.minumObatHT,
             edukasi: { hipertensi: true, dashDiet: false, aktivitas: false, alkohol: false },
@@ -655,7 +662,7 @@ async function syncFromFirestore() {
 }
 
 // Auto-load: localStorage/memory first (instant), then Firestore (async)
-// loadDummyData(); // Disabled to prevent duplicate data
+loadDummyData();
 
 // ===================== ONE-TIME CLEANUP SCRIPT =====================
 (function cleanupOldData() {
