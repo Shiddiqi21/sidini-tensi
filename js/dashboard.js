@@ -700,7 +700,8 @@ function handleExcelImport(e) {
                     };
 
                     if (typeof HypertensionScreening !== 'undefined') {
-                        screeningData.hasil = HypertensionScreening.evaluate(screeningData, patient.umur || 40);
+                        const expert = new HypertensionScreening({ ...screeningData, umur: patient.umur || 40 });
+                        screeningData.hasil = expert.evaluate();
                     }
                     ScreeningDB.add(screeningData);
                     addedScreenings++;
