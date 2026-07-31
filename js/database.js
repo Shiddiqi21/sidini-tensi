@@ -154,15 +154,15 @@ const FirestoreSync = {
     },
 
     deletePatient(id) {
-        if (!this.db) return;
-        this.db.collection('patients').doc(id).delete().catch(e => {
+        if (!this.db || id == null) return;
+        this.db.collection('patients').doc(String(id)).delete().catch(e => {
             console.warn('Firestore delete patient failed:', e);
         });
     },
 
     deleteScreening(id) {
-        if (!this.db) return;
-        this.db.collection('screenings').doc(id).delete().catch(e => {
+        if (!this.db || id == null) return;
+        this.db.collection('screenings').doc(String(id)).delete().catch(e => {
             console.warn('Firestore delete screening failed:', e);
         });
     },

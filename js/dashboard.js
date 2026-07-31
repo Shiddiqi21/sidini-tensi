@@ -46,16 +46,11 @@ window.showConfirm = function(title, message, okText = 'Hapus', okClass = 'btn b
             confirmButtonText: okText,
             cancelButtonText: 'Batal'
         }).then((result) => {
-            if (result.isConfirmed) {
-                return true;
-            } else {
-                throw new Error('Cancel');
-            }
+            return result.isConfirmed;
         });
     } else {
-        return new Promise((resolve, reject) => {
-            if (confirm(`${title}\n\n${message.replace(/<[^>]*>?/gm, '')}`)) resolve();
-            else reject();
+        return new Promise((resolve) => {
+            resolve(confirm(`${title}\n\n${message.replace(/<[^>]*>?/gm, '')}`));
         });
     }
 };
@@ -1454,7 +1449,7 @@ window.deleteWarga = async function(patientId, nama) {
                 if (typeof renderDashboard === 'function') renderDashboard();
             } catch (e) {
                 console.error("Error deleting warga:", e);
-                showToast("Terjadi kesalahan saat menghapus warga.", "danger");
+                showToast("Error: " + (e.message || "Kesalahan tak dikenal"), "danger", 6000);
             } finally {
                 hideLoading();
             }
