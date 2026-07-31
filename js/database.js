@@ -131,24 +131,24 @@ const FirestoreSync = {
 
     // Simpan 1 patient ke Firestore
     savePatient(patient) {
-        if (!this.db) return;
-        this.db.collection('patients').doc(patient.id).set(cleanObject(patient)).catch(e => {
+        if (!this.db || patient.id == null) return;
+        this.db.collection('patients').doc(String(patient.id)).set(cleanObject(patient)).catch(e => {
             console.warn('Firestore save patient failed:', e);
         });
     },
 
     // Simpan 1 screening ke Firestore
     saveScreening(screening) {
-        if (!this.db) return;
-        this.db.collection('screenings').doc(screening.id).set(cleanObject(screening)).catch(e => {
+        if (!this.db || screening.id == null) return;
+        this.db.collection('screenings').doc(String(screening.id)).set(cleanObject(screening)).catch(e => {
             console.warn('Firestore save screening failed:', e);
         });
     },
 
     // Update 1 patient di Firestore
     updatePatient(patient) {
-        if (!this.db) return;
-        this.db.collection('patients').doc(patient.id).set(cleanObject(patient), { merge: true }).catch(e => {
+        if (!this.db || patient.id == null) return;
+        this.db.collection('patients').doc(String(patient.id)).set(cleanObject(patient), { merge: true }).catch(e => {
             console.warn('Firestore update patient failed:', e);
         });
     },
