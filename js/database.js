@@ -21,7 +21,7 @@ const JORONG_LIST = [
 ];
 
 window.getCustomJorongs = function() {
-    try { return JSON.parse(localStorage.getItem(DB_KEYS.CUSTOM_JORONGS)) || []; } 
+    try { return JSON.parse(localStorage.getItem('sidini_custom_jorongs')) || []; } 
     catch(e) { return []; }
 };
 
@@ -29,9 +29,19 @@ window.addCustomJorong = function(name) {
     name = name.trim();
     if (!name) return;
     const list = window.getCustomJorongs();
-    if (!list.includes(name) && !JORONG_LIST.includes(name)) {
+    const isDefault = JORONG_LIST.some(j => j.toLowerCase() === name.toLowerCase());
+    const isCustom = list.some(j => j.toLowerCase() === name.toLowerCase());
+    
+    if (!isDefault && !isCustom) {
         list.push(name);
-        localStorage.setItem(DB_KEYS.CUSTOM_JORONGS, JSON.stringify(list));
+        try {
+            localStorage.setItem('sidini_custom_jorongs', JSON.stringify(list));
+        } catch (e) {
+            console.error("Local storage setItem error:", e);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Error Penyimpanan', 'Gagal menyimpan jorong ke memori browser. Pastikan browser tidak dalam mode incognito/private yang ketat.', 'error');
+            }
+        }
     }
 };
 

@@ -107,17 +107,24 @@ window.promptTambahJorong = function() {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                const nama = result.value.trim();
-                if (typeof window.addCustomJorong === 'function') {
-                    window.addCustomJorong(nama);
-                    window.renderJorongDropdowns();
-                    const filter = document.getElementById('filter-jorong');
-                    if (filter) {
-                        filter.value = nama;
-                        window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
-                        if (typeof renderDashboard === 'function') renderDashboard();
+                try {
+                    const nama = result.value.trim();
+                    if (typeof window.addCustomJorong === 'function') {
+                        window.addCustomJorong(nama);
+                        window.renderJorongDropdowns();
+                        const filter = document.getElementById('filter-jorong');
+                        if (filter) {
+                            filter.value = nama;
+                            window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+                            if (typeof renderDashboard === 'function') renderDashboard();
+                        }
+                        Swal.fire('Berhasil!', `Jorong "${nama}" telah ditambahkan.`, 'success');
+                    } else {
+                        Swal.fire('Error', 'Fungsi sistem tidak ditemukan. Harap refresh halaman (Ctrl+F5).', 'error');
                     }
-                    Swal.fire('Berhasil!', `Jorong "${nama}" telah ditambahkan.`, 'success');
+                } catch (e) {
+                    Swal.fire('Kesalahan Sistem', `Gagal menambahkan jorong: ${e.message}`, 'error');
+                    console.error("Error in promptTambahJorong:", e);
                 }
             }
         });
@@ -730,12 +737,17 @@ function handleExcelImport(e) {
                     }
                     ScreeningDB.add(screeningData);
                     addedScreenings++;
+                    
+                    if (typeof window.addCustomJorong === 'function' && patient.jorong) {
+                        window.addCustomJorong(patient.jorong);
+                    }
                 });
 
                 let alertMsg = `<b>Data Skrining</b><br>Berhasil ditambahkan: ${addedScreenings} data.<br><br>`;
                 if (failedScreenings.length > 0) {
                     alertMsg += `<b style="color: #d97706;">Peringatan: ${failedScreenings.length} baris dilewati</b> karena warga belum terdaftar:<br><small>${failedScreenings.join(', ')}</small>`;
                 }
+                if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
                 Swal.fire({ title: 'Import Selesai', html: alertMsg, icon: failedScreenings.length > 0 ? 'warning' : 'success' });
 
             } else {
@@ -756,6 +768,12 @@ function handleExcelImport(e) {
 
                 if (typeof PatientDB !== 'undefined') {
                     const result = PatientDB.importBulk(patients);
+                    if (typeof window.addCustomJorong === 'function') {
+                        patients.forEach(p => {
+                            if (p.jorong) window.addCustomJorong(p.jorong);
+                        });
+                        if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
+                    }
                     Swal.fire('Import Selesai', `<b>Data Warga</b><br>Data baru ditambahkan: ${result.added}<br>Data diperbarui: ${result.updated}<br>Total Warga: ${result.total}`, 'success');
                 } else {
                     Swal.fire('Error', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'error');
