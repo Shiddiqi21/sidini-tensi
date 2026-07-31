@@ -175,14 +175,14 @@ const FirestoreSync = {
             const batchSize = 500;
             let batch = this.db.batch();
             let count = 0;
-            snap.forEach(doc => {
+            for (const doc of snap.docs) {
                 batch.delete(doc.ref);
                 count++;
                 if (count % batchSize === 0) {
-                    batch.commit();
+                    await batch.commit();
                     batch = this.db.batch();
                 }
-            });
+            }
             if (count % batchSize !== 0) {
                 await batch.commit();
             }
@@ -247,8 +247,8 @@ const PatientDB = {
         if (!query || query.length < 2) return [];
         const q = query.toLowerCase();
         return this.getAll().filter(p =>
-            p.nama.toLowerCase().includes(q) ||
-            p.nik.includes(q)
+            (p.nama && p.nama.toLowerCase().includes(q)) ||
+            (p.nik && String(p.nik).includes(q))
         ).slice(0, 10);
     },
 
