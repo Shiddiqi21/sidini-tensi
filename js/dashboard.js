@@ -529,11 +529,17 @@ window.deleteScreeningRecord = async function(screeningId, patientId) {
     if (confirmed) {
         showLoading('Menghapus riwayat...');
         setTimeout(() => {
-            ScreeningDB.deleteById(screeningId);
-            hideLoading();
-            showToast('Riwayat skrining berhasil dihapus.', 'danger');
-            showHistoryModal(patientId);
-            renderDashboard();
+            try {
+                ScreeningDB.deleteById(screeningId);
+                showToast('Riwayat skrining berhasil dihapus.', 'danger');
+                showHistoryModal(patientId);
+                if (typeof renderDashboard === 'function') renderDashboard();
+            } catch (e) {
+                console.error("Error deleting screening record:", e);
+                showToast("Terjadi kesalahan saat menghapus riwayat.", "danger");
+            } finally {
+                hideLoading();
+            }
         }, 300);
     }
 };
@@ -1086,11 +1092,17 @@ window.deleteFollowUpRecord = async function(patientId, followUpId) {
     if (confirmed) {
         showLoading('Menghapus catatan...');
         setTimeout(() => {
-            PatientDB.deleteFollowUp(patientId, followUpId);
-            hideLoading();
-            showToast('Catatan follow-up berhasil dihapus.', 'danger');
-            openFollowUpModal(patientId);
-            renderDashboard();
+            try {
+                PatientDB.deleteFollowUp(patientId, followUpId);
+                showToast('Catatan follow-up berhasil dihapus.', 'danger');
+                openFollowUpModal(patientId);
+                renderDashboard();
+            } catch (e) {
+                console.error("Error deleting follow-up:", e);
+                showToast("Terjadi kesalahan.", "danger");
+            } finally {
+                hideLoading();
+            }
         }, 300);
     }
 };
@@ -1223,11 +1235,17 @@ window.deleteWarga = async function(patientId, nama) {
     if (confirmed) {
         showLoading('Menghapus data...');
         setTimeout(() => {
-            PatientDB.delete(patientId);
-            ScreeningDB.deleteByPatientId(patientId);
-            hideLoading();
-            showToast(`Data warga "${nama}" berhasil dihapus.`, 'danger');
-            renderDashboard();
+            try {
+                PatientDB.delete(patientId);
+                ScreeningDB.deleteByPatientId(patientId);
+                showToast(`Data warga "${nama}" berhasil dihapus.`, 'danger');
+                if (typeof renderDashboard === 'function') renderDashboard();
+            } catch (e) {
+                console.error("Error deleting warga:", e);
+                showToast("Terjadi kesalahan saat menghapus warga.", "danger");
+            } finally {
+                hideLoading();
+            }
         }, 400);
     }
 };
