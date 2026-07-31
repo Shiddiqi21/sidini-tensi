@@ -646,9 +646,8 @@ async function syncFromFirestore() {
     const loaded = await FirestoreSync.loadAll();
 
     if (loaded && _memoryDB[DB_KEYS.PATIENTS].length === 0) {
-        // Firestore kosong — load dummy data, lalu push ke Firestore
-        console.log('☁️ Firestore empty, loading dummy data...');
-        loadDummyData();
+        // Firestore kosong — do not load dummy data anymore
+        console.log('☁️ Firestore empty, no longer loading dummy data automatically.');
     }
 
     // Beritahu seluruh UI untuk re-render
