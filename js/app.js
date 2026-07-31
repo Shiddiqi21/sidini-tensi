@@ -518,3 +518,115 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 10);
     });
 });
+
+// ===== FIREBASE AUTHENTICATION LOGIC =====
+
+// Monitor Auth State
+if (typeof auth !== 'undefined' && auth) {
+    auth.onAuthStateChanged((user) => {
+        window.currentUser = user;
+        
+        // Cek auth pertama kali untuk router
+        if (!window.isAuthReady) {
+            window.isAuthReady = true;
+            if (typeof handleRouting === 'function') handleRouting();
+        }
+
+        const btnLogout = document.getElementById('btn-logout');
+        
+        if (user) {
+            // User is logged in
+            console.log('✅ User logged in:', user.email);
+            if (btnLogout) btnLogout.classList.remove('hidden');
+            
+            // Sembunyikan modal login jika terbuka
+            const loginModal = document.getElementById('login-modal');
+            if (loginModal) loginModal.classList.add('hidden');
+            
+        } else {
+            // User is logged out
+            console.log('🔒 User logged out');
+            if (btnLogout) btnLogout.classList.add('hidden');
+            
+            // Kick to home jika di halaman protected
+            const hash = window.location.hash || '#home';
+            if (hash === '#skrining' || hash === '#dashboard') {
+                window.location.hash = '#home';
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) loginModal.classList.remove('hidden');
+            }
+        }
+    });
+} else {
+    // Firebase SDK tidak dimuat (Offline murni tanpa auth awal)
+    // Anggap sudah login agar sistem tetap jalan saat demonstrasi lokal murni tanpa server
+    window.isAuthReady = true;
+    window.currentUser = { email: 'offline@local' };
+    console.warn('⚠️ Menjalankan mock-auth (offline) karena SDK tidak terdeteksi.');
+}
+
+// Handle Login Form Submit
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const btn = loginForm.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>';
+                btn.disabled = true;
+                
+                await auth.signInWithEmailAndPassword(email, password);
+                
+                // Alert sukses
+                if(typeof Swal !== 'undefined'){
+                    Swal.fire({ icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false });
+                }
+                
+                document.getElementById('login-modal').classList.add('hidden');
+                loginForm.reset();
+                
+            } catch (error) {
+                console.error("Login Error:", error);
+                if(typeof Swal !== 'undefined'){
+                    Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Email atau password salah.' });
+                } else {
+                    alert('Login gagal: Email atau password salah.');
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+});
+
+// Handle Logout
+window.handleLogout = async function() {
+    if(typeof Swal !== 'undefined'){
+        const result = await Swal.fire({
+            title: 'Konfirmasi Keluar',
+            text: "Anda yakin ingin keluar dari sistem?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Batal'
+        });
+        if (!result.isConfirmed) return;
+    } else {
+        if(!confirm("Anda yakin ingin keluar?")) return;
+    }
+    
+    try {
+        await auth.signOut();
+        if(typeof Swal !== 'undefined'){
+            Swal.fire({ icon: 'success', title: 'Berhasil Keluar', timer: 1500, showConfirmButton: false });
+        }
+    } catch (err) {
+        console.error("Logout Error:", err);
+    }
+};

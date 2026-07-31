@@ -4,6 +4,7 @@
  */
 
 let firestoreDB = null;
+let auth = null;
 
 try {
     const firebaseConfig = {
@@ -19,6 +20,7 @@ try {
     if (typeof firebase !== 'undefined') {
         firebase.initializeApp(firebaseConfig);
         firestoreDB = firebase.firestore();
+        auth = firebase.auth();
 
         // Enable offline persistence
         firestoreDB.enablePersistence({ synchronizeTabs: true }).catch(err => {
@@ -32,4 +34,5 @@ try {
 } catch (e) {
     console.warn('⚠️ Firebase initialization failed:', e);
     firestoreDB = null;
+    auth = null;
 }
