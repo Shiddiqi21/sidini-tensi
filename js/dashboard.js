@@ -909,8 +909,8 @@ function downloadTemplate() {
     if (typeof XLSX === 'undefined') return;
 
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
-    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Koto Tangah';
-    const exampleJorong2 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Padang Laweh';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Koto Tangah';
+    const exampleJorong2 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Padang Laweh';
 
     // Sheet 1: Data Warga
     const wsData = XLSX.utils.aoa_to_sheet([
@@ -955,7 +955,7 @@ window.downloadSkriningTemplate = function() {
     if (typeof XLSX === 'undefined') return;
 
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
-    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Koto Tangah';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Koto Tangah';
 
     // Sheet 1: Data Skrining
     const wsData = XLSX.utils.aoa_to_sheet([

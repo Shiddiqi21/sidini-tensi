@@ -14,10 +14,10 @@ const DB_KEYS = {
 
 // ===================== JORONG LIST =====================
 const JORONG_LIST = [
-    'Jorong Koto Tangah',
-    'Jorong Padang Laweh',
-    'Jorong Balai Gurah',
-    'Jorong Galuang'
+    'Koto Tangah',
+    'Padang Laweh',
+    'Balai Gurah',
+    'Galuang'
 ];
 
 window.getCustomJorongs = function() {
