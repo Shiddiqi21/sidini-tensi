@@ -91,61 +91,6 @@ window.renderJorongDropdowns = function() {
     });
 };
 
-window.promptTambahJorong = function() {
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: 'Tambah Jorong Baru',
-            input: 'text',
-            inputPlaceholder: 'Masukkan nama jorong baru...',
-            showCancelButton: true,
-            confirmButtonText: 'Tambah',
-            cancelButtonText: 'Batal',
-            inputValidator: (value) => {
-                if (!value || !value.trim()) {
-                    return 'Nama jorong tidak boleh kosong!'
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                try {
-                    const nama = result.value.trim();
-                    if (typeof window.addCustomJorong === 'function') {
-                        window.addCustomJorong(nama);
-                        window.renderJorongDropdowns();
-                        const filter = document.getElementById('filter-jorong');
-                        if (filter) {
-                            filter.value = nama;
-                            window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
-                            if (typeof renderDashboard === 'function') renderDashboard();
-                        }
-                        Swal.fire('Berhasil!', `Jorong "${nama}" telah ditambahkan.`, 'success');
-                    } else {
-                        Swal.fire('Error', 'Fungsi sistem tidak ditemukan. Harap refresh halaman (Ctrl+F5).', 'error');
-                    }
-                } catch (e) {
-                    Swal.fire('Kesalahan Sistem', `Gagal menambahkan jorong: ${e.message}`, 'error');
-                    console.error("Error in promptTambahJorong:", e);
-                }
-            }
-        });
-    } else {
-        const nama = prompt('Masukkan nama jorong baru:');
-        if (nama && nama.trim() !== '') {
-            if (typeof window.addCustomJorong === 'function') {
-                window.addCustomJorong(nama);
-                window.renderJorongDropdowns();
-                const filter = document.getElementById('filter-jorong');
-                if (filter) {
-                    filter.value = nama.trim();
-                    window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
-                    if (typeof renderDashboard === 'function') renderDashboard();
-                }
-                showToast('Jorong berhasil ditambahkan', 'success');
-            }
-        }
-    }
-};
-
 let statusChartInstance = null;
 let risikoChartInstance = null;
 let demografiChartInstance = null;
@@ -748,10 +693,6 @@ function handleExcelImport(e) {
                     }
                     ScreeningDB.add(screeningData);
                     addedScreenings++;
-                    
-                    if (typeof window.addCustomJorong === 'function' && patient.jorong) {
-                        window.addCustomJorong(patient.jorong);
-                    }
                 });
 
                 let alertMsg = `<b>Data Skrining</b><br>Berhasil ditambahkan: ${addedScreenings} data.<br><br>`;
@@ -779,12 +720,7 @@ function handleExcelImport(e) {
 
                 if (typeof PatientDB !== 'undefined') {
                     const result = PatientDB.importBulk(patients);
-                    if (typeof window.addCustomJorong === 'function') {
-                        patients.forEach(p => {
-                            if (p.jorong) window.addCustomJorong(p.jorong);
-                        });
-                        if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
-                    }
+                    if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
                     Swal.fire('Import Selesai', `<b>Data Warga</b><br>Data baru ditambahkan: ${result.added}<br>Data diperbarui: ${result.updated}<br>Total Warga: ${result.total}`, 'success');
                 } else {
                     Swal.fire('Error', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'error');
@@ -920,8 +856,8 @@ function downloadTemplate() {
     if (typeof XLSX === 'undefined') return;
 
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
-    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Koto Tangah';
-    const exampleJorong2 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Padang Laweh';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Anduriang Munggu Gadang';
+    const exampleJorong2 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Aur';
 
     // Sheet 1: Data Warga
     const wsData = XLSX.utils.aoa_to_sheet([
@@ -966,7 +902,7 @@ window.downloadSkriningTemplate = function() {
     if (typeof XLSX === 'undefined') return;
 
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
-    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Koto Tangah';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Anduriang Munggu Gadang';
 
     // Sheet 1: Data Skrining
     const wsData = XLSX.utils.aoa_to_sheet([
