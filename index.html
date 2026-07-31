@@ -33,7 +33,8 @@
                 </div>
             </div>
             <div class="nav-links">
-                <a href="#skrining" id="nav-skrining" class="nav-link active"><i class="ph ph-clipboard-text"></i> <span>Skrining</span></a>
+                <a href="#home" id="nav-home" class="nav-link active"><i class="ph ph-house"></i> <span>Beranda</span></a>
+                <a href="#skrining" id="nav-skrining" class="nav-link"><i class="ph ph-clipboard-text"></i> <span>Skrining</span></a>
                 <a href="#dashboard" id="nav-dashboard" class="nav-link"><i class="ph ph-chart-bar"></i> <span>Dashboard</span></a>
             </div>
             <div class="nav-logos">
@@ -44,6 +45,89 @@
             </div>
         </div>
     </nav>
+
+    <!-- PAGE: BERANDA / HOME -->
+    <main id="page-home">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">SiDini-<span class="gradient-text">Tensi</span></h1>
+                    <p class="hero-subtitle">Sistem Deteksi Dini & Rekapitulasi Skrining Hipertensi Terpadu</p>
+                    <p class="hero-desc">Platform digital inovatif untuk memfasilitasi pendataan, analisis, dan monitoring kesehatan warga Nagari Koto Tangah secara *real-time* dan komprehensif, bahkan tanpa koneksi internet.</p>
+                    <div class="hero-buttons">
+                        <a href="#skrining" class="btn btn-primary btn-lg"><i class="ph-bold ph-clipboard-text"></i> Mulai Skrining</a>
+                        <a href="#dashboard" class="btn btn-outline btn-lg"><i class="ph-bold ph-chart-bar"></i> Lihat Dashboard</a>
+                        <button class="btn btn-info btn-lg" onclick="document.getElementById('info-modal').classList.remove('hidden')"><i class="ph-bold ph-info"></i> Info Tim</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-bg-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features-section">
+            <div class="container">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ph-fill ph-brain"></i></div>
+                        <h3>Sistem Pakar Otomatis</h3>
+                        <p>Kalkulasi Instan Indeks Massa Tubuh (IMT), Klasifikasi JNC 8, dan Penilaian Risiko Penyakit Kardiovaskular sesuai standar WHO.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ph-fill ph-chart-pie-slice"></i></div>
+                        <h3>Dashboard Analitik</h3>
+                        <p>Visualisasi data interaktif, rekapitulasi real-time, dan kemudahan ekspor/impor data ke format Excel untuk pelaporan Puskesmas.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="ph-fill ph-wifi-slash"></i></div>
+                        <h3>Offline-Ready (PWA)</h3>
+                        <p>Aplikasi tetap berfungsi penuh 100% tanpa jaringan internet. Sinkronisasi ke server awan berjalan otomatis saat sinyal kembali.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Info Tim -->
+        <div class="modal hidden" id="info-modal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h4><i class="ph-fill ph-info" style="color:var(--primary)"></i> Informasi Tim Pengembang</h4>
+                    <button class="btn-close" onclick="document.getElementById('info-modal').classList.add('hidden')"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">Sistem ini dibangun dan dikembangkan oleh Mahasiswa KKN UNAND 2026</p>
+                    <div class="team-grid">
+                        <div class="team-card">
+                            <div class="team-avatar"><i class="ph-fill ph-user-circle"></i></div>
+                            <h4 class="team-name">Hasbi Ash Shiddiqi</h4>
+                            <p class="team-major">Sistem Informasi</p>
+                            <span class="team-nim">NIM: 2311523014</span>
+                        </div>
+                        <div class="team-card">
+                            <div class="team-avatar"><i class="ph-fill ph-user-circle"></i></div>
+                            <h4 class="team-name">Laila Fitri</h4>
+                            <p class="team-major">Kedokteran</p>
+                            <span class="team-nim">NIM: 2311523001</span>
+                        </div>
+                        <div class="team-card">
+                            <div class="team-avatar"><i class="ph-fill ph-user-circle"></i></div>
+                            <h4 class="team-name">Zhafirah Amalia</h4>
+                            <p class="team-major">Kedokteran</p>
+                            <span class="team-nim">NIM: 2311523014</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: center;">
+                    <button class="btn btn-outline" onclick="document.getElementById('info-modal').classList.add('hidden')">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!-- PAGE: SKRINING -->
     <main id="page-skrining">
@@ -851,26 +935,39 @@
     <!-- SPA Router -->
     <script>
         function handleRouting() {
-            const hash = window.location.hash || '#skrining';
+            const hash = window.location.hash || '#home';
             
+            const pageHome = document.getElementById('page-home');
             const pageSkrining = document.getElementById('page-skrining');
             const pageDashboard = document.getElementById('page-dashboard');
+            
+            const navHome = document.getElementById('nav-home');
             const navSkrining = document.getElementById('nav-skrining');
             const navDashboard = document.getElementById('nav-dashboard');
             
+            // Hide all pages
+            pageHome.classList.add('hidden');
+            pageSkrining.classList.add('hidden');
+            pageDashboard.classList.add('hidden');
+            
+            // Remove active class from all navs
+            navHome.classList.remove('active');
+            navSkrining.classList.remove('active');
+            navDashboard.classList.remove('active');
+            
             if (hash === '#dashboard') {
-                pageSkrining.classList.add('hidden');
                 pageDashboard.classList.remove('hidden');
-                navSkrining.classList.remove('active');
                 navDashboard.classList.add('active');
                 if (typeof renderDashboard === 'function') {
                     renderDashboard();
                 }
-            } else {
-                pageDashboard.classList.add('hidden');
+            } else if (hash === '#skrining') {
                 pageSkrining.classList.remove('hidden');
-                navDashboard.classList.remove('active');
                 navSkrining.classList.add('active');
+            } else {
+                // Default to home
+                pageHome.classList.remove('hidden');
+                navHome.classList.add('active');
             }
             window.scrollTo(0,0);
         }
