@@ -655,25 +655,43 @@ async function syncFromFirestore() {
 }
 
 // Auto-load: localStorage/memory first (instant), then Firestore (async)
-loadDummyData();
+// loadDummyData(); // Disabled to prevent duplicate data
 
 // ===================== ONE-TIME CLEANUP SCRIPT =====================
-// Menghapus data lama yang menggunakan ID random (bukan NIK)
 (function cleanupOldData() {
     setTimeout(() => {
+        // 1. Cleanup old random ID patients
         const patients = PatientDB.getAll();
-        let cleaned = false;
         patients.forEach(p => {
-            // Jika ID tidak sama dengan NIK, atau ID berawalan "ms" (format random lama)
             if (p.id !== p.nik || String(p.id).startsWith('ms')) { 
                 PatientDB.delete(p.id);
                 ScreeningDB.deleteByPatientId(p.id);
-                cleaned = true;
                 console.log('🗑️ Deleted old format record:', p.id);
             }
         });
-        if (cleaned) {
-            console.log('✅ Old records cleaned up automatically.');
+
+        // 2. Cleanup duplicated screenings (caused by previous auto-load bug)
+        const screenings = ScreeningDB.getAll();
+        const uniqueMap = {};
+        let deletedCount = 0;
+        
+        screenings.forEach(s => {
+            // Create a unique hash for the screening data (ignoring id and date)
+            const hash = `${s.patientId}_${s.sistolik}_${s.diastolik}_${s.beratBadan}_${s.tinggiBadan}`;
+            
+            if (!uniqueMap[hash]) {
+                uniqueMap[hash] = s.id; // Keep the first one
+            } else {
+                // It's a duplicate, delete it
+                if (s.id !== uniqueMap[hash]) {
+                    ScreeningDB.deleteById(s.id);
+                    deletedCount++;
+                }
+            }
+        });
+
+        if (deletedCount > 0) {
+            console.log(`✅ Cleaned up ${deletedCount} duplicated screenings automatically.`);
             if (typeof renderDashboard === 'function') renderDashboard();
         }
     }, 4000); // Wait for Firestore initial sync to finish
