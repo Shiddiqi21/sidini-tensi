@@ -51,15 +51,19 @@
         <!-- Hero Section -->
         <div class="hero-section">
             <div class="container hero-content">
-                <div class="hero-text">
-                    <h1 class="hero-title">SiDini-<span class="gradient-text">Tensi</span></h1>
-                    <p class="hero-subtitle">Sistem Deteksi Dini & Rekapitulasi Skrining Hipertensi Terpadu</p>
-                    <p class="hero-desc">Platform digital inovatif untuk memfasilitasi pendataan, analisis, dan monitoring kesehatan warga Nagari Koto Tangah secara *real-time* dan komprehensif, bahkan tanpa koneksi internet.</p>
-                    <div class="hero-buttons">
-                        <a href="#skrining" class="btn btn-primary btn-lg"><i class="ph-bold ph-clipboard-text"></i> Mulai Skrining</a>
-                        <a href="#dashboard" class="btn btn-outline btn-lg"><i class="ph-bold ph-chart-bar"></i> Lihat Dashboard</a>
-                        <button class="btn btn-info btn-lg" onclick="document.getElementById('info-modal').classList.remove('hidden')"><i class="ph-bold ph-info"></i> Info Tim</button>
-                    </div>
+                <div class="hero-logos">
+                    <img src="assets/LogoKKN.png" alt="Logo KKN">
+                    <img src="assets/LogoAgam.png" alt="Logo Agam">
+                    <img src="assets/LogoNagariKotoTangah.png" alt="Logo Nagari">
+                    <img src="assets/LogoPuskesmas.png" alt="Logo Puskesmas">
+                </div>
+                <h1 class="hero-title">SiDini-<span class="gradient-text">Tensi</span></h1>
+                <p class="hero-subtitle">Sistem Deteksi Dini & Rekapitulasi Skrining Hipertensi Terpadu</p>
+                <p class="hero-desc">Platform digital inovatif untuk pendataan, analisis, dan monitoring kesehatan warga Nagari Koto Tangah secara real-time dan komprehensif, bahkan tanpa koneksi internet.</p>
+                <div class="hero-buttons">
+                    <a href="#skrining" class="btn btn-primary btn-lg"><i class="ph-bold ph-clipboard-text"></i> Mulai Skrining</a>
+                    <a href="#dashboard" class="btn btn-outline btn-lg"><i class="ph-bold ph-chart-bar"></i> Lihat Dashboard</a>
+                    <button class="btn btn-info btn-lg" onclick="document.getElementById('info-modal').classList.remove('hidden')"><i class="ph-bold ph-info"></i> Info Tim</button>
                 </div>
             </div>
             <div class="hero-bg-shapes">
@@ -72,35 +76,94 @@
         <!-- Features Section -->
         <div class="features-section">
             <div class="container">
+                <div class="section-title">
+                    <h2><i class="ph-fill ph-star-four"></i> Keunggulan Sistem</h2>
+                    <p>Dibangun dengan teknologi terkini untuk mendukung program kesehatan masyarakat.</p>
+                </div>
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon"><i class="ph-fill ph-brain"></i></div>
                         <h3>Sistem Pakar Otomatis</h3>
-                        <p>Kalkulasi Instan Indeks Massa Tubuh (IMT), Klasifikasi JNC 8, dan Penilaian Risiko Penyakit Kardiovaskular sesuai standar WHO.</p>
+                        <p>Kalkulasi Instan Indeks Massa Tubuh (IMT), Klasifikasi JNC 8, dan Penilaian Risiko Kardiovaskular sesuai standar WHO.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon"><i class="ph-fill ph-chart-pie-slice"></i></div>
                         <h3>Dashboard Analitik</h3>
-                        <p>Visualisasi data interaktif, rekapitulasi real-time, dan kemudahan ekspor/impor data ke format Excel untuk pelaporan Puskesmas.</p>
+                        <p>Visualisasi data interaktif, rekapitulasi real-time, dan ekspor/impor data ke format Excel untuk pelaporan Puskesmas.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon"><i class="ph-fill ph-wifi-slash"></i></div>
-                        <h3>Offline-Ready (PWA)</h3>
-                        <p>Aplikasi tetap berfungsi penuh 100% tanpa jaringan internet. Sinkronisasi ke server awan berjalan otomatis saat sinyal kembali.</p>
+                        <div class="feature-icon"><i class="ph-fill ph-cloud-check"></i></div>
+                        <h3>Sinkronisasi Cloud</h3>
+                        <p>Data tersimpan aman di server awan Firebase. Bisa diakses dari perangkat mana pun oleh banyak pengguna secara bersamaan.</p>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- How-To Section -->
+        <div class="howto-section">
+            <div class="container">
+                <div class="section-title">
+                    <h2><i class="ph-fill ph-book-open-text"></i> Tata Cara Penggunaan</h2>
+                    <p>Ikuti langkah-langkah sederhana berikut untuk melakukan skrining hipertensi.</p>
+                </div>
+                <div class="howto-grid">
+                    <div class="howto-step">
+                        <div class="step-number">1</div>
+                        <h4>Buka Halaman Skrining</h4>
+                        <p>Klik tombol <b>"Mulai Skrining"</b> atau pilih menu <b>Skrining</b> di navigasi atas.</p>
+                    </div>
+                    <div class="howto-step">
+                        <div class="step-number">2</div>
+                        <h4>Isi Data Diri Warga</h4>
+                        <p>Masukkan NIK, Nama, Tanggal Lahir, Jenis Kelamin, dan Jorong tempat tinggal warga.</p>
+                    </div>
+                    <div class="howto-step">
+                        <div class="step-number">3</div>
+                        <h4>Catat Pengukuran Fisik</h4>
+                        <p>Input Berat Badan (kg), Tinggi Badan (cm), Tekanan Darah Sistolik & Diastolik. IMT akan dihitung otomatis.</p>
+                    </div>
+                    <div class="howto-step">
+                        <div class="step-number">4</div>
+                        <h4>Lengkapi Riwayat & Gaya Hidup</h4>
+                        <p>Isi riwayat hipertensi, kebiasaan merokok, konsumsi garam, aktivitas fisik, dan komorbiditas.</p>
+                    </div>
+                    <div class="howto-step">
+                        <div class="step-number">5</div>
+                        <h4>Cek Hasil Skrining</h4>
+                        <p>Klik tombol <b>"Cek Hasil"</b>. Sistem pakar akan menganalisis data dan menampilkan hasil klasifikasi, skor risiko, dan rekomendasi intervensi.</p>
+                    </div>
+                    <div class="howto-step">
+                        <div class="step-number">6</div>
+                        <h4>Simpan & Pantau</h4>
+                        <p>Klik <b>"Simpan ke Database"</b> lalu pantau seluruh data dari halaman <b>Dashboard</b> dan ekspor ke Excel kapan saja.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Footer -->
+        <footer class="home-footer">
+            <div class="container">
+                <p>&copy; 2026 SiDini-Tensi &mdash; Program Kerja Nyata (KKN) Universitas Andalas, Nagari Koto Tangah, Kab. Agam</p>
+                <div class="home-footer-logos">
+                    <img src="assets/LogoKKN.png" alt="Logo KKN">
+                    <img src="assets/LogoAgam.png" alt="Logo Agam">
+                    <img src="assets/LogoNagariKotoTangah.png" alt="Logo Nagari">
+                    <img src="assets/LogoPuskesmas.png" alt="Logo Puskesmas">
+                </div>
+            </div>
+        </footer>
         
         <!-- Modal Info Tim -->
         <div class="modal hidden" id="info-modal">
             <div class="modal-content" style="max-width: 800px;">
                 <div class="modal-header">
-                    <h4><i class="ph-fill ph-info" style="color:var(--primary)"></i> Informasi Tim Pengembang</h4>
+                    <h4><i class="ph-fill ph-users-three" style="color:var(--primary)"></i> Tim Pengembang</h4>
                     <button class="btn-close" onclick="document.getElementById('info-modal').classList.add('hidden')"><i class="ph ph-x"></i></button>
                 </div>
                 <div class="modal-body">
-                    <p style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">Sistem ini dibangun dan dikembangkan oleh Mahasiswa KKN UNAND 2026</p>
+                    <p style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">Sistem ini dibangun dan dikembangkan oleh Mahasiswa KKN Universitas Andalas 2026</p>
                     <div class="team-grid">
                         <div class="team-card">
                             <div class="team-avatar"><i class="ph-fill ph-user-circle"></i></div>
@@ -956,16 +1019,19 @@
             navDashboard.classList.remove('active');
             
             if (hash === '#dashboard') {
+                document.body.classList.remove('home-active');
                 pageDashboard.classList.remove('hidden');
                 navDashboard.classList.add('active');
                 if (typeof renderDashboard === 'function') {
                     renderDashboard();
                 }
             } else if (hash === '#skrining') {
+                document.body.classList.remove('home-active');
                 pageSkrining.classList.remove('hidden');
                 navSkrining.classList.add('active');
             } else {
-                // Default to home
+                // Default to home — hide navbar
+                document.body.classList.add('home-active');
                 pageHome.classList.remove('hidden');
                 navHome.classList.add('active');
             }
