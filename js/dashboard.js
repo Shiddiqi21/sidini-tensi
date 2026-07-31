@@ -1,3 +1,59 @@
+// ===================== GLOBAL UI UTILITIES =====================
+window.showToast = function(message, type = 'success', duration = 4000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const iconMap = {
+        success: 'ph-fill ph-check-circle',
+        danger: 'ph-fill ph-x-circle',
+        warning: 'ph-fill ph-warning',
+        info: 'ph-fill ph-info'
+    };
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="${iconMap[type] || iconMap.info}"></i>
+        <span>${message}</span>
+        <button class="toast-close" onclick="this.parentElement.classList.add('toast-out'); setTimeout(() => this.parentElement.remove(), 350);">
+            <i class="ph-bold ph-x"></i>
+        </button>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.classList.add('toast-out');
+            setTimeout(() => toast.remove(), 350);
+        }
+    }, duration);
+};
+
+window.showLoading = function(text = 'Menyimpan data...') {
+    const overlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+    if (overlay) { overlay.classList.remove('hidden'); }
+    if (loadingText) { loadingText.textContent = text; }
+};
+
+window.hideLoading = function() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.add('hidden');
+};
+
+window.showConfirm = function(title, message, okText = 'Hapus', okClass = 'btn btn-danger') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-message').innerHTML = message;
+        const okBtn = document.getElementById('confirm-ok-btn');
+        okBtn.textContent = okText;
+        okBtn.className = okClass;
+        window._confirmResolve = resolve;
+        modal.classList.remove('hidden');
+    });
+};
+
 let statusChartInstance = null;
 let risikoChartInstance = null;
 let demografiChartInstance = null;
@@ -422,12 +478,34 @@ function showHistoryModal(patientId) {
             <td><span class="${statusHTClass}">${statusHT}</span></td>
             <td><span class="${riskClass}">${riskLabel}</span></td>
             <td>${cvdRisk}</td>
+            <td style="text-align:center;">
+                <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
+                    <i class="ph-bold ph-trash"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 
     modal.classList.remove('hidden');
 }
+
+window.deleteScreeningRecord = async function(screeningId, patientId) {
+    const confirmed = await showConfirm(
+        'Hapus Riwayat Skrining',
+        'Apakah Anda yakin ingin menghapus catatan skrining ini?'
+    );
+    if (confirmed) {
+        showLoading('Menghapus riwayat...');
+        setTimeout(() => {
+            ScreeningDB.deleteById(screeningId);
+            hideLoading();
+            showToast('Riwayat skrining berhasil dihapus.', 'danger');
+            showHistoryModal(patientId);
+            renderDashboard();
+        }, 300);
+    }
+};
 
 function closeHistoryModal() {
     document.getElementById('history-modal').classList.add('hidden');
@@ -919,9 +997,14 @@ window.openFollowUpModal = function(patientId) {
         sortedFUs.forEach(fu => {
             const dateStr = new Date(fu.tanggal).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
             historyContainer.innerHTML += `
-                <div style="background: var(--bg); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--primary);">
-                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</div>
-                    <div style="color: var(--text); font-size: 0.95rem; line-height: 1.5;">${fu.catatan}</div>
+                <div style="background: var(--bg); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</div>
+                        <div style="color: var(--text); font-size: 0.95rem; line-height: 1.5;">${fu.catatan}</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFollowUpRecord('${patient.id}', '${fu.id}')" title="Hapus catatan ini" style="padding: 6px 8px;">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
                 </div>
             `;
         });
@@ -931,23 +1014,44 @@ window.openFollowUpModal = function(patientId) {
     modal.classList.remove('hidden');
 };
 
+window.deleteFollowUpRecord = async function(patientId, followUpId) {
+    const confirmed = await showConfirm(
+        'Hapus Catatan Follow-Up',
+        'Apakah Anda yakin ingin menghapus catatan follow-up ini?'
+    );
+    if (confirmed) {
+        showLoading('Menghapus catatan...');
+        setTimeout(() => {
+            PatientDB.deleteFollowUp(patientId, followUpId);
+            hideLoading();
+            showToast('Catatan follow-up berhasil dihapus.', 'danger');
+            openFollowUpModal(patientId);
+            renderDashboard();
+        }, 300);
+    }
+};
+
 window.saveFollowUp = function() {
     const patientId = document.getElementById('fu-patient-id').value;
     const tanggal = document.getElementById('fu-tanggal').value;
     const catatan = document.getElementById('fu-catatan').value;
 
     if (!patientId || !tanggal || !catatan) {
-        alert('Mohon lengkapi data follow-up.');
+        showToast('Mohon lengkapi data follow-up.', 'warning');
         return;
     }
 
-    PatientDB.addFollowUp(patientId, {
-        tanggal: tanggal,
-        catatan: catatan
-    });
-
-    // Refresh modal to show new note
-    openFollowUpModal(patientId);
+    showLoading('Menyimpan follow-up...');
+    setTimeout(() => {
+        PatientDB.addFollowUp(patientId, {
+            tanggal: tanggal,
+            catatan: catatan
+        });
+        hideLoading();
+        showToast('Catatan follow-up berhasil disimpan!', 'success');
+        openFollowUpModal(patientId);
+        renderDashboard();
+    }, 400);
 };
 // ===================== KATEGORI MODAL LOGIC =====================
 window.showCategoryModal = function(categoryKey, categoryLabel) {
@@ -1047,13 +1151,20 @@ window.prevPage = function(tableId) {
     }
 };
 
-window.deleteWarga = function(patientId, nama) {
-    if (confirm(`Apakah Anda yakin ingin menghapus data warga bernama "${nama}"? Semua data riwayat skrining dan follow-up milik warga ini juga akan dihapus secara permanen.`)) {
-        PatientDB.delete(patientId);
-        ScreeningDB.deleteByPatientId(patientId);
-        
-        // Re-render dashboard components
-        renderDashboard();
+window.deleteWarga = async function(patientId, nama) {
+    const confirmed = await showConfirm(
+        'Hapus Data Warga',
+        `Apakah Anda yakin ingin menghapus data warga <b>"${nama}"</b>?<br>Semua riwayat skrining dan follow-up milik warga ini juga akan dihapus secara permanen.`
+    );
+    if (confirmed) {
+        showLoading('Menghapus data...');
+        setTimeout(() => {
+            PatientDB.delete(patientId);
+            ScreeningDB.deleteByPatientId(patientId);
+            hideLoading();
+            showToast(`Data warga "${nama}" berhasil dihapus.`, 'danger');
+            renderDashboard();
+        }, 400);
     }
 };
 
@@ -1066,7 +1177,7 @@ window.handleSimpanWarga = function() {
     const umurUnit = document.getElementById('tw-umurUnit')?.value || 'tahun';
 
     if (!nik || !nama || !jorong) {
-        alert("Harap isi NIK, Nama, dan Jorong terlebih dahulu.");
+        showToast('Harap isi NIK, Nama, dan Jorong terlebih dahulu.', 'warning');
         return;
     }
 
@@ -1086,34 +1197,36 @@ window.handleSimpanWarga = function() {
     const form = document.getElementById('form-tambah-warga');
     const editId = form ? form.getAttribute('data-edit-id') : null;
 
-    if (editId) {
-        // Edit existing
-        PatientDB.update(editId, data);
-        alert("Data warga berhasil diperbarui!");
-    } else {
-        // Add new
-        PatientDB.add(data);
-        alert("Data warga baru berhasil ditambahkan!");
-    }
+    showLoading(editId ? 'Memperbarui data...' : 'Menyimpan data...');
 
-    // Reset and hide form
-    if (form) {
-        form.removeAttribute('data-edit-id');
-        form.classList.add('hidden');
-        
-        // Reset title
-        const titleEl = form.querySelector('h4');
-        if (titleEl) titleEl.innerHTML = '<i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Tambah Data Warga Baru';
-        
-        // Clear inputs
-        document.getElementById('tw-nik').value = '';
-        document.getElementById('tw-nama').value = '';
-        document.getElementById('tw-umur').value = '';
-        if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
-        document.getElementById('tw-jorong').value = '';
-    }
+    setTimeout(() => {
+        if (editId) {
+            PatientDB.update(editId, data);
+            hideLoading();
+            showToast(`Data warga <b>${nama}</b> berhasil diperbarui!`, 'success');
+        } else {
+            PatientDB.add(data);
+            hideLoading();
+            showToast(`Data warga <b>${nama}</b> berhasil ditambahkan!`, 'success');
+        }
 
-    renderDashboard();
+        // Reset and hide form
+        if (form) {
+            form.removeAttribute('data-edit-id');
+            form.classList.add('hidden');
+            
+            const titleEl = form.querySelector('h4');
+            if (titleEl) titleEl.innerHTML = '<i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Tambah Data Warga Baru';
+            
+            document.getElementById('tw-nik').value = '';
+            document.getElementById('tw-nama').value = '';
+            document.getElementById('tw-umur').value = '';
+            if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
+            document.getElementById('tw-jorong').value = '';
+        }
+
+        renderDashboard();
+    }, 500);
 };
 window.editWarga = function(patientId) {
     const patient = PatientDB.getById(patientId);

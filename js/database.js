@@ -216,19 +216,19 @@ const PatientDB = {
             const existingIdx = patients.findIndex(p => p.nik === patient.nik);
             if (existingIdx !== -1) {
                 // Upsert: update existing patient instead of adding duplicate
-                patients[existingIdx] = { ...patients[existingIdx], ...patient };
+                patients[existingIdx] = { ...patients[existingIdx], ...patient, id: patient.nik };
                 saveToStorage(DB_KEYS.PATIENTS, patients);
                 FirestoreSync.updatePatient(patients[existingIdx]);
                 return patients[existingIdx];
             }
         }
 
-        patient.id = patient.id || generateId();
+        patient.id = patient.nik || patient.id || generateId();
         patient.createdAt = patient.createdAt || new Date().toISOString();
-        patient.followUps = patient.followUps || []; // Initialize follow-ups
+        patient.followUps = patient.followUps || [];
         patients.push(patient);
         saveToStorage(DB_KEYS.PATIENTS, patients);
-        FirestoreSync.savePatient(patient); // ☁️ Sync to cloud
+        FirestoreSync.savePatient(patient);
         return patient;
     },
 
@@ -270,10 +270,22 @@ const PatientDB = {
             patients[idx].followUps.push(followUpData);
             
             saveToStorage(DB_KEYS.PATIENTS, patients);
-            FirestoreSync.updatePatient(patients[idx]); // Sync the patient doc which now has the followUp
+            FirestoreSync.updatePatient(patients[idx]);
             return followUpData;
         }
         return null;
+    },
+
+    deleteFollowUp(patientId, followUpId) {
+        const patients = this.getAll();
+        const idx = patients.findIndex(p => p.id === patientId);
+        if (idx !== -1 && patients[idx].followUps) {
+            patients[idx].followUps = patients[idx].followUps.filter(f => f.id !== followUpId);
+            saveToStorage(DB_KEYS.PATIENTS, patients);
+            FirestoreSync.updatePatient(patients[idx]);
+            return true;
+        }
+        return false;
     },
 
     getDemographicsStats(filterJorong = '') {
@@ -335,10 +347,10 @@ const PatientDB = {
             }
 
             if (existingIdx !== -1) {
-                existing[existingIdx] = { ...existing[existingIdx], ...p };
+                existing[existingIdx] = { ...existing[existingIdx], ...p, id: p.nik };
                 updated++;
             } else {
-                p.id = p.id || generateId();
+                p.id = p.nik || p.id || generateId();
                 p.createdAt = p.createdAt || new Date().toISOString();
                 existing.push(p);
                 added++;
@@ -432,6 +444,16 @@ const ScreeningDB = {
         const screenings = this.getByPatientId(patientId);
         if (screenings.length === 0) return null;
         return screenings.sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining))[0];
+    },
+
+    deleteById(screeningId) {
+        const screenings = this.getAll();
+        const filtered = screenings.filter(s => s.id !== screeningId);
+        if (filtered.length < screenings.length) {
+            saveToStorage(DB_KEYS.SCREENINGS, filtered);
+            return true;
+        }
+        return false;
     },
 
     deleteByPatientId(patientId) {

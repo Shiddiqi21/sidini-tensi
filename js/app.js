@@ -266,7 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== SAVE TO DATABASE =====
     btnSave.addEventListener('click', () => {
         if (!currentResult) {
-            alert('Proses skrining terlebih dahulu sebelum menyimpan.');
+            if (window.showToast) window.showToast('Proses skrining terlebih dahulu sebelum menyimpan.', 'warning');
+            else alert('Proses skrining terlebih dahulu sebelum menyimpan.');
             return;
         }
 
@@ -368,31 +369,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 rekomendasi: currentResult.rekomendasi
             }
         };
-        ScreeningDB.add(screeningRecord);
 
-        // Calculate total screenings for this patient
-        const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
+        if (window.showLoading) window.showLoading('Menyimpan data skrining...');
 
-        // Show success alert inline
-        const alertEl = document.getElementById('save-alert');
-        alertEl.className = 'alert alert-success';
-        alertEl.innerHTML = `<i class="ph-fill ph-check-circle"></i> Data skrining <b>${data.nama}</b> berhasil disimpan ke database!`;
-        alertEl.scrollIntoView({ behavior: 'smooth' });
-
-        // Disable save button
-        btnSave.disabled = true;
-        btnSave.innerHTML = '<i class="ph-fill ph-check"></i> Tersimpan';
-
-        // Auto-hide inline alert after 5s
-        setTimeout(() => { alertEl.className = 'hidden'; }, 5000);
-
-        // Show Custom HTML Modal
         setTimeout(() => {
+            ScreeningDB.add(screeningRecord);
+
+            // Calculate total screenings for this patient
+            const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
+
+            if (window.hideLoading) window.hideLoading();
+
+            // Disable save button
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="ph-fill ph-check"></i> Tersimpan';
+
+            // Show Custom HTML Modal
             document.getElementById('success-modal-name').textContent = data.nama;
             document.getElementById('success-modal-count').textContent = `ke-${totalSkrining}`;
             const modal = document.getElementById('success-modal');
-            modal.classList.remove('hidden');
-        }, 100);
+            if (modal) modal.classList.remove('hidden');
+        }, 500);
     });
 
     // ===== PRINT =====
