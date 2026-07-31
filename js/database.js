@@ -601,21 +601,21 @@ function loadDummyData() {
     if (PatientDB.getAll().length > 0) return; // Jangan timpa jika sudah ada
 
     const dummyPatients = [
-        { nik: '1305201001800001', nama: 'Ahmad Rasyid', tanggalLahir: '1964-05-12', umur: 62, umurBulan: 744, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201002750002', nama: 'Siti Nurhaliza', tanggalLahir: '1975-08-20', umur: 51, umurBulan: 612, jenisKelamin: 'female', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201003900003', nama: 'Budi Santoso', tanggalLahir: '1990-01-10', umur: 36, umurBulan: 432, jenisKelamin: 'male', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201004680004', nama: 'Hj. Mariam', tanggalLahir: '1968-11-05', umur: 58, umurBulan: 696, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201005850005', nama: 'Dedi Kurniawan', tanggalLahir: '1985-03-25', umur: 41, umurBulan: 492, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201006720006', nama: 'Nurlela', tanggalLahir: '1972-06-15', umur: 54, umurBulan: 648, jenisKelamin: 'female', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201007880007', nama: 'Irwan Syahputra', tanggalLahir: '1988-09-30', umur: 38, umurBulan: 456, jenisKelamin: 'male', jorong: 'Jorong Galuang' },
-        { nik: '1305201008650008', nama: 'Rosni', tanggalLahir: '1965-12-12', umur: 61, umurBulan: 732, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
-        { nik: '1305201009780009', nama: 'Hendri Nofriandi', tanggalLahir: '1978-02-18', umur: 48, umurBulan: 576, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201010920010', nama: 'Yeni Fitria', tanggalLahir: '1992-07-22', umur: 34, umurBulan: 408, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201011700011', nama: 'H. Zainal Abidin', tanggalLahir: '1970-04-14', umur: 56, umurBulan: 672, jenisKelamin: 'male', jorong: 'Jorong Balai Gurah' },
-        { nik: '1305201012830012', nama: 'Dewi Sartika', tanggalLahir: '1983-10-09', umur: 43, umurBulan: 516, jenisKelamin: 'female', jorong: 'Jorong Galuang' },
-        { nik: '1305201013670013', nama: 'Usman Hakim', tanggalLahir: '1967-01-28', umur: 59, umurBulan: 708, jenisKelamin: 'male', jorong: 'Jorong Koto Tangah' },
-        { nik: '1305201014950014', nama: 'Linda Permata Sari', tanggalLahir: '1995-11-11', umur: 31, umurBulan: 372, jenisKelamin: 'female', jorong: 'Jorong Padang Laweh' },
-        { nik: '1305201015710015', nama: 'Darwis', tanggalLahir: '1971-08-08', umur: 55, umurBulan: 660, jenisKelamin: 'male', jorong: 'Jorong Galuang' }
+        { nik: '1305201001800001', nama: 'Ahmad Rasyid', tanggalLahir: '1964-05-12', umur: 62, umurBulan: 744, jenisKelamin: 'male', jorong: 'Koto Tangah' },
+        { nik: '1305201002750002', nama: 'Siti Nurhaliza', tanggalLahir: '1975-08-20', umur: 51, umurBulan: 612, jenisKelamin: 'female', jorong: 'Koto Tangah' },
+        { nik: '1305201003900003', nama: 'Budi Santoso', tanggalLahir: '1990-01-10', umur: 36, umurBulan: 432, jenisKelamin: 'male', jorong: 'Padang Laweh' },
+        { nik: '1305201004680004', nama: 'Hj. Mariam', tanggalLahir: '1968-11-05', umur: 58, umurBulan: 696, jenisKelamin: 'female', jorong: 'Padang Laweh' },
+        { nik: '1305201005850005', nama: 'Dedi Kurniawan', tanggalLahir: '1985-03-25', umur: 41, umurBulan: 492, jenisKelamin: 'male', jorong: 'Balai Gurah' },
+        { nik: '1305201006720006', nama: 'Nurlela', tanggalLahir: '1972-06-15', umur: 54, umurBulan: 648, jenisKelamin: 'female', jorong: 'Balai Gurah' },
+        { nik: '1305201007880007', nama: 'Irwan Syahputra', tanggalLahir: '1988-09-30', umur: 38, umurBulan: 456, jenisKelamin: 'male', jorong: 'Galuang' },
+        { nik: '1305201008650008', nama: 'Rosni', tanggalLahir: '1965-12-12', umur: 61, umurBulan: 732, jenisKelamin: 'female', jorong: 'Galuang' },
+        { nik: '1305201009780009', nama: 'Hendri Nofriandi', tanggalLahir: '1978-02-18', umur: 48, umurBulan: 576, jenisKelamin: 'male', jorong: 'Koto Tangah' },
+        { nik: '1305201010920010', nama: 'Yeni Fitria', tanggalLahir: '1992-07-22', umur: 34, umurBulan: 408, jenisKelamin: 'female', jorong: 'Padang Laweh' },
+        { nik: '1305201011700011', nama: 'H. Zainal Abidin', tanggalLahir: '1970-04-14', umur: 56, umurBulan: 672, jenisKelamin: 'male', jorong: 'Balai Gurah' },
+        { nik: '1305201012830012', nama: 'Dewi Sartika', tanggalLahir: '1983-10-09', umur: 43, umurBulan: 516, jenisKelamin: 'female', jorong: 'Galuang' },
+        { nik: '1305201013670013', nama: 'Usman Hakim', tanggalLahir: '1967-01-28', umur: 59, umurBulan: 708, jenisKelamin: 'male', jorong: 'Koto Tangah' },
+        { nik: '1305201014950014', nama: 'Linda Permata Sari', tanggalLahir: '1995-11-11', umur: 31, umurBulan: 372, jenisKelamin: 'female', jorong: 'Padang Laweh' },
+        { nik: '1305201015710015', nama: 'Darwis', tanggalLahir: '1971-08-08', umur: 55, umurBulan: 660, jenisKelamin: 'male', jorong: 'Galuang' }
     ];
 
     dummyPatients.forEach(p => PatientDB.add(p));
@@ -694,22 +694,35 @@ async function syncFromFirestore() {
 }
 
 // Auto-load: localStorage/memory first (instant), then Firestore (async)
-// loadDummyData(); // Dinonaktifkan sesuai permintaan pengguna untuk mencegah duplikasi
+loadDummyData();
 
 // ===================== ONE-TIME CLEANUP SCRIPT =====================
 (function cleanupOldData() {
     setTimeout(() => {
-        // 1. Cleanup old random ID patients
+        // 1. Cleanup old random ID patients & Migrate 'Jorong ' prefix
         const patients = PatientDB.getAll();
         patients.forEach(p => {
+            let updated = false;
+            
             if (p.id !== p.nik || String(p.id).startsWith('ms')) { 
                 PatientDB.delete(p.id);
                 ScreeningDB.deleteByPatientId(p.id);
                 console.log('🗑️ Deleted old format record:', p.id);
+                return;
+            }
+
+            if (p.jorong && p.jorong.startsWith('Jorong ')) {
+                p.jorong = p.jorong.replace('Jorong ', '').trim();
+                updated = true;
+            }
+
+            if (updated) {
+                PatientDB.update(p.id, p);
+                console.log('🔄 Migrated patient jorong:', p.id);
             }
         });
 
-        // 2. Cleanup duplicated screenings (caused by previous auto-load bug)
+        // 2. Cleanup duplicated screenings & Migrate 'Jorong ' prefix
         const screenings = ScreeningDB.getAll();
         const uniqueMap = {};
         let deletedCount = 0;
@@ -720,6 +733,12 @@ async function syncFromFirestore() {
             
             if (!uniqueMap[hash]) {
                 uniqueMap[hash] = s.id; // Keep the first one
+                
+                // Migrate jorong
+                if (s.jorong && s.jorong.startsWith('Jorong ')) {
+                    s.jorong = s.jorong.replace('Jorong ', '').trim();
+                    ScreeningDB.update(s.id, s);
+                }
             } else {
                 // It's a duplicate, delete it
                 if (s.id !== uniqueMap[hash]) {
@@ -731,8 +750,9 @@ async function syncFromFirestore() {
 
         if (deletedCount > 0) {
             console.log(`✅ Cleaned up ${deletedCount} duplicated screenings automatically.`);
-            if (typeof renderDashboard === 'function') renderDashboard();
         }
+        
+        if (typeof renderDashboard === 'function') renderDashboard();
     }, 4000); // Wait for Firestore initial sync to finish
 })();
 
