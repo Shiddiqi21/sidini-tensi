@@ -1476,6 +1476,18 @@ window.handleSimpanWarga = function() {
         return;
     }
 
+    const form = document.getElementById('form-tambah-warga');
+    const editId = form ? form.getAttribute('data-edit-id') : null;
+
+    // Check if NIK already exists (only for new patient or if NIK changed)
+    const existingPatient = PatientDB.getByNIK(nik);
+    if (existingPatient) {
+        if (!editId || existingPatient.id !== editId) {
+            Swal.fire('Gagal Menyimpan', `Warga dengan NIK <b>${nik}</b> sudah terdaftar di sistem atas nama <b>${existingPatient.nama}</b>.`, 'error');
+            return;
+        }
+    }
+
     const isBulan = umurUnit === 'bulan';
     const umurTahun = isBulan ? Math.floor(umurVal / 12) : umurVal;
     const totalBulan = isBulan ? umurVal : (umurVal * 12);
@@ -1490,40 +1502,42 @@ window.handleSimpanWarga = function() {
         jorong: jorong
     };
 
-    const form = document.getElementById('form-tambah-warga');
-    const editId = form ? form.getAttribute('data-edit-id') : null;
-
     showLoading(editId ? 'Memperbarui data...' : 'Menyimpan data...');
 
     setTimeout(() => {
-        if (editId) {
-            PatientDB.update(editId, data);
-            hideLoading();
-            showToast(`Data warga <b>${nama}</b> berhasil diperbarui!`, 'success');
-        } else {
-            PatientDB.add(data);
-            hideLoading();
-            showToast(`Data warga <b>${nama}</b> berhasil ditambahkan!`, 'success');
-        }
+        try {
+            if (editId) {
+                PatientDB.update(editId, data);
+                showToast(`Data warga <b>${nama}</b> berhasil diperbarui!`, 'success');
+            } else {
+                PatientDB.add(data);
+                showToast(`Data warga <b>${nama}</b> berhasil ditambahkan!`, 'success');
+            }
 
-        // Reset and hide form
-        if (form) {
-            form.removeAttribute('data-edit-id');
-            form.classList.add('hidden');
-            
-            const titleEl = form.querySelector('h4');
-            if (titleEl) titleEl.innerHTML = '<i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Tambah Data Warga Baru';
-            
-            document.getElementById('tw-nik').value = '';
-            document.getElementById('tw-nama').value = '';
-            if (document.getElementById('tw-tanggalLahir')) document.getElementById('tw-tanggalLahir').value = '';
-            document.getElementById('tw-umur').value = '';
-            if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
-            if (document.getElementById('tw-umurDisplay')) document.getElementById('tw-umurDisplay').value = '';
-            document.getElementById('tw-jorong').value = '';
-        }
+            // Reset and hide form
+            if (form) {
+                form.removeAttribute('data-edit-id');
+                form.classList.add('hidden');
+                
+                const titleEl = form.querySelector('h4');
+                if (titleEl) titleEl.innerHTML = '<i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Tambah Data Warga Baru';
+                
+                document.getElementById('tw-nik').value = '';
+                document.getElementById('tw-nama').value = '';
+                if (document.getElementById('tw-tanggalLahir')) document.getElementById('tw-tanggalLahir').value = '';
+                document.getElementById('tw-umur').value = '';
+                if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
+                if (document.getElementById('tw-umurDisplay')) document.getElementById('tw-umurDisplay').value = '';
+                document.getElementById('tw-jorong').value = '';
+            }
 
-        renderDashboard();
+            if (typeof renderDashboard === 'function') renderDashboard();
+        } catch (e) {
+            console.error("Error saving patient:", e);
+            Swal.fire('Terjadi Kesalahan', 'Gagal menyimpan data warga.', 'error');
+        } finally {
+            hideLoading();
+        }
     }, 500);
 };
 window.editWarga = function(patientId) {
