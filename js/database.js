@@ -692,8 +692,7 @@ async function syncFromFirestore() {
     document.dispatchEvent(new Event('firestore-ready'));
 }
 
-// Auto-load: localStorage/memory first (instant), then Firestore (async)
-loadDummyData();
+// Auto-load is now moved inside DOMContentLoaded
 
 // ===================== ONE-TIME CLEANUP SCRIPT =====================
 (function cleanupOldData() {
@@ -736,7 +735,8 @@ loadDummyData();
                 // Migrate jorong
                 if (s.jorong && s.jorong.startsWith('Jorong ')) {
                     s.jorong = s.jorong.replace('Jorong ', '').trim();
-                    ScreeningDB.update(s.id, s);
+                    saveToStorage(DB_KEYS.SCREENINGS, screenings);
+                    if (typeof FirestoreSync !== 'undefined') FirestoreSync.saveScreening(s);
                 }
             } else {
                 // It's a duplicate, delete it
@@ -756,5 +756,6 @@ loadDummyData();
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadDummyData(); // Ensure expertSystem.js is loaded first
     syncFromFirestore();
 });

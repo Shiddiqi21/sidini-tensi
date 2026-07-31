@@ -469,7 +469,7 @@ function showHistoryModal(patientId) {
         const dateStr = s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-';
         
         // IMT Badge
-        const imtVal = s.hasil?.imt?.nilai || '-';
+        const imtVal = (s.hasil?.imt?.nilai !== undefined && s.hasil?.imt?.nilai !== null) ? s.hasil.imt.nilai : '-';
         const imtKat = (s.hasil?.imt?.kategori || '').toLowerCase();
         let imtClass = 'status-badge';
         if (imtKat.includes('normal')) imtClass += ' normal';
@@ -825,12 +825,12 @@ function handleExcelExport() {
             'Stress (Ya/Tidak)': s.stress === 'ya' ? 'Ya' : 'Tidak',
             
             // Output Sistem Tambahan
-            'IMT': s.hasil?.imt?.nilai || '-',
+            'IMT': (s.hasil?.imt?.nilai !== undefined && s.hasil?.imt?.nilai !== null) ? s.hasil.imt.nilai : '-',
             'Kategori IMT': s.hasil?.imt?.kategori || '-',
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
-            'Skor Risiko': s.hasil?.riskScore || 0
+            'Skor Risiko': (s.hasil?.riskScore !== undefined && s.hasil?.riskScore !== null) ? s.hasil.riskScore : 0
         };
     });
 
