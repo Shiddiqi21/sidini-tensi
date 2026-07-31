@@ -509,34 +509,26 @@ function showHistoryModal(patientId) {
             cvdRisk = s.hasil.komplikasiList.join(', ');
         }
 
-        // Gaya Hidup & Risiko
-        let gayaHidup = [];
-        if (s.beratBadan) gayaHidup.push(`BB: ${s.beratBadan}kg, TB: ${s.tinggiBadan}cm`);
-        if (s.merokok) gayaHidup.push(`Merokok: ${s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak')}`);
-        if (s.alkohol) gayaHidup.push(`Alkohol: ${s.alkohol === 'ya' ? 'Ya' : 'Tidak'}`);
-        if (s.polaGaram) gayaHidup.push(`Garam: ${s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah')}`);
-        if (s.aktivitasFisik) gayaHidup.push(`Fisik: ${s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang')}`);
-        if (s.riwayatKeluarga) gayaHidup.push(`Keturunan HT: ${s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak'}`);
-        if (s.stress === 'ya') gayaHidup.push('Stres: Ya');
+        // Individual columns
+        const bbTbStr = s.beratBadan ? `${s.beratBadan}kg / ${s.tinggiBadan}cm` : '-';
+        const riwKelStr = s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak';
+        const merokokStr = s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak');
+        const garamStr = s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah');
+        const alkoholStr = s.alkohol === 'ya' ? 'Ya' : 'Tidak';
+        const fisikStr = s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang');
+        const stresStr = s.stress === 'ya' ? 'Ya' : 'Tidak';
+        const riwHtStr = s.riwayatHT === 'ya' ? 'Ya' : 'Tidak';
+        const obatHtStr = s.minumObatHT === 'ya' ? 'Ya' : 'Tidak';
         
-        const gayaHidupStr = gayaHidup.length > 0 ? gayaHidup.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
-
-        // Kondisi Medis & Riwayat
-        let kondisiMedis = [];
-        if (s.riwayatHT) kondisiMedis.push(`Riwayat HT: ${s.riwayatHT === 'ya' ? 'Ya' : 'Tidak'}`);
-        if (s.minumObatHT) kondisiMedis.push(`Obat HT: ${s.minumObatHT === 'ya' ? 'Ya' : 'Tidak'}`);
-        
-        // Komorbiditas might be array or string (from old dummy data 'yes'/'no')
+        let komorbidStr = '-';
         if (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) {
-            kondisiMedis.push(`Komorbid: ${s.komorbiditas.join(', ')}`);
+            komorbidStr = s.komorbiditas.join(', ');
         } else if (s.komorbiditas === 'yes') {
-            kondisiMedis.push('Komorbid: Ada');
+            komorbidStr = 'Ada';
         }
         
-        if (s.penyakitPenyerta) kondisiMedis.push(`Penyerta: ${s.penyakitPenyerta}`);
-        if (s.komplikasiHT && s.komplikasiHT.length > 0) kondisiMedis.push(`Komplikasi: ${s.komplikasiHT.join(', ')}`);
-
-        const kondisiStr = kondisiMedis.length > 0 ? kondisiMedis.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
+        const komplikasiStr = (s.komplikasiHT && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-';
+        const penyertaStr = s.penyakitPenyerta || '-';
 
         // Edukasi
         let edukasi = [];
@@ -549,13 +541,23 @@ function showHistoryModal(patientId) {
         tr.innerHTML = `
             <td style="font-weight:bold;">${s._ke}</td>
             <td>${dateStr}</td>
+            <td style="font-size: 0.85em;">${bbTbStr}</td>
             <td><span class="${imtClass}">${imtVal}</span></td>
             <td>${sistolik}/${diastolik}</td>
             <td><span class="${statusHTClass}">${statusHT}</span></td>
             <td><span class="${riskClass}">${riskLabel}</span></td>
             <td>${cvdRisk}</td>
-            <td style="font-size: 0.85em; line-height: 1.3;">${gayaHidupStr}</td>
-            <td style="font-size: 0.85em; line-height: 1.3;">${kondisiStr}</td>
+            <td style="font-size: 0.85em;">${riwKelStr}</td>
+            <td style="font-size: 0.85em;">${merokokStr}</td>
+            <td style="font-size: 0.85em;">${garamStr}</td>
+            <td style="font-size: 0.85em;">${alkoholStr}</td>
+            <td style="font-size: 0.85em;">${fisikStr}</td>
+            <td style="font-size: 0.85em;">${stresStr}</td>
+            <td style="font-size: 0.85em;">${riwHtStr}</td>
+            <td style="font-size: 0.85em;">${obatHtStr}</td>
+            <td style="font-size: 0.85em;">${komorbidStr}</td>
+            <td style="font-size: 0.85em;">${komplikasiStr}</td>
+            <td style="font-size: 0.85em;">${penyertaStr}</td>
             <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
             <td style="text-align:center;">
                 <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
