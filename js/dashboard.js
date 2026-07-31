@@ -681,8 +681,19 @@ function handleExcelImport(e) {
                     if (!patient && nama && nama !== '-') patient = patients.find(p => (p.nama || '').toLowerCase() === nama.toLowerCase());
                     
                     if (!patient) {
-                        failedScreenings.push(nama || nik);
-                        return;
+                        // Auto-create patient if missing
+                        let tglLahir = row['Tanggal Lahir'] || row['tanggal_lahir'] || '';
+                        if (typeof tglLahir === 'number') tglLahir = new Date((tglLahir - 25569) * 86400 * 1000).toISOString();
+                        
+                        patient = {
+                            nik: nik || '-',
+                            nama: nama || '-',
+                            umur: parseInt(row['Umur'] || row['umur'] || row['Usia'] || 0),
+                            tanggalLahir: tglLahir,
+                            jenisKelamin: (String(row['Jenis Kelamin'] || row['jenis_kelamin'] || row['JK'] || 'male')).toLowerCase().includes('p') ? 'female' : 'male',
+                            jorong: String(row['Jorong'] || row['jorong'] || row['Alamat'] || '')
+                        };
+                        PatientDB.add(patient);
                     }
                     
                     const sistolik = parseInt(row['Sistolik'] || row['sistolik'] || 0);
@@ -703,7 +714,7 @@ function handleExcelImport(e) {
 
                     const checkStr = (val) => {
                         const s = String(val || '').toUpperCase();
-                        return (s === 'YA' || s === 'TRUE' || s.includes('☑') || s === 'V') ? 'ya' : 'tidak';
+                        return (s === 'YA' || s === 'TRUE' || s.includes('☑') || s === 'V' || s === '1') ? 'ya' : 'tidak';
                     };
                     const checkStrMerokok = (val) => {
                         const s = String(val || '').toUpperCase();
@@ -725,10 +736,10 @@ function handleExcelImport(e) {
                         aktivitasFisik: checkStr(row['Kurang aktivitas fisik dan olahraga']) === 'ya' ? 'rare' : 'active',
                         riwayatKeluarga: checkStr(row['Faktor genetik (Orang tua riwayat HT)']) === 'ya' ? 'yes' : 'no',
                         stress: checkStr(row['Stress']),
-                        riwayatHT: checkStr(row['Hipertensi (Kondisi)']), 
+                        riwayatHT: checkStr(row['Hipertensi (Kondisi)'] || row['Hipertensi']), 
                         minumObatHT: checkStr(row['Hipertensi Terkontrol (Ada minum obat)']),
                         komorbiditas: [],
-                        penyakitPenyerta: String(row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || '').replace('-', '').trim(),
+                        penyakitPenyerta: String(row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || row['Pemyakit penyerta (asma, kolesterol, tumor, OA, dsb'] || '').replace('-', '').trim(),
                         komplikasiHT: (row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
                     };
 
@@ -762,7 +773,7 @@ function handleExcelImport(e) {
                         umur: parseInt(row['Umur'] || row['umur'] || row['Usia'] || 0),
                         tanggalLahir: tglLahir,
                         jenisKelamin: (String(row['Jenis Kelamin'] || row['jenis_kelamin'] || row['JK'] || 'male')).toLowerCase().includes('p') ? 'female' : 'male',
-                        jorong: String(row['Jorong'] || row['jorong'] || '')
+                        jorong: String(row['Jorong'] || row['jorong'] || row['Alamat'] || '')
                     };
                 });
 
@@ -959,22 +970,22 @@ window.downloadSkriningTemplate = function() {
 
     // Sheet 1: Data Skrining
     const wsData = XLSX.utils.aoa_to_sheet([
-        ['No', 'NIK', 'Nama', 'Jorong', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Merokok', 'Konsumsi alkohol', 'Konsumsi garam yang terlalu banyak', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Faktor genetik (Orang tua riwayat HT)', 'Hipertensi (Kondisi)', 'Hipertensi Terkontrol (Ada minum obat)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'],
-        [1, '1305201001800001', 'Ahmad Contoh', exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', '-', '-'],
-        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+        ['No', 'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Hipertensi', 'Hipertensi Terkontrol (Ada minum obat)', 'Hipertensi Tidak Terkontrol', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)', 'Faktor genetik (Orang tua riwayat HT)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Kelebihan berat badan dan obesitas', 'Merokok', 'Konsumsi garam yang terlalu banyak', 'Konsumsi alkohol', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Degeneratif (pertambahan usia) > 60 tahun'],
+        [1, 'Ahmad Contoh', '1305201001800001', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Tidak', 'Stroke', 'Tidak', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Ya'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
     ]);
     
     // Sheet 2: Petunjuk
     const wsPetunjuk = XLSX.utils.aoa_to_sheet([
         ['PETUNJUK PENGISIAN TEMPLATE DATA SKRINING'],
         [''],
-        ['Kolom NIK: Isi dengan 16 digit NIK KTP warga (Harus sudah terdaftar di Data Warga!)'],
+        ['Kolom NIK: Isi dengan 16 digit NIK KTP warga'],
         ['Kolom Nama: Isi nama lengkap warga'],
         ['Kolom Tanggal Skrining: Format YYYY-MM-DD'],
         ['Kolom Sistolik & Diastolik: Angka tensi darah'],
         ['Kolom BB & TB: Berat Badan (kg) & Tinggi Badan (cm)'],
         ['Kolom Pertanyaan (Merokok, dsb): Isi YA atau TIDAK'],
-        ['PENTING: Warga harus sudah ada di tab "Kelola Data Warga" agar riwayat ini bisa dimasukkan!']
+        ['CATATAN: Jika nama warga belum terdaftar, sistem akan otomatis mendaftarkannya berdasarkan data di baris ini!']
     ]);
     
     const wb = XLSX.utils.book_new();
