@@ -348,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSave.addEventListener('click', () => {
         if (!currentResult) {
             if (window.showToast) window.showToast('Proses skrining terlebih dahulu sebelum menyimpan.', 'warning');
+            else if (typeof Swal !== 'undefined') Swal.fire('Peringatan', 'Proses skrining terlebih dahulu sebelum menyimpan.', 'warning');
             else alert('Proses skrining terlebih dahulu sebelum menyimpan.');
             return;
         }
@@ -471,11 +472,23 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSave.disabled = true;
             btnSave.innerHTML = '<i class="ph-fill ph-check"></i> Tersimpan';
 
-            // Show Custom HTML Modal
-            document.getElementById('success-modal-name').textContent = data.nama;
-            document.getElementById('success-modal-count').textContent = `ke-${totalSkrining}`;
-            const modal = document.getElementById('success-modal');
-            if (modal) modal.classList.remove('hidden');
+            // Show Custom HTML Modal or SweetAlert
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    html: `Data skrining untuk <b>${data.nama}</b> telah tersimpan ke database.<br><br><span style="font-size: 0.9em; color: #666;">Ini adalah riwayat skrining ke-${totalSkrining} untuk warga ini.</span>`,
+                    icon: 'success',
+                    confirmButtonText: 'Selesai',
+                    confirmButtonColor: '#2563eb'
+                }).then(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            } else {
+                document.getElementById('success-modal-name').textContent = data.nama;
+                document.getElementById('success-modal-count').textContent = `ke-${totalSkrining}`;
+                const modal = document.getElementById('success-modal');
+                if (modal) modal.classList.remove('hidden');
+            }
         }, 500);
     });
 

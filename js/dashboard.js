@@ -1,32 +1,24 @@
 // ===================== GLOBAL UI UTILITIES =====================
 window.showToast = function(message, type = 'success', duration = 4000) {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    
-    const iconMap = {
-        success: 'ph-fill ph-check-circle',
-        danger: 'ph-fill ph-x-circle',
-        warning: 'ph-fill ph-warning',
-        info: 'ph-fill ph-info'
-    };
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <i class="${iconMap[type] || iconMap.info}"></i>
-        <span>${message}</span>
-        <button class="toast-close" onclick="this.parentElement.classList.add('toast-out'); setTimeout(() => this.parentElement.remove(), 350);">
-            <i class="ph-bold ph-x"></i>
-        </button>
-    `;
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.classList.add('toast-out');
-            setTimeout(() => toast.remove(), 350);
-        }
-    }, duration);
+    if (typeof Swal !== 'undefined') {
+        const iconMap = {
+            success: 'success',
+            danger: 'error',
+            warning: 'warning',
+            info: 'info'
+        };
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: iconMap[type] || 'info',
+            title: message,
+            showConfirmButton: false,
+            timer: duration,
+            timerProgressBar: true
+        });
+    } else {
+        alert(message);
+    }
 };
 
 window.showLoading = function(text = 'Menyimpan data...') {
@@ -42,16 +34,30 @@ window.hideLoading = function() {
 };
 
 window.showConfirm = function(title, message, okText = 'Hapus', okClass = 'btn btn-danger') {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('confirm-modal');
-        document.getElementById('confirm-title').textContent = title;
-        document.getElementById('confirm-message').innerHTML = message;
-        const okBtn = document.getElementById('confirm-ok-btn');
-        okBtn.textContent = okText;
-        okBtn.className = okClass;
-        window._confirmResolve = resolve;
-        modal.classList.remove('hidden');
-    });
+    if (typeof Swal !== 'undefined') {
+        const isDanger = okClass.includes('danger');
+        return Swal.fire({
+            title: title,
+            html: message,
+            icon: isDanger ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonColor: isDanger ? '#dc2626' : '#2563eb',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: okText,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                return true;
+            } else {
+                throw new Error('Cancel');
+            }
+        });
+    } else {
+        return new Promise((resolve, reject) => {
+            if (confirm(`${title}\n\n${message.replace(/<[^>]*>?/gm, '')}`)) resolve();
+            else reject();
+        });
+    }
 };
 
 window.renderJorongDropdowns = function() {
@@ -86,18 +92,49 @@ window.renderJorongDropdowns = function() {
 };
 
 window.promptTambahJorong = function() {
-    const nama = prompt('Masukkan nama jorong baru:');
-    if (nama && nama.trim() !== '') {
-        if (typeof window.addCustomJorong === 'function') {
-            window.addCustomJorong(nama);
-            window.renderJorongDropdowns();
-            const filter = document.getElementById('filter-jorong');
-            if (filter) {
-                filter.value = nama.trim();
-                window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
-                if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Tambah Jorong Baru',
+            input: 'text',
+            inputPlaceholder: 'Masukkan nama jorong baru...',
+            showCancelButton: true,
+            confirmButtonText: 'Tambah',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) {
+                    return 'Nama jorong tidak boleh kosong!'
+                }
             }
-            showToast('Jorong berhasil ditambahkan', 'success');
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const nama = result.value.trim();
+                if (typeof window.addCustomJorong === 'function') {
+                    window.addCustomJorong(nama);
+                    window.renderJorongDropdowns();
+                    const filter = document.getElementById('filter-jorong');
+                    if (filter) {
+                        filter.value = nama;
+                        window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+                        if (typeof renderDashboard === 'function') renderDashboard();
+                    }
+                    Swal.fire('Berhasil!', `Jorong "${nama}" telah ditambahkan.`, 'success');
+                }
+            }
+        });
+    } else {
+        const nama = prompt('Masukkan nama jorong baru:');
+        if (nama && nama.trim() !== '') {
+            if (typeof window.addCustomJorong === 'function') {
+                window.addCustomJorong(nama);
+                window.renderJorongDropdowns();
+                const filter = document.getElementById('filter-jorong');
+                if (filter) {
+                    filter.value = nama.trim();
+                    window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+                    if (typeof renderDashboard === 'function') renderDashboard();
+                }
+                showToast('Jorong berhasil ditambahkan', 'success');
+            }
         }
     }
 };
@@ -616,7 +653,7 @@ function handleExcelImport(e) {
             const jsonData = XLSX.utils.sheet_to_json(sheet);
             
             if (jsonData.length === 0) {
-                showAlert('import-alert', 'File Excel kosong atau format tidak sesuai.', 'warning');
+                Swal.fire('Peringatan', 'File Excel kosong atau format tidak sesuai.', 'warning');
                 return;
             }
 
@@ -695,13 +732,11 @@ function handleExcelImport(e) {
                     addedScreenings++;
                 });
 
+                let alertMsg = `<b>Data Skrining</b><br>Berhasil ditambahkan: ${addedScreenings} data.<br><br>`;
                 if (failedScreenings.length > 0) {
-                    const uniqueFailed = [...new Set(failedScreenings)];
-                    const names = uniqueFailed.slice(0, 5).join(', ') + (uniqueFailed.length > 5 ? '...' : '');
-                    showAlert('import-alert', `Berhasil mengimpor ${addedScreenings} riwayat skrining.<br><b>Perhatian:</b> ${uniqueFailed.length} warga gagal diimpor riwayatnya karena namanya belum ada di sistem (misal: ${names}). Silakan tambah data warga tsb terlebih dahulu!`, 'warning');
-                } else {
-                    showAlert('import-alert', `Berhasil mengimpor ${addedScreenings} riwayat skrining baru!`, 'success');
+                    alertMsg += `<b style="color: #d97706;">Peringatan: ${failedScreenings.length} baris dilewati</b> karena warga belum terdaftar:<br><small>${failedScreenings.join(', ')}</small>`;
                 }
+                Swal.fire({ title: 'Import Selesai', html: alertMsg, icon: failedScreenings.length > 0 ? 'warning' : 'success' });
 
             } else {
                 const patients = jsonData.map(row => {
@@ -721,9 +756,9 @@ function handleExcelImport(e) {
 
                 if (typeof PatientDB !== 'undefined') {
                     const result = PatientDB.importBulk(patients);
-                    showAlert('import-alert', `Berhasil! ${result.added} data baru ditambahkan, ${result.updated} data diperbarui. Total: ${result.total} warga.`, 'success');
+                    Swal.fire('Import Selesai', `<b>Data Warga</b><br>Data baru ditambahkan: ${result.added}<br>Data diperbarui: ${result.updated}<br>Total Warga: ${result.total}`, 'success');
                 } else {
-                    showAlert('import-alert', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'danger');
+                    Swal.fire('Error', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'error');
                 }
             }
             
@@ -734,7 +769,7 @@ function handleExcelImport(e) {
             
         } catch (error) {
             console.error(error);
-            showAlert('import-alert', 'Terjadi kesalahan saat memproses file Excel.', 'danger');
+            Swal.fire('Error', 'Terjadi kesalahan saat memproses file Excel.', 'error');
         }
     };
     reader.readAsArrayBuffer(file);
@@ -745,7 +780,7 @@ function handleExcelExport() {
 
     const allScreenings = ScreeningDB.getAll();
     if (allScreenings.length === 0) {
-        alert("Tidak ada data untuk diexport");
+        Swal.fire('Peringatan', 'Tidak ada data skrining untuk diexport.', 'warning');
         return;
     }
 
@@ -769,7 +804,7 @@ function handleExcelExport() {
             return jorong === filterJorong;
         });
         if (screenings.length === 0) {
-            alert(`Tidak ada data untuk diexport untuk ${filterJorong}`);
+            Swal.fire('Peringatan', `Tidak ada data skrining untuk diexport untuk jorong ${filterJorong}.`, 'warning');
             return;
         }
     }
@@ -841,29 +876,14 @@ function handleExcelExport() {
 }
 
 function showAlert(containerId, message, type = 'info') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    container.className = `alert alert-${type}`;
-    
-    let bgColor, color;
-    if (type === 'success') { bgColor = '#dcfce7'; color = '#166534'; }
-    else if (type === 'danger') { bgColor = '#fee2e2'; color = '#991b1b'; }
-    else if (type === 'warning') { bgColor = '#fef3c7'; color = '#92400e'; }
-    else { bgColor = '#e0f2fe'; color = '#075985'; }
-    
-    container.style.padding = '10px 15px';
-    container.style.marginBottom = '15px';
-    container.style.borderRadius = '5px';
-    container.style.backgroundColor = bgColor;
-    container.style.color = color;
-    
-    container.innerHTML = message;
-    container.style.display = 'block';
-
-    setTimeout(() => {
-        container.style.display = 'none';
-    }, 5000);
+    Swal.fire({
+        icon: type === 'error' ? 'error' : type,
+        html: message,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
 }
 
 // NEW functions
@@ -1042,7 +1062,7 @@ window.showHistory = function(patientId) {
 };
 
 // ===================== KELOLA WARGA LOGIC =====================
-window.handleSimpanWarga = function() {
+window.handleSimpanWarga = function(isEdit = false) {
     const nik = document.getElementById('tw-nik').value;
     const nama = document.getElementById('tw-nama').value;
     const umurThn = parseInt(document.getElementById('tw-umur').value) || 0;
@@ -1051,22 +1071,22 @@ window.handleSimpanWarga = function() {
     const jorong = document.getElementById('tw-jorong').value;
 
     if (!nik || !nama) {
-        alert('NIK dan Nama wajib diisi!');
+        Swal.fire('Peringatan', 'NIK dan Nama wajib diisi!', 'warning');
         return;
     }
 
     if (nik.length !== 16) {
-        alert('NIK harus 16 digit.');
+        Swal.fire('Peringatan', 'NIK harus 16 digit.', 'warning');
+        return;
+    }
+
+    const patients = PatientDB.getAll();
+    if (!isEdit && patients.some(p => p.nik === nik)) {
+        Swal.fire('Peringatan', 'Data Warga dengan NIK tersebut sudah ada.', 'warning');
         return;
     }
 
     const totalBulan = (umurThn * 12) + umurBln;
-
-    const existing = PatientDB.getByNIK(nik);
-    if (existing) {
-        alert('Data Warga dengan NIK tersebut sudah ada.');
-        return;
-    }
 
     PatientDB.add({
         nik: nik,
@@ -1086,12 +1106,22 @@ window.handleSimpanWarga = function() {
     // Refresh table & stats
     renderDashboard();
     
-    const alertBox = document.getElementById('import-alert');
-    if (alertBox) {
-        alertBox.className = 'alert alert-success';
-        alertBox.innerHTML = `<strong>Berhasil!</strong> Data warga ${nama} ditambahkan.`;
-        alertBox.classList.remove('hidden');
-        setTimeout(() => alertBox.classList.add('hidden'), 3000);
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Berhasil!',
+            html: `Data warga <b>${nama}</b> berhasil ditambahkan.`,
+            icon: 'success',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#2563eb'
+        });
+    } else {
+        const alertBox = document.getElementById('import-alert');
+        if (alertBox) {
+            alertBox.className = 'alert alert-success';
+            alertBox.innerHTML = `<strong>Berhasil!</strong> Data warga ${nama} ditambahkan.`;
+            alertBox.classList.remove('hidden');
+            setTimeout(() => alertBox.classList.add('hidden'), 3000);
+        }
     }
 };
 
