@@ -538,6 +538,14 @@ function showHistoryModal(patientId) {
 
         const kondisiStr = kondisiMedis.length > 0 ? kondisiMedis.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
 
+        // Edukasi
+        let edukasi = [];
+        if (s.edukasi?.hipertensi) edukasi.push('Penjelasan HT');
+        if (s.edukasi?.dashDiet) edukasi.push('DASH Diet');
+        if (s.edukasi?.aktivitas) edukasi.push('Akt. Fisik');
+        if (s.edukasi?.alkohol) edukasi.push('Batas Alkohol');
+        const eduStr = edukasi.length > 0 ? edukasi.map(str => `<div><small style="color:var(--success);">✓ ${str}</small></div>`).join('') : '-';
+
         tr.innerHTML = `
             <td style="font-weight:bold;">${s._ke}</td>
             <td>${dateStr}</td>
@@ -548,6 +556,7 @@ function showHistoryModal(patientId) {
             <td>${cvdRisk}</td>
             <td style="font-size: 0.85em; line-height: 1.3;">${gayaHidupStr}</td>
             <td style="font-size: 0.85em; line-height: 1.3;">${kondisiStr}</td>
+            <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
             <td style="text-align:center;">
                 <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
                     <i class="ph-bold ph-trash"></i>
@@ -791,6 +800,13 @@ function handleExcelExport() {
         const isOverweight = s.hasil?.imt?.kategori === 'Obesitas' || s.hasil?.imt?.kategori === 'Overweight' || s.hasil?.imt?.kategori === 'Pre-Obese';
         const isDegeneratif = s.umur > 60;
 
+        let edukasiExport = [];
+        if (s.edukasi?.hipertensi) edukasiExport.push('Penjelasan HT');
+        if (s.edukasi?.dashDiet) edukasiExport.push('DASH Diet');
+        if (s.edukasi?.aktivitas) edukasiExport.push('Akt. Fisik');
+        if (s.edukasi?.alkohol) edukasiExport.push('Batas Alkohol');
+        const eduExportStr = edukasiExport.length > 0 ? edukasiExport.join(', ') : '-';
+
         return {
             'No': i + 1,
             'Tanggal Skrining': s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-',
@@ -830,7 +846,8 @@ function handleExcelExport() {
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
-            'Skor Risiko': (s.hasil?.riskScore !== undefined && s.hasil?.riskScore !== null) ? s.hasil.riskScore : 0
+            'Skor Risiko': (s.hasil?.riskScore !== undefined && s.hasil?.riskScore !== null) ? s.hasil.riskScore : 0,
+            'Edukasi Diberikan': eduExportStr
         };
     });
 
