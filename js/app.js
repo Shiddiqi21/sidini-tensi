@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const namaField = document.getElementById('nama');
     const umurField = document.getElementById('umur');
     const umurUnitField = document.getElementById('umurUnit');
+    const umurDisplayField = document.getElementById('umurDisplay');
     const tanggalLahirField = document.getElementById('tanggalLahir');
     const jorongField = document.getElementById('jorong');
     const bbField = document.getElementById('beratBadan');
@@ -91,12 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof patient.umurBulan === 'number' && patient.umurBulan < 12) {
                 umurField.value = patient.umurBulan;
                 umurUnitField.value = 'bulan';
+                if (umurDisplayField) umurDisplayField.value = patient.umurBulan + ' Bulan';
             } else {
                 umurField.value = patient.umur || '';
                 umurUnitField.value = 'tahun';
+                if (umurDisplayField) umurDisplayField.value = (patient.umur || '') + ' Tahun';
             }
         } else {
             umurField.value = patient.umur || '';
+            if (umurDisplayField) umurDisplayField.value = (patient.umur || '') + ' Tahun';
         }
         
         // Set Jorong dropdown
@@ -162,9 +166,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Under 1 year, show months
                     umurField.value = ageMonths;
                     if (umurUnitField) umurUnitField.value = 'bulan';
+                    if (umurDisplayField) umurDisplayField.value = ageMonths + ' Bulan';
                 } else {
                     umurField.value = ageYears;
                     if (umurUnitField) umurUnitField.value = 'tahun';
+                    if (umurDisplayField) umurDisplayField.value = ageYears + ' Tahun';
                 }
             }
         });
@@ -479,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             patientIdField.value = '';
             searchInput.value = '';
+            if (umurDisplayField) umurDisplayField.value = '';
             imtValueDisplay.textContent = '—';
             imtBadgeDisplay.textContent = 'Isi BB & TB';
             imtBadgeDisplay.className = 'imt-badge';

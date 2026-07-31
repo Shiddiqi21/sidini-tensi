@@ -1258,6 +1258,7 @@ window.handleSimpanWarga = function() {
             if (document.getElementById('tw-tanggalLahir')) document.getElementById('tw-tanggalLahir').value = '';
             document.getElementById('tw-umur').value = '';
             if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
+            if (document.getElementById('tw-umurDisplay')) document.getElementById('tw-umurDisplay').value = '';
             document.getElementById('tw-jorong').value = '';
         }
 
@@ -1276,6 +1277,7 @@ window.editWarga = function(patientId) {
     const jorongInput = document.getElementById('tw-jorong');
     const umurInput = document.getElementById('tw-umur');
     const umurUnitInput = document.getElementById('tw-umurUnit');
+    const umurDisplayInput = document.getElementById('tw-umurDisplay');
 
     if (nikInput) nikInput.value = patient.nik || '';
     if (namaInput) namaInput.value = patient.nama || '';
@@ -1290,9 +1292,11 @@ window.editWarga = function(patientId) {
         if (typeof patient.umurBulan === 'number' && patient.umurBulan < 12) {
             umurInput.value = patient.umurBulan;
             umurUnitInput.value = 'bulan';
+            if (umurDisplayInput) umurDisplayInput.value = patient.umurBulan + ' Bulan';
         } else {
             umurInput.value = patient.umur || '';
             umurUnitInput.value = 'tahun';
+            if (umurDisplayInput) umurDisplayInput.value = (patient.umur || '') + ' Tahun';
         }
     }
 
@@ -1438,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const twTanggalLahir = document.getElementById('tw-tanggalLahir');
     const twUmur = document.getElementById('tw-umur');
     const twUmurUnit = document.getElementById('tw-umurUnit');
+    const twUmurDisplay = document.getElementById('tw-umurDisplay');
     
     if (twTanggalLahir) {
         twTanggalLahir.addEventListener('change', () => {
@@ -1455,9 +1460,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (ageYears < 1) {
                     if (twUmur) twUmur.value = ageMonths;
                     if (twUmurUnit) twUmurUnit.value = 'bulan';
+                    if (twUmurDisplay) twUmurDisplay.value = ageMonths + ' Bulan';
                 } else {
                     if (twUmur) twUmur.value = ageYears;
                     if (twUmurUnit) twUmurUnit.value = 'tahun';
+                    if (twUmurDisplay) twUmurDisplay.value = ageYears + ' Tahun';
                 }
             }
         });
