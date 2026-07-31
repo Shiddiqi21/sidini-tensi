@@ -22,10 +22,14 @@ try {
         firestoreDB = firebase.firestore();
         auth = firebase.auth();
 
-        // Enable offline persistence
-        firestoreDB.enablePersistence({ synchronizeTabs: true }).catch(err => {
-            console.warn('Firestore persistence warning:', err.code);
-        });
+        // Enable offline persistence (hanya jika bukan file:// karena IndexedDB diblokir browser di lokal)
+        if (window.location.protocol !== 'file:') {
+            firestoreDB.enablePersistence({ synchronizeTabs: true }).catch(err => {
+                console.warn('Firestore persistence warning:', err.code);
+            });
+        } else {
+            console.warn('⚠️ Menjalankan via file:// — Offline persistence dinonaktifkan untuk mencegah crash.');
+        }
 
         console.log('🔥 Firebase initialized successfully!');
     } else {
