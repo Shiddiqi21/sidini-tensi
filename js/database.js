@@ -123,6 +123,20 @@ const FirestoreSync = {
         });
     },
 
+    deletePatient(id) {
+        if (!this.db) return;
+        this.db.collection('patients').doc(id).delete().catch(e => {
+            console.warn('Firestore delete patient failed:', e);
+        });
+    },
+
+    deleteScreening(id) {
+        if (!this.db) return;
+        this.db.collection('screenings').doc(id).delete().catch(e => {
+            console.warn('Firestore delete screening failed:', e);
+        });
+    },
+
     // Hapus semua dokumen dalam collection
     async clearCollection(collectionName) {
         if (!this.db) return;
@@ -249,10 +263,7 @@ const PatientDB = {
         const filtered = patients.filter(p => p.id !== id);
         if (filtered.length < patients.length) {
             saveToStorage(DB_KEYS.PATIENTS, filtered);
-            // ☁️ Sync to cloud (Assuming FirestoreSync has a deletePatient method or we use generic clear/sync, but since we don't have deletePatient in FirestoreSync, we might just leave it or add it if needed. We'll add a simple Firestore delete call below if we can, but since FirestoreSync is custom, we'll try to just remove it)
-            if (this.db) {
-                this.db.collection('patients').doc(id).delete().catch(console.warn);
-            }
+            FirestoreSync.deletePatient(id);
             return true;
         }
         return false;
@@ -451,6 +462,7 @@ const ScreeningDB = {
         const filtered = screenings.filter(s => s.id !== screeningId);
         if (filtered.length < screenings.length) {
             saveToStorage(DB_KEYS.SCREENINGS, filtered);
+            FirestoreSync.deleteScreening(screeningId);
             return true;
         }
         return false;
@@ -458,9 +470,11 @@ const ScreeningDB = {
 
     deleteByPatientId(patientId) {
         const screenings = this.getAll();
+        const toDelete = screenings.filter(s => s.patientId === patientId);
         const filtered = screenings.filter(s => s.patientId !== patientId);
         if (filtered.length < screenings.length) {
             saveToStorage(DB_KEYS.SCREENINGS, filtered);
+            toDelete.forEach(s => FirestoreSync.deleteScreening(s.id));
             return true;
         }
         return false;
@@ -643,6 +657,28 @@ async function syncFromFirestore() {
 
 // Auto-load: localStorage/memory first (instant), then Firestore (async)
 loadDummyData();
+
+// ===================== ONE-TIME CLEANUP SCRIPT =====================
+// Menghapus data lama yang menggunakan ID random (bukan NIK)
+(function cleanupOldData() {
+    setTimeout(() => {
+        const patients = PatientDB.getAll();
+        let cleaned = false;
+        patients.forEach(p => {
+            // Jika ID tidak sama dengan NIK, atau ID berawalan "ms" (format random lama)
+            if (p.id !== p.nik || String(p.id).startsWith('ms')) { 
+                PatientDB.delete(p.id);
+                ScreeningDB.deleteByPatientId(p.id);
+                cleaned = true;
+                console.log('🗑️ Deleted old format record:', p.id);
+            }
+        });
+        if (cleaned) {
+            console.log('✅ Old records cleaned up automatically.');
+            if (typeof renderDashboard === 'function') renderDashboard();
+        }
+    }, 4000); // Wait for Firestore initial sync to finish
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
     syncFromFirestore();
