@@ -1276,3 +1276,118 @@ document.addEventListener('click', function(e) {
         }
     });
 });
+
+// ===================== EXPORT EXCEL BARU =====================
+window.exportWarga = function() {
+    if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
+    const patients = PatientDB.getAll();
+    if (patients.length === 0) {
+        showToast('Tidak ada data warga untuk diexport', 'warning');
+        return;
+    }
+
+    const exportData = patients.map((p, i) => ({
+        'No': i + 1,
+        'NIK': p.nik || '-',
+        'Nama': p.nama || '-',
+        'Jorong': p.jorong || '-',
+        'Umur': (p.umurBulan ? Math.floor(p.umurBulan / 12) + ' Tahun ' + (p.umurBulan % 12) + ' Bulan' : (p.umur || 0) + ' Tahun'),
+        'Jenis Kelamin': p.jenisKelamin === 'female' ? 'Perempuan' : 'Laki-laki',
+        'Tanggal Ditambahkan': p.createdAt ? new Date(p.createdAt).toLocaleDateString('id-ID') : '-'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Warga');
+    XLSX.writeFile(wb, 'Data_Warga_KotoTangah.xlsx');
+    showToast('Berhasil mengekspor Data Warga', 'success');
+};
+
+window.exportHT = function() {
+    if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
+    let hts = [];
+    const patients = PatientDB.getAll();
+    patients.forEach(p => {
+        const latest = ScreeningDB.getLatestByPatient(p.id);
+        if (latest && latest.hasil && (latest.hasil.statusHT === 'Tidak Terkontrol' || latest.hasil.statusHT === 'Terkontrol' || (latest.riwayatHT && latest.riwayatHT.toLowerCase() === 'ya'))) {
+            hts.push({ patient: p, screening: latest });
+        }
+    });
+
+    if (hts.length === 0) {
+        showToast('Tidak ada data prioritas HT untuk diexport', 'warning');
+        return;
+    }
+
+    // Sort by name
+    hts.sort((a, b) => a.patient.nama.localeCompare(b.patient.nama));
+
+    const exportData = hts.map((item, i) => ({
+        'No': i + 1,
+        'Nama': item.patient.nama || '-',
+        'Jorong': item.patient.jorong || '-',
+        'Umur (Tahun)': item.patient.umur || 0,
+        'Status HT': item.screening.hasil?.statusHT || '-',
+        'Tensi Terakhir': item.screening.sistolik + '/' + item.screening.diastolik,
+        'Riwayat HT': item.screening.riwayatHT || '-',
+        'Minum Obat': item.screening.minumObatHT || '-'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Prioritas HT');
+    XLSX.writeFile(wb, 'Prioritas_HT_KotoTangah.xlsx');
+    showToast('Berhasil mengekspor Prioritas HT', 'success');
+};
+
+window.exportRisk = function() {
+    if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
+    let risks = [];
+    const patients = PatientDB.getAll();
+    patients.forEach(p => {
+        const latest = ScreeningDB.getLatestByPatient(p.id);
+        if (latest && latest.hasil && latest.hasil.riskScore >= 5) { // Sedang ke atas
+            risks.push({ patient: p, screening: latest });
+        }
+    });
+
+    if (risks.length === 0) {
+        showToast('Tidak ada data risiko tinggi untuk diexport', 'warning');
+        return;
+    }
+
+    // Sort by risk score desc
+    risks.sort((a, b) => b.screening.hasil.riskScore - a.screening.hasil.riskScore);
+
+    const exportData = risks.map((item, i) => {
+        let cvdRisk = '-';
+        const s = item.screening;
+        if (s.hasil?.komplikasi && s.hasil.komplikasi.length > 0) {
+            if (typeof s.hasil.komplikasi[0] === 'object' && s.hasil.komplikasi[0].level) {
+                cvdRisk = s.hasil.komplikasi.map(k => k.level).join(', ');
+            } else if (typeof s.hasil.komplikasi[0] === 'string') {
+                cvdRisk = s.hasil.komplikasi.join(', ');
+            }
+        }
+        if (s.hasil?.komplikasiList && s.hasil.komplikasiList.length > 0 && cvdRisk === '-') {
+            cvdRisk = s.hasil.komplikasiList.join(', ');
+        }
+
+        return {
+            'No': i + 1,
+            'Nama': item.patient.nama || '-',
+            'Jorong': item.patient.jorong || '-',
+            'Umur (Tahun)': item.patient.umur || 0,
+            'Skor Risiko': item.screening.hasil.riskScore,
+            'Tensi Terakhir': item.screening.sistolik + '/' + item.screening.diastolik,
+            'Kategori IMT': item.screening.hasil?.imt?.kategori || '-',
+            'Risiko Kardiovaskular': cvdRisk
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Risiko Tinggi');
+    XLSX.writeFile(wb, 'Prioritas_Risiko_KotoTangah.xlsx');
+    showToast('Berhasil mengekspor Prioritas Risiko', 'success');
+};

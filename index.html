@@ -403,7 +403,8 @@
 
                 <!-- Tab Content: Hipertensi -->
                 <div id="tab-content-ht">
-                    <div class="toolbar" style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+                    <div class="toolbar" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn btn-success btn-sm" onclick="exportHT()"><i class="ph-bold ph-download-simple"></i> Export Excel</button>
                         <div class="toolbar-search">
                             <i class="ph ph-magnifying-glass"></i>
                             <input type="text" id="fu-ht-search" placeholder="Cari nama...">
@@ -434,7 +435,8 @@
 
                 <!-- Tab Content: Risiko -->
                 <div id="tab-content-risk" class="hidden">
-                    <div class="toolbar" style="margin-bottom: 12px; display: flex; justify-content: flex-end;">
+                    <div class="toolbar" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn btn-success btn-sm" onclick="exportRisk()"><i class="ph-bold ph-download-simple"></i> Export Excel</button>
                         <div class="toolbar-search">
                             <i class="ph ph-magnifying-glass"></i>
                             <input type="text" id="fu-risk-search" placeholder="Cari nama...">
@@ -473,6 +475,7 @@
                     <div class="btn-group">
                         <button id="btn-download-template" class="btn btn-primary btn-sm" onclick="if(typeof downloadTemplate==='function')downloadTemplate()"><i class="ph-bold ph-file-xls"></i> Download Template Excel</button>
                         <button id="btn-import" class="btn btn-outline btn-sm" onclick="document.getElementById('file-excel').click()"><i class="ph-bold ph-upload-simple"></i> Import dari Excel</button>
+                        <button id="btn-export-warga" class="btn btn-success btn-sm" onclick="exportWarga()"><i class="ph-bold ph-download-simple"></i> Export Excel</button>
                         <button id="btn-tambah-warga" class="btn btn-outline btn-sm" onclick="document.getElementById('form-tambah-warga').classList.toggle('hidden')"><i class="ph-bold ph-user-plus"></i> Tambah Warga Manual</button>
                     </div>
                     <input type="file" id="file-excel" accept=".xlsx,.xls,.csv" style="display: none;">
