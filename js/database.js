@@ -275,7 +275,8 @@ const PatientDB = {
     },
 
     getById(id) {
-        return this.getAll().find(p => p.id === id);
+        const sid = String(id);
+        return this.getAll().find(p => String(p.id) === sid);
     },
 
     getByNIK(nik) {

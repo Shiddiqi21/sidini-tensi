@@ -483,12 +483,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         setTimeout(() => {
+            let totalSkrining = 0;
             try {
                 const savedScreeningRecord = ScreeningDB.add(screeningRecord, true); // skipFirestore
                 FirestoreSync.saveWargaWithScreening(savedPatientRecord, savedScreeningRecord);
 
                 // Calculate total screenings for this patient
-                const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
+                const pid = String(patientId);
+                totalSkrining = ScreeningDB.getAll().filter(s => String(s.patientId) === pid).length;
 
                 if (window.hideLoading) window.hideLoading();
 

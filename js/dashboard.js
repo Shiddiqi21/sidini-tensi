@@ -421,7 +421,7 @@ function renderTable(filterJorong = '', searchQuery = '') {
         const jk = (patient.jenisKelamin || s.jenisKelamin) === 'female' ? 'Perempuan' : 'Laki-laki';
         const globalIndex = startIdx + index + 1;
 
-        const totalSkrining = allScreenings.filter(sc => sc.patientId === s.patientId).length;
+        const totalSkrining = allScreenings.filter(sc => String(sc.patientId) === String(s.patientId)).length;
 
         tr.innerHTML = `
             <td>${globalIndex}</td>
@@ -445,10 +445,12 @@ function showHistoryModal(patientId) {
     const tbody = document.getElementById('modal-history-body');
     const nameSpan = document.getElementById('modal-patient-name');
     
-    const patient = PatientDB.getById(patientId);
+    // Normalisasi ID ke string untuk perbandingan yang konsisten
+    const pid = String(patientId);
+    const patient = PatientDB.getById(pid) || PatientDB.getAll().find(p => String(p.id) === pid || String(p.nik) === pid);
     if(patient) nameSpan.textContent = patient.nama;
 
-    let history = ScreeningDB.getAll().filter(s => s.patientId === patientId);
+    let history = ScreeningDB.getAll().filter(s => String(s.patientId) === pid);
     
     // Sort oldest first to calculate index
     history.sort((a, b) => new Date(a.tanggalSkrining) - new Date(b.tanggalSkrining));
