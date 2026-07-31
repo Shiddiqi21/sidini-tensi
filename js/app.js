@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let [key, value] of formData.entries()) {
             if (['beratBadan', 'tinggiBadan', 'sistolik', 'diastolik'].includes(key)) {
                 data[key] = parseFloat(value) || 0;
-            } else if (key === 'komplikasiHT') {
+            } else if (key === 'komplikasiHT' || key === 'komorbiditas') {
                 // Ignore here, will handle array below
             } else {
                 data[key] = value;
@@ -225,6 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get all selected checkboxes for komplikasiHT
         const komplikasiCheckboxes = form.querySelectorAll('input[name="komplikasiHT"]:checked');
         data.komplikasiHT = Array.from(komplikasiCheckboxes).map(cb => cb.value);
+
+        // Get all selected checkboxes for komorbiditas
+        const komorbiditasCheckboxes = form.querySelectorAll('input[name="komorbiditas"]:checked');
+        data.komorbiditas = Array.from(komorbiditasCheckboxes).map(cb => cb.value);
 
         const umurVal = parseFloat(document.getElementById('umur')?.value) || 0;
         const umurUnit = document.getElementById('umurUnit')?.value || 'tahun';

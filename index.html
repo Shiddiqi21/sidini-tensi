@@ -120,9 +120,10 @@
                     </div>
                     <div class="form-group">
                         <label>Komorbid (Diabetes/Ginjal/Jantung)</label>
-                        <div class="radio-row">
-                            <label class="radio-card-label"><input type="radio" name="komorbiditas" value="no" checked><span class="label-content">Tidak Ada</span></label>
-                            <label class="radio-card-label"><input type="radio" name="komorbiditas" value="yes"><span class="label-content">Ada</span></label>
+                        <div class="checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+                            <label class="checkbox-card-label"><input type="checkbox" name="komorbiditas" value="Diabetes"><span class="label-content">Diabetes</span></label>
+                            <label class="checkbox-card-label"><input type="checkbox" name="komorbiditas" value="Ginjal"><span class="label-content">Ginjal</span></label>
+                            <label class="checkbox-card-label"><input type="checkbox" name="komorbiditas" value="Jantung"><span class="label-content">Jantung</span></label>
                         </div>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
@@ -644,7 +645,8 @@
                                     <th>Status HT</th>
                                     <th>Skor Risiko</th>
                                     <th>Risiko CVD (WHO)</th>
-                                    <th>Detail Kondisi</th>
+                                    <th>Gaya Hidup & Risiko</th>
+                                    <th>Kondisi Medis</th>
                                     <th style="text-align: center;">Aksi</th>
                                 </tr>
                             </thead>

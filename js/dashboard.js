@@ -470,14 +470,34 @@ function showHistoryModal(patientId) {
             cvdRisk = s.hasil.komplikasiList.join(', ');
         }
 
-        // Detail Kondisi (Baru)
-        let detailKondisi = [];
-        if (s.komorbiditas === 'yes') detailKondisi.push('Komorbid: Ada');
-        if (s.penyakitPenyerta) detailKondisi.push(`Penyerta: ${s.penyakitPenyerta}`);
-        if (s.komplikasiHT && s.komplikasiHT.length > 0) detailKondisi.push(`Komplikasi HT: ${s.komplikasiHT.join(', ')}`);
-        if (s.stress === 'ya') detailKondisi.push('Stres: Ya');
+        // Gaya Hidup & Risiko
+        let gayaHidup = [];
+        if (s.beratBadan) gayaHidup.push(`BB: ${s.beratBadan}kg, TB: ${s.tinggiBadan}cm`);
+        if (s.merokok) gayaHidup.push(`Merokok: ${s.merokok === 'active' ? 'Aktif' : (s.merokok === 'passive' ? 'Pasif' : 'Tidak')}`);
+        if (s.alkohol) gayaHidup.push(`Alkohol: ${s.alkohol === 'ya' ? 'Ya' : 'Tidak'}`);
+        if (s.polaGaram) gayaHidup.push(`Garam: ${s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah')}`);
+        if (s.aktivitasFisik) gayaHidup.push(`Fisik: ${s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang')}`);
+        if (s.riwayatKeluarga) gayaHidup.push(`Keturunan HT: ${s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak'}`);
+        if (s.stress === 'ya') gayaHidup.push('Stres: Ya');
         
-        const kondisiStr = detailKondisi.length > 0 ? detailKondisi.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
+        const gayaHidupStr = gayaHidup.length > 0 ? gayaHidup.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
+
+        // Kondisi Medis & Riwayat
+        let kondisiMedis = [];
+        if (s.riwayatHT) kondisiMedis.push(`Riwayat HT: ${s.riwayatHT === 'ya' ? 'Ya' : 'Tidak'}`);
+        if (s.minumObatHT) kondisiMedis.push(`Obat HT: ${s.minumObatHT === 'ya' ? 'Ya' : 'Tidak'}`);
+        
+        // Komorbiditas might be array or string (from old dummy data 'yes'/'no')
+        if (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) {
+            kondisiMedis.push(`Komorbid: ${s.komorbiditas.join(', ')}`);
+        } else if (s.komorbiditas === 'yes') {
+            kondisiMedis.push('Komorbid: Ada');
+        }
+        
+        if (s.penyakitPenyerta) kondisiMedis.push(`Penyerta: ${s.penyakitPenyerta}`);
+        if (s.komplikasiHT && s.komplikasiHT.length > 0) kondisiMedis.push(`Komplikasi: ${s.komplikasiHT.join(', ')}`);
+
+        const kondisiStr = kondisiMedis.length > 0 ? kondisiMedis.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
 
         tr.innerHTML = `
             <td style="font-weight:bold;">${s._ke}</td>
@@ -487,6 +507,7 @@ function showHistoryModal(patientId) {
             <td><span class="${statusHTClass}">${statusHT}</span></td>
             <td><span class="${riskClass}">${riskLabel}</span></td>
             <td>${cvdRisk}</td>
+            <td style="font-size: 0.85em; line-height: 1.3;">${gayaHidupStr}</td>
             <td style="font-size: 0.85em; line-height: 1.3;">${kondisiStr}</td>
             <td style="text-align:center;">
                 <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
