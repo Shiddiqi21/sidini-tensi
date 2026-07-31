@@ -1739,3 +1739,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// HAPUS SELURUH DATA SISTEM
+window.handleResetData = function() {
+    Swal.fire({
+        title: 'PERINGATAN KRITIKAL!',
+        html: `Anda yakin ingin menghapus <b>SELURUH DATA Warga, Riwayat Skrining, dan Follow-Up</b> secara permanen?<br><br><span style="color:red">Data yang dihapus tidak dapat dikembalikan.</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus Semua!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (typeof PatientDB !== 'undefined') PatientDB.clear();
+            if (typeof ScreeningDB !== 'undefined') ScreeningDB.clear();
+            if (typeof FirestoreSync !== 'undefined' && FirestoreSync.db) {
+                FirestoreSync.clearCollection('patients');
+                FirestoreSync.clearCollection('screenings');
+                FirestoreSync.clearCollection('followUps');
+            }
+            localStorage.clear();
+            
+            Swal.fire(
+                'Terhapus!',
+                'Seluruh data sistem berhasil dikosongkan.',
+                'success'
+            ).then(() => {
+                location.reload();
+            });
+        }
+    });
+};

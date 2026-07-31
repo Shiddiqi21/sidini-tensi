@@ -87,8 +87,9 @@ class HypertensionScreening {
         // Riwayat keluarga
         if (this.data.riwayatKeluarga === 'yes') score += 2;
 
-        // Komorbiditas (Diabetes/Ginjal)
-        if (this.data.komorbiditas === 'yes') score += 3;
+        // Komorbiditas (Diabetes/Ginjal/Jantung)
+        if (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.length > 0) score += 3;
+        else if (this.data.komorbiditas === 'yes') score += 3;
 
         // Merokok
         if (this.data.merokok === 'active') score += 2;
@@ -202,7 +203,8 @@ class HypertensionScreening {
         }
 
         // Target BP JNC 8 & Kemkes
-        const hasDiabetes = this.data.komorbiditas === 'yes';
+        const hasDiabetes = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Diabetes')) || this.data.komorbiditas === 'yes';
+        const hasKomorbid = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.length > 0) || this.data.komorbiditas === 'yes';
         const age = parseInt(this.data.umur) || 0;
         let targetTD = '< 140/90 mmHg';
         if (age >= 60 && !hasDiabetes) targetTD = '< 150/90 mmHg';
@@ -220,8 +222,8 @@ class HypertensionScreening {
             intervensi.push('Evaluasi obat: Tekanan darah belum terkontrol meski sudah minum obat. Rujuk ke dokter untuk penyesuaian dosis/jenis obat.');
         }
 
-        if (this.data.komorbiditas === 'yes') {
-            intervensi.push('Penanganan Komorbid: Kontrol gula darah dan fungsi ginjal secara berkala.');
+        if (hasKomorbid) {
+            intervensi.push('Penanganan Komorbid: Kontrol penyakit penyerta (seperti gula darah, ginjal, atau jantung) secara berkala.');
         }
 
         if (intervensi.length === 0) {
