@@ -687,9 +687,11 @@ async function syncFromFirestore() {
         // Firestore kosong — do not load dummy data anymore
         console.log('☁️ Firestore empty, no longer loading dummy data automatically.');
     }
-
     // Beritahu seluruh UI untuk re-render
     document.dispatchEvent(new Event('firestore-ready'));
+    
+    // Disable auto dummy data loading to prevent any duplication loops
+    // setTimeout(loadDummyData, 500);
 }
 
 // Auto-load is now moved inside DOMContentLoaded
@@ -756,6 +758,5 @@ async function syncFromFirestore() {
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadDummyData(); // Ensure expertSystem.js is loaded first
     syncFromFirestore();
 });
