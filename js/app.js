@@ -109,6 +109,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const genderRadio = form.querySelector(`input[name="jenisKelamin"][value="${patient.jenisKelamin}"]`);
             if (genderRadio) genderRadio.checked = true;
         }
+
+        // Lock fields
+        toggleDataDiriLock(true);
+    }
+
+    function toggleDataDiriLock(isLocked) {
+        const fieldsToLock = [nikField, namaField, tanggalLahirField, jorongField];
+        fieldsToLock.forEach(field => {
+            if (!field) return;
+            if (isLocked) {
+                if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'date')) {
+                    field.readOnly = true;
+                }
+                field.style.pointerEvents = 'none';
+                field.style.backgroundColor = 'var(--bg-tertiary)';
+            } else {
+                if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'date')) {
+                    field.readOnly = false;
+                }
+                field.style.pointerEvents = 'auto';
+                field.style.backgroundColor = '';
+            }
+        });
+
+        // For radios (Jenis Kelamin)
+        const genderRadios = form.querySelectorAll('input[name="jenisKelamin"]');
+        genderRadios.forEach(radio => {
+            const label = radio.closest('.radio-card-label');
+            if (label) {
+                label.style.pointerEvents = isLocked ? 'none' : 'auto';
+                label.style.opacity = isLocked ? '0.7' : '1';
+            }
+        });
     }
 
     // ===== AUTO CALCULATE UMUR =====
@@ -454,7 +487,10 @@ document.addEventListener('DOMContentLoaded', () => {
             currentFormData = null;
             btnSave.disabled = false;
             btnSave.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Simpan ke Database';
-            document.getElementById('save-alert').className = 'hidden';
+            document.getElementById('save-alert')?.classList.add('hidden');
+            
+            // Unlock fields
+            toggleDataDiriLock(false);
         }, 10);
     });
 });
