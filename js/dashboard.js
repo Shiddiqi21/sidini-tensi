@@ -738,7 +738,11 @@ function handleExcelImport(e) {
                         stress: checkStr(row['Stress']),
                         riwayatHT: checkStr(row['Hipertensi (Kondisi)'] || row['Hipertensi']), 
                         minumObatHT: checkStr(row['Hipertensi Terkontrol (Ada minum obat)']),
-                        komorbiditas: [],
+                        komorbiditas: [
+                            checkStr(row['Komorbid Diabetes']) === 'ya' ? 'Diabetes' : null,
+                            checkStr(row['Komorbid Ginjal']) === 'ya' ? 'Ginjal' : null,
+                            checkStr(row['Komorbid Jantung']) === 'ya' ? 'Jantung' : null
+                        ].filter(Boolean),
                         penyakitPenyerta: String(row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || row['Pemyakit penyerta (asma, kolesterol, tumor, OA, dsb'] || '').replace('-', '').trim(),
                         komplikasiHT: (row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
                     };
@@ -882,6 +886,11 @@ function handleExcelExport() {
             'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
             'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)': s.penyakitPenyerta || '-',
             
+            // Komorbid
+            'Komorbid Diabetes': (s.komorbiditas || []).includes('Diabetes') ? '☑' : '☐',
+            'Komorbid Ginjal': (s.komorbiditas || []).includes('Ginjal') ? '☑' : '☐',
+            'Komorbid Jantung': (s.komorbiditas || []).includes('Jantung') ? '☑' : '☐',
+            
             // Faktor Risiko Detail
             'Faktor genetik (Orang tua riwayat HT)': s.riwayatKeluarga === 'yes' ? '☑' : '☐',
             'Kelebihan berat badan dan obesitas': isOverweight ? '☑' : '☐',
@@ -970,9 +979,9 @@ window.downloadSkriningTemplate = function() {
 
     // Sheet 1: Data Skrining
     const wsData = XLSX.utils.aoa_to_sheet([
-        ['No', 'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Hipertensi', 'Hipertensi Terkontrol (Ada minum obat)', 'Hipertensi Tidak Terkontrol', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)', 'Faktor genetik (Orang tua riwayat HT)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Kelebihan berat badan dan obesitas', 'Merokok', 'Konsumsi garam yang terlalu banyak', 'Konsumsi alkohol', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Degeneratif (pertambahan usia) > 60 tahun'],
-        [1, 'Ahmad Contoh', '1305201001800001', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Tidak', 'Stroke', 'Tidak', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Ya'],
-        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+        ['No', 'Nama', 'NIK', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Hipertensi', 'Hipertensi Terkontrol (Ada minum obat)', 'Hipertensi Tidak Terkontrol', 'Komorbid Diabetes', 'Komorbid Ginjal', 'Komorbid Jantung', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)', 'Faktor genetik (Orang tua riwayat HT)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Kelebihan berat badan dan obesitas', 'Merokok', 'Konsumsi garam yang terlalu banyak', 'Konsumsi alkohol', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Degeneratif (pertambahan usia) > 60 tahun'],
+        [1, 'Ahmad Contoh', '1305201001800001', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Stroke', 'Tidak', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Ya'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
     ]);
     
     // Sheet 2: Petunjuk
