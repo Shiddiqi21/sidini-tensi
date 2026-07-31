@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nikField = document.getElementById('nik');
     const namaField = document.getElementById('nama');
     const umurField = document.getElementById('umur');
+    const umurUnitField = document.getElementById('umurUnit');
+    const tanggalLahirField = document.getElementById('tanggalLahir');
     const jorongField = document.getElementById('jorong');
     const bbField = document.getElementById('beratBadan');
     const tbField = document.getElementById('tinggiBadan');
@@ -79,8 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
         patientIdField.value = patient.id || '';
         nikField.value = patient.nik || '';
         namaField.value = patient.nama || '';
+        if (patient.tanggalLahir) {
+            tanggalLahirField.value = patient.tanggalLahir.split('T')[0];
+        } else {
+            tanggalLahirField.value = '';
+        }
         
-        const umurUnitField = document.getElementById('umurUnit');
         if (umurUnitField) {
             if (typeof patient.umurBulan === 'number' && patient.umurBulan < 12) {
                 umurField.value = patient.umurBulan;
@@ -103,6 +109,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const genderRadio = form.querySelector(`input[name="jenisKelamin"][value="${patient.jenisKelamin}"]`);
             if (genderRadio) genderRadio.checked = true;
         }
+    }
+
+    // ===== AUTO CALCULATE UMUR =====
+    if (tanggalLahirField) {
+        tanggalLahirField.addEventListener('change', () => {
+            const dob = new Date(tanggalLahirField.value);
+            if (!isNaN(dob.getTime())) {
+                const today = new Date();
+                let ageYears = today.getFullYear() - dob.getFullYear();
+                let ageMonths = today.getMonth() - dob.getMonth();
+                
+                if (ageMonths < 0 || (ageMonths === 0 && today.getDate() < dob.getDate())) {
+                    ageYears--;
+                    ageMonths += 12;
+                }
+                
+                if (ageYears < 1) {
+                    // Under 1 year, show months
+                    umurField.value = ageMonths;
+                    if (umurUnitField) umurUnitField.value = 'bulan';
+                } else {
+                    umurField.value = ageYears;
+                    if (umurUnitField) umurUnitField.value = 'tahun';
+                }
+            }
+        });
     }
 
     // ===== LIVE IMT CALCULATION =====
@@ -144,10 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let [key, value] of formData.entries()) {
             if (['beratBadan', 'tinggiBadan', 'sistolik', 'diastolik'].includes(key)) {
                 data[key] = parseFloat(value) || 0;
+            } else if (key === 'komplikasiHT') {
+                // Ignore here, will handle array below
             } else {
                 data[key] = value;
             }
         }
+        
+        // Get all selected checkboxes for komplikasiHT
+        const komplikasiCheckboxes = form.querySelectorAll('input[name="komplikasiHT"]:checked');
+        data.komplikasiHT = Array.from(komplikasiCheckboxes).map(cb => cb.value);
 
         const umurVal = parseFloat(document.getElementById('umur')?.value) || 0;
         const umurUnit = document.getElementById('umurUnit')?.value || 'tahun';
@@ -316,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPatient = PatientDB.add({
                 nik: data.nik,
                 nama: data.nama,
+                tanggalLahir: data.tanggalLahir,
                 umur: data.umur,
                 umurBulan: data.umurBulan,
                 jenisKelamin: data.jenisKelamin,
@@ -330,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
             PatientDB.update(patientId, {
                 nik: data.nik,
                 nama: data.nama,
+                tanggalLahir: data.tanggalLahir,
                 umur: data.umur,
                 umurBulan: data.umurBulan,
                 jenisKelamin: data.jenisKelamin,
@@ -344,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const screeningRecord = {
             patientId: patientId,
             nama: data.nama,
+            tanggalLahir: data.tanggalLahir,
             jorong: data.jorong,
             umur: data.umur,
             beratBadan: data.beratBadan,
@@ -356,6 +397,9 @@ document.addEventListener('DOMContentLoaded', () => {
             aktivitasFisik: data.aktivitasFisik,
             riwayatKeluarga: data.riwayatKeluarga,
             komorbiditas: data.komorbiditas,
+            komplikasiHT: data.komplikasiHT || [],
+            penyakitPenyerta: data.penyakitPenyerta || '',
+            stress: data.stress || 'tidak',
             riwayatHT: data.riwayatHT,
             minumObatHT: data.minumObatHT,
             edukasi: data.edukasi,

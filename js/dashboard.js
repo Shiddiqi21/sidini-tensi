@@ -580,26 +580,59 @@ function handleExcelExport() {
 
     const exportData = screenings.map((s, i) => {
         let nik = s.nik || '-';
+        let jenisKelamin = '-';
+        let tanggalLahir = s.tanggalLahir ? new Date(s.tanggalLahir).toLocaleDateString('id-ID') : '-';
         if (typeof PatientDB !== 'undefined' && s.patientId) {
             const patient = PatientDB.getById(s.patientId);
             if (patient && patient.nik) nik = patient.nik;
+            if (patient && patient.jenisKelamin) jenisKelamin = patient.jenisKelamin === 'female' ? 'Perempuan' : 'Laki-laki';
+            if (patient && patient.tanggalLahir && tanggalLahir === '-') tanggalLahir = new Date(patient.tanggalLahir).toLocaleDateString('id-ID');
         }
+
+        const isHT = s.hasil?.statusHT === 'Terkontrol' || s.hasil?.statusHT === 'Tidak Terkontrol' || (s.riwayatHT === 'ya');
+        const isHTTerkontrol = s.hasil?.statusHT === 'Terkontrol';
+        const isHTTidakTerkontrol = s.hasil?.statusHT === 'Tidak Terkontrol';
+        const isOverweight = s.hasil?.imt?.kategori === 'Obesitas' || s.hasil?.imt?.kategori === 'Overweight' || s.hasil?.imt?.kategori === 'Pre-Obese';
+        const isDegeneratif = s.umur > 60;
 
         return {
             'No': i + 1,
-            'Tanggal': s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-',
-            'NIK': nik,
+            'Tanggal Skrining': s.tanggalSkrining ? new Date(s.tanggalSkrining).toLocaleDateString('id-ID') : '-',
             'Nama': s.nama || '-',
-            'Jorong': s.jorong || '-',
+            'NIK': nik,
+            'Jenis Kelamin': jenisKelamin,
+            'Tanggal Lahir': tanggalLahir,
             'Umur': s.umur || 0,
+            'Jorong / Alamat': s.jorong || '-',
+            
+            // Pengukuran
             'BB (kg)': s.beratBadan || '-',
             'TB (cm)': s.tinggiBadan || '-',
             'IMT': s.hasil?.imt?.nilai || '-',
             'Kategori IMT': s.hasil?.imt?.kategori || '-',
             'Sistolik': s.sistolik || '-',
             'Diastolik': s.diastolik || '-',
+            
+            // Status Hipertensi & Komplikasi
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
-            'Status HT': s.hasil?.statusHT || '-',
+            'Status HT (Sistem)': s.hasil?.statusHT || '-',
+            'Hipertensi (Kondisi)': isHT ? 'TRUE' : 'FALSE',
+            'Hipertensi Terkontrol (Ada minum obat)': isHTTerkontrol ? 'TRUE' : 'FALSE',
+            'Hipertensi Tidak Terkontrol': isHTTidakTerkontrol ? 'TRUE' : 'FALSE',
+            'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
+            'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)': s.penyakitPenyerta || '-',
+            
+            // Faktor Risiko Detail
+            'Faktor genetik (Orang tua riwayat HT)': s.riwayatKeluarga === 'yes' ? 'YA' : 'TIDAK',
+            'Kelebihan berat badan dan obesitas': isOverweight ? 'YA' : 'TIDAK',
+            'Merokok': s.merokok === 'active' ? 'YA (AKTIF)' : (s.merokok === 'passive' ? 'YA (PASIF)' : 'TIDAK'),
+            'Konsumsi garam yang terlalu banyak': s.polaGaram === 'high' ? 'YA' : 'TIDAK',
+            'Konsumsi alkohol': s.alkohol === 'ya' ? 'YA' : 'TIDAK',
+            'Kurang aktivitas fisik dan olahraga': s.aktivitasFisik === 'rare' ? 'YA' : 'TIDAK',
+            'Stress': s.stress === 'ya' ? 'YA' : 'TIDAK',
+            'Degeneratif (pertambahan usia) > 60 tahun': isDegeneratif ? 'YA' : 'TIDAK',
+            
+            // Output Sistem Tambahan
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
             'Skor Risiko': s.hasil?.riskScore || 0
         };
@@ -1171,6 +1204,7 @@ window.deleteWarga = async function(patientId, nama) {
 window.handleSimpanWarga = function() {
     const nik = document.getElementById('tw-nik')?.value || '';
     const nama = document.getElementById('tw-nama')?.value || '';
+    const tanggalLahir = document.getElementById('tw-tanggalLahir')?.value || '';
     const jk = document.getElementById('tw-jk')?.value || 'male';
     const jorong = document.getElementById('tw-jorong')?.value || '';
     const umurVal = parseInt(document.getElementById('tw-umur')?.value) || 0;
@@ -1188,6 +1222,7 @@ window.handleSimpanWarga = function() {
     const data = {
         nik: nik,
         nama: nama,
+        tanggalLahir: tanggalLahir,
         umur: umurTahun,
         umurBulan: totalBulan,
         jenisKelamin: jk,
@@ -1220,6 +1255,7 @@ window.handleSimpanWarga = function() {
             
             document.getElementById('tw-nik').value = '';
             document.getElementById('tw-nama').value = '';
+            if (document.getElementById('tw-tanggalLahir')) document.getElementById('tw-tanggalLahir').value = '';
             document.getElementById('tw-umur').value = '';
             if (document.getElementById('tw-umurUnit')) document.getElementById('tw-umurUnit').value = 'tahun';
             document.getElementById('tw-jorong').value = '';
@@ -1235,6 +1271,7 @@ window.editWarga = function(patientId) {
     // Populate the form fields
     const nikInput = document.getElementById('tw-nik');
     const namaInput = document.getElementById('tw-nama');
+    const tanggalLahirInput = document.getElementById('tw-tanggalLahir');
     const jkInput = document.getElementById('tw-jk');
     const jorongInput = document.getElementById('tw-jorong');
     const umurInput = document.getElementById('tw-umur');
@@ -1242,6 +1279,10 @@ window.editWarga = function(patientId) {
 
     if (nikInput) nikInput.value = patient.nik || '';
     if (namaInput) namaInput.value = patient.nama || '';
+    if (tanggalLahirInput) {
+        if (patient.tanggalLahir) tanggalLahirInput.value = patient.tanggalLahir.split('T')[0];
+        else tanggalLahirInput.value = '';
+    }
     if (jkInput) jkInput.value = patient.jenisKelamin || 'male';
     if (jorongInput) jorongInput.value = patient.jorong || '';
     
@@ -1391,3 +1432,34 @@ window.exportRisk = function() {
     XLSX.writeFile(wb, 'Prioritas_Risiko_KotoTangah.xlsx');
     showToast('Berhasil mengekspor Prioritas Risiko', 'success');
 };
+
+// AUTO-CALCULATE AGE FOR "TAMBAH WARGA" MODAL
+document.addEventListener('DOMContentLoaded', () => {
+    const twTanggalLahir = document.getElementById('tw-tanggalLahir');
+    const twUmur = document.getElementById('tw-umur');
+    const twUmurUnit = document.getElementById('tw-umurUnit');
+    
+    if (twTanggalLahir) {
+        twTanggalLahir.addEventListener('change', () => {
+            const dob = new Date(twTanggalLahir.value);
+            if (!isNaN(dob.getTime())) {
+                const today = new Date();
+                let ageYears = today.getFullYear() - dob.getFullYear();
+                let ageMonths = today.getMonth() - dob.getMonth();
+                
+                if (ageMonths < 0 || (ageMonths === 0 && today.getDate() < dob.getDate())) {
+                    ageYears--;
+                    ageMonths += 12;
+                }
+                
+                if (ageYears < 1) {
+                    if (twUmur) twUmur.value = ageMonths;
+                    if (twUmurUnit) twUmurUnit.value = 'bulan';
+                } else {
+                    if (twUmur) twUmur.value = ageYears;
+                    if (twUmurUnit) twUmurUnit.value = 'tahun';
+                }
+            }
+        });
+    }
+});
