@@ -470,6 +470,15 @@ function showHistoryModal(patientId) {
             cvdRisk = s.hasil.komplikasiList.join(', ');
         }
 
+        // Detail Kondisi (Baru)
+        let detailKondisi = [];
+        if (s.komorbiditas === 'yes') detailKondisi.push('Komorbid: Ada');
+        if (s.penyakitPenyerta) detailKondisi.push(`Penyerta: ${s.penyakitPenyerta}`);
+        if (s.komplikasiHT && s.komplikasiHT.length > 0) detailKondisi.push(`Komplikasi HT: ${s.komplikasiHT.join(', ')}`);
+        if (s.stress === 'ya') detailKondisi.push('Stres: Ya');
+        
+        const kondisiStr = detailKondisi.length > 0 ? detailKondisi.map(str => `<div><small>• ${str}</small></div>`).join('') : '-';
+
         tr.innerHTML = `
             <td style="font-weight:bold;">${s._ke}</td>
             <td>${dateStr}</td>
@@ -478,6 +487,7 @@ function showHistoryModal(patientId) {
             <td><span class="${statusHTClass}">${statusHT}</span></td>
             <td><span class="${riskClass}">${riskLabel}</span></td>
             <td>${cvdRisk}</td>
+            <td style="font-size: 0.85em; line-height: 1.3;">${kondisiStr}</td>
             <td style="text-align:center;">
                 <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${s.id}', '${patientId}')" title="Hapus riwayat ini">
                     <i class="ph-bold ph-trash"></i>
