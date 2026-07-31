@@ -103,9 +103,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (umurDisplayField) umurDisplayField.value = (patient.umur || '') + ' Tahun';
         }
         
-        // Set Jorong dropdown
-        if (patient.jorong) {
-            jorongField.value = patient.jorong;
+        // Set Jorong dropdown with flexible matching (ignore case and 'jorong ' prefix)
+        if (patient.jorong && jorongField) {
+            let found = false;
+            const pJorong = String(patient.jorong).toLowerCase().replace('jorong ', '').trim();
+            for (let i = 0; i < jorongField.options.length; i++) {
+                const optVal = jorongField.options[i].value.toLowerCase().replace('jorong ', '').trim();
+                if (optVal && pJorong.includes(optVal) || optVal.includes(pJorong)) {
+                    jorongField.value = jorongField.options[i].value;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // If not found in list, we could either add it or leave it. 
+                // We'll just set it directly; if the browser allows, it sets it.
+                jorongField.value = patient.jorong; 
+            }
         }
 
         // Set gender radio
@@ -393,35 +407,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Hapus pencarian berdasarkan Nama agar NIK menjadi primary key
             }
 
-        if (!patientId) {
-            // Create new patient
-            const newPatient = PatientDB.add({
-                nik: data.nik,
-                nama: data.nama,
-                tanggalLahir: data.tanggalLahir,
-                umur: data.umur,
-                umurBulan: data.umurBulan,
-                jenisKelamin: data.jenisKelamin,
-                jorong: data.jorong,
-                beratBadan: data.beratBadan,
-                tinggiBadan: data.tinggiBadan,
-                lastScreeningDate: new Date().toISOString()
-            });
-            patientId = newPatient.id;
-        } else {
-            // Update existing patient
-            PatientDB.update(patientId, {
-                nik: data.nik,
-                nama: data.nama,
-                tanggalLahir: data.tanggalLahir,
-                umur: data.umur,
-                umurBulan: data.umurBulan,
-                jenisKelamin: data.jenisKelamin,
-                jorong: data.jorong,
-                beratBadan: data.beratBadan,
-                tinggiBadan: data.tinggiBadan,
-                lastScreeningDate: new Date().toISOString()
-            });
+        if (window.showLoading) window.showLoading('Menyimpan data skrining...');
+
+        try {
+            if (!patientId) {
+                // Create new patient
+                const newPatient = PatientDB.add({
+                    nik: data.nik,
+                    nama: data.nama,
+                    tanggalLahir: data.tanggalLahir,
+                    umur: data.umur,
+                    umurBulan: data.umurBulan,
+                    jenisKelamin: data.jenisKelamin,
+                    jorong: data.jorong,
+                    beratBadan: data.beratBadan,
+                    tinggiBadan: data.tinggiBadan,
+                    lastScreeningDate: new Date().toISOString()
+                });
+                patientId = newPatient.id;
+            } else {
+                // Update existing patient
+                PatientDB.update(patientId, {
+                    nik: data.nik,
+                    nama: data.nama,
+                    tanggalLahir: data.tanggalLahir,
+                    umur: data.umur,
+                    umurBulan: data.umurBulan,
+                    jenisKelamin: data.jenisKelamin,
+                    jorong: data.jorong,
+                    beratBadan: data.beratBadan,
+                    tinggiBadan: data.tinggiBadan,
+                    lastScreeningDate: new Date().toISOString()
+                });
+            }
+        } catch (e) {
+            console.error("Patient save error:", e);
+            if (window.hideLoading) window.hideLoading();
+            alert("Gagal menyimpan data warga: " + e.message);
+            return;
         }
 
         // Save screening
@@ -458,19 +481,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (window.showLoading) window.showLoading('Menyimpan data skrining...');
-
         setTimeout(() => {
-            ScreeningDB.add(screeningRecord);
+            try {
+                ScreeningDB.add(screeningRecord);
 
-            // Calculate total screenings for this patient
-            const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
+                // Calculate total screenings for this patient
+                const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
 
-            if (window.hideLoading) window.hideLoading();
+                if (window.hideLoading) window.hideLoading();
 
-            // Disable save button
-            btnSave.disabled = true;
-            btnSave.innerHTML = '<i class="ph-fill ph-check"></i> Tersimpan';
+                // Disable save button
+                btnSave.disabled = true;
+                btnSave.innerHTML = '<i class="ph-fill ph-check"></i> Tersimpan';
+            } catch (e) {
+                console.error("Save error:", e);
+                if (window.hideLoading) window.hideLoading();
+                alert("Gagal menyimpan data: " + e.message);
+                return;
+            }
 
             // Show Custom HTML Modal or SweetAlert
             if (typeof Swal !== 'undefined') {
