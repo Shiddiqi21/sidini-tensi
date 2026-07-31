@@ -169,22 +169,40 @@ const FirestoreSync = {
 
     // Batch delete: hapus 1 patient + semua screening terkait dalam 1 batch
     deleteWargaWithScreenings(patientId, screeningIds) {
-        if (!this.db || patientId == null) return;
+        if (!this.db) return;
+        const batch = this.db.batch();
         try {
-            const batch = this.db.batch();
             batch.delete(this.db.collection('patients').doc(String(patientId)));
             if (screeningIds && screeningIds.length > 0) {
                 screeningIds.forEach(sid => {
-                    if (sid != null) {
+                    if (sid) {
                         batch.delete(this.db.collection('screenings').doc(String(sid)));
                     }
                 });
             }
+            batch.commit().catch(e => console.warn('Firestore batch delete failed:', e));
+        } catch(e) {
+            console.error("Batch preparation failed", e);
+        }
+    },
+
+    saveWargaWithScreening(patient, screening) {
+        if (!this.db) return;
+        const batch = this.db.batch();
+        try {
+            if (patient) {
+                batch.set(this.db.collection('patients').doc(String(patient.id)), cleanObject(patient), { merge: true });
+            }
+            if (screening) {
+                batch.set(this.db.collection('screenings').doc(String(screening.id)), cleanObject(screening));
+            }
             batch.commit().catch(e => {
-                console.warn('Firestore batch delete failed:', e);
+                console.warn('Firestore batch save failed:', e);
+                throw e;
             });
-        } catch (e) {
-            console.warn('Firestore batch delete setup failed:', e);
+        } catch(e) {
+            console.error("Batch preparation failed", e);
+            throw e;
         }
     },
 
@@ -273,7 +291,7 @@ const PatientDB = {
         ).slice(0, 10);
     },
 
-    add(patient) {
+    add(patient, skipFirestore = false) {
         const patients = this.getAll();
         
         // Enforce NIK as primary key if NIK is provided
@@ -283,7 +301,7 @@ const PatientDB = {
                 // Upsert: update existing patient instead of adding duplicate
                 patients[existingIdx] = { ...patients[existingIdx], ...patient, id: patient.nik };
                 saveToStorage(DB_KEYS.PATIENTS, patients);
-                FirestoreSync.updatePatient(patients[existingIdx]);
+                if (!skipFirestore) FirestoreSync.updatePatient(patients[existingIdx]);
                 return patients[existingIdx];
             }
         }
@@ -293,17 +311,17 @@ const PatientDB = {
         patient.followUps = patient.followUps || [];
         patients.push(patient);
         saveToStorage(DB_KEYS.PATIENTS, patients);
-        FirestoreSync.savePatient(patient);
+        if (!skipFirestore) FirestoreSync.savePatient(patient);
         return patient;
     },
 
-    update(id, updates) {
+    update(id, updates, skipFirestore = false) {
         const patients = this.getAll();
         const idx = patients.findIndex(p => p.id === id);
         if (idx !== -1) {
             patients[idx] = { ...patients[idx], ...updates };
             saveToStorage(DB_KEYS.PATIENTS, patients);
-            FirestoreSync.updatePatient(patients[idx]); // ☁️ Sync to cloud
+            if (!skipFirestore) FirestoreSync.updatePatient(patients[idx]); // ☁️ Sync to cloud
             return patients[idx];
         }
         return null;
@@ -492,13 +510,13 @@ const ScreeningDB = {
         return this.getAll().filter(s => s.jorong === jorong);
     },
 
-    add(screening) {
+    add(screening, skipFirestore = false) {
         const screenings = this.getAll();
         screening.id = screening.id || generateId();
         screening.tanggalSkrining = screening.tanggalSkrining || new Date().toISOString();
         screenings.push(screening);
         saveToStorage(DB_KEYS.SCREENINGS, screenings);
-        FirestoreSync.saveScreening(screening); // ☁️ Sync to cloud
+        if (!skipFirestore) FirestoreSync.saveScreening(screening); // ☁️ Sync to cloud
         return screening;
     },
 

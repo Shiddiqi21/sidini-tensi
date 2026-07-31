@@ -409,10 +409,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.showLoading) window.showLoading('Menyimpan data skrining...');
 
+        let savedPatientRecord = null;
         try {
             if (!patientId) {
                 // Create new patient
-                const newPatient = PatientDB.add({
+                savedPatientRecord = PatientDB.add({
                     nik: data.nik,
                     nama: data.nama,
                     tanggalLahir: data.tanggalLahir,
@@ -423,11 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     beratBadan: data.beratBadan,
                     tinggiBadan: data.tinggiBadan,
                     lastScreeningDate: new Date().toISOString()
-                });
-                patientId = newPatient.id;
+                }, true); // skipFirestore
+                patientId = savedPatientRecord.id;
             } else {
                 // Update existing patient
-                PatientDB.update(patientId, {
+                savedPatientRecord = PatientDB.update(patientId, {
                     nik: data.nik,
                     nama: data.nama,
                     tanggalLahir: data.tanggalLahir,
@@ -438,12 +439,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     beratBadan: data.beratBadan,
                     tinggiBadan: data.tinggiBadan,
                     lastScreeningDate: new Date().toISOString()
-                });
+                }, true); // skipFirestore
             }
         } catch (e) {
             console.error("Patient save error:", e);
             if (window.hideLoading) window.hideLoading();
-            alert("Gagal menyimpan data warga: " + e.message);
+            alert("Gagal menyimpan data warga lokal: " + e.message);
             return;
         }
 
@@ -483,7 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             try {
-                ScreeningDB.add(screeningRecord);
+                const savedScreeningRecord = ScreeningDB.add(screeningRecord, true); // skipFirestore
+                FirestoreSync.saveWargaWithScreening(savedPatientRecord, savedScreeningRecord);
 
                 // Calculate total screenings for this patient
                 const totalSkrining = ScreeningDB.getAll().filter(s => s.patientId === patientId).length;
@@ -496,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error("Save error:", e);
                 if (window.hideLoading) window.hideLoading();
-                alert("Gagal menyimpan data: " + e.message);
+                alert("Gagal menyimpan data ke server: " + e.message);
                 return;
             }
 
