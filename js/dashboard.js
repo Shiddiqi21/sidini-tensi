@@ -570,19 +570,111 @@ function handleExcelImport(e) {
                 return;
             }
 
-            const patients = jsonData.map(row => ({
-                nik: String(row['NIK'] || row['nik'] || ''),
-                nama: String(row['Nama'] || row['nama'] || row['NAMA'] || ''),
-                umur: parseInt(row['Umur'] || row['umur'] || row['Usia'] || 0),
-                jenisKelamin: (String(row['Jenis Kelamin'] || row['jenis_kelamin'] || row['JK'] || 'male')).toLowerCase().includes('p') ? 'female' : 'male',
-                jorong: String(row['Jorong'] || row['jorong'] || '')
-            }));
+            const isScreeningFile = jsonData.some(row => row['Sistolik'] !== undefined || row['sistolik'] !== undefined || row['BB (kg)'] !== undefined || row['Tanggal Skrining'] !== undefined);
 
-            if (typeof PatientDB !== 'undefined') {
-                const result = PatientDB.importBulk(patients);
-                showAlert('import-alert', `Berhasil! ${result.added} data baru ditambahkan, ${result.updated} data diperbarui. Total: ${result.total} warga.`, 'success');
+            if (isScreeningFile) {
+                let addedScreenings = 0;
+                let failedScreenings = [];
+                
+                jsonData.forEach(row => {
+                    const nik = String(row['NIK'] || row['nik'] || '').trim();
+                    const nama = String(row['Nama'] || row['nama'] || row['NAMA'] || '').trim();
+                    if (!nik && !nama) return;
+                    
+                    const patients = PatientDB.getAll();
+                    let patient = null;
+                    if (nik && nik !== '-') patient = patients.find(p => p.nik === nik);
+                    if (!patient && nama && nama !== '-') patient = patients.find(p => (p.nama || '').toLowerCase() === nama.toLowerCase());
+                    
+                    if (!patient) {
+                        failedScreenings.push(nama || nik);
+                        return;
+                    }
+                    
+                    const sistolik = parseInt(row['Sistolik'] || row['sistolik'] || 0);
+                    const diastolik = parseInt(row['Diastolik'] || row['diastolik'] || 0);
+                    const bb = parseFloat(row['BB (kg)'] || row['bb'] || 0);
+                    const tb = parseFloat(row['TB (cm)'] || row['tb'] || 0);
+                    
+                    if (!sistolik && !bb) return; 
+
+                    let tglSkrining = row['Tanggal Skrining'] || row['tanggal_skrining'];
+                    if (typeof tglSkrining === 'number') tglSkrining = new Date((tglSkrining - 25569) * 86400 * 1000).toISOString();
+                    else if (typeof tglSkrining === 'string') {
+                        const parts = tglSkrining.split(/[-/]/);
+                        if (parts.length === 3) tglSkrining = parts[2].length === 4 ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).toISOString() : new Date(tglSkrining).toISOString();
+                        else tglSkrining = new Date().toISOString();
+                    } else tglSkrining = new Date().toISOString();
+                    if(isNaN(new Date(tglSkrining).getTime())) tglSkrining = new Date().toISOString();
+
+                    const checkStr = (val) => {
+                        const s = String(val || '').toUpperCase();
+                        return (s === 'YA' || s === 'TRUE' || s.includes('☑') || s === 'V') ? 'ya' : 'tidak';
+                    };
+                    const checkStrMerokok = (val) => {
+                        const s = String(val || '').toUpperCase();
+                        if (s.includes('AKTIF') || s === 'YA' || s === 'TRUE' || s.includes('☑')) return 'active';
+                        if (s.includes('PASIF')) return 'passive';
+                        return 'no';
+                    };
+                    
+                    const screeningData = {
+                        patientId: patient.id,
+                        tanggalSkrining: tglSkrining,
+                        sistolik: sistolik,
+                        diastolik: diastolik,
+                        beratBadan: bb,
+                        tinggiBadan: tb,
+                        merokok: checkStrMerokok(row['Merokok']),
+                        alkohol: checkStr(row['Konsumsi alkohol']),
+                        polaGaram: checkStr(row['Konsumsi garam yang terlalu banyak']) === 'ya' ? 'high' : 'low',
+                        aktivitasFisik: checkStr(row['Kurang aktivitas fisik dan olahraga']) === 'ya' ? 'rare' : 'active',
+                        riwayatKeluarga: checkStr(row['Faktor genetik (Orang tua riwayat HT)']) === 'ya' ? 'yes' : 'no',
+                        stress: checkStr(row['Stress']),
+                        riwayatHT: checkStr(row['Hipertensi (Kondisi)']), 
+                        minumObatHT: checkStr(row['Hipertensi Terkontrol (Ada minum obat)']),
+                        komorbiditas: [],
+                        penyakitPenyerta: String(row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || '').replace('-', '').trim(),
+                        komplikasiHT: (row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
+                    };
+
+                    if (typeof HypertensionScreening !== 'undefined') {
+                        screeningData.hasil = HypertensionScreening.evaluate(screeningData, patient.umur || 40);
+                    }
+                    ScreeningDB.add(screeningData);
+                    addedScreenings++;
+                });
+
+                if (failedScreenings.length > 0) {
+                    const uniqueFailed = [...new Set(failedScreenings)];
+                    const names = uniqueFailed.slice(0, 5).join(', ') + (uniqueFailed.length > 5 ? '...' : '');
+                    showAlert('import-alert', `Berhasil mengimpor ${addedScreenings} riwayat skrining.<br><b>Perhatian:</b> ${uniqueFailed.length} warga gagal diimpor riwayatnya karena namanya belum ada di sistem (misal: ${names}). Silakan tambah data warga tsb terlebih dahulu!`, 'warning');
+                } else {
+                    showAlert('import-alert', `Berhasil mengimpor ${addedScreenings} riwayat skrining baru!`, 'success');
+                }
+
             } else {
-                showAlert('import-alert', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'danger');
+                const patients = jsonData.map(row => {
+                    let tglLahir = row['Tanggal Lahir'] || row['tanggal_lahir'] || '';
+                    if (typeof tglLahir === 'number') {
+                        tglLahir = new Date((tglLahir - 25569) * 86400 * 1000).toISOString();
+                    }
+                    return {
+                        nik: String(row['NIK'] || row['nik'] || ''),
+                        nama: String(row['Nama'] || row['nama'] || row['NAMA'] || ''),
+                        umur: parseInt(row['Umur'] || row['umur'] || row['Usia'] || 0),
+                        tanggalLahir: tglLahir,
+                        jenisKelamin: (String(row['Jenis Kelamin'] || row['jenis_kelamin'] || row['JK'] || 'male')).toLowerCase().includes('p') ? 'female' : 'male',
+                        jorong: String(row['Jorong'] || row['jorong'] || '')
+                    };
+                });
+
+                if (typeof PatientDB !== 'undefined') {
+                    const result = PatientDB.importBulk(patients);
+                    showAlert('import-alert', `Berhasil! ${result.added} data baru ditambahkan, ${result.updated} data diperbarui. Total: ${result.total} warga.`, 'success');
+                } else {
+                    showAlert('import-alert', 'PatientDB tidak ditemukan. Data tidak disimpan.', 'danger');
+                }
             }
             
             renderDashboard();
@@ -1385,6 +1477,7 @@ window.exportWarga = function() {
         'NIK': p.nik || '-',
         'Nama': p.nama || '-',
         'Jorong': p.jorong || '-',
+        'Tanggal Lahir': p.tanggalLahir ? new Date(p.tanggalLahir).toLocaleDateString('id-ID') : '-',
         'Umur': (p.umurBulan ? Math.floor(p.umurBulan / 12) + ' Tahun ' + (p.umurBulan % 12) + ' Bulan' : (p.umur || 0) + ' Tahun'),
         'Jenis Kelamin': p.jenisKelamin === 'female' ? 'Perempuan' : 'Laki-laki',
         'Tanggal Ditambahkan': p.createdAt ? new Date(p.createdAt).toLocaleDateString('id-ID') : '-'
