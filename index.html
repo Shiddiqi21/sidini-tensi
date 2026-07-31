@@ -586,6 +586,8 @@
                         <input type="text" id="table-search" placeholder="Cari nama/NIK...">
                     </div>
                     <div class="btn-group">
+                        <button class="btn btn-primary btn-sm" onclick="if(typeof downloadSkriningTemplate==='function')downloadSkriningTemplate()"><i class="ph-bold ph-file-xls"></i> Template Skrining</button>
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('file-excel').click()"><i class="ph-bold ph-upload-simple"></i> Import Skrining</button>
                         <button id="btn-export" class="btn btn-success btn-sm" onclick="if(typeof handleExcelExport==='function')handleExcelExport()"><i class="ph-bold ph-download-simple"></i> Export Skrining</button>
                     </div>
                 </div>

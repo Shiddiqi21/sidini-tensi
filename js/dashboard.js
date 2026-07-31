@@ -907,11 +907,43 @@ function downloadTemplate() {
     ]);
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsData, 'Data Warga');
+    XLSX.utils.book_append_sheet(wb, wsData, 'Template Warga');
     XLSX.utils.book_append_sheet(wb, wsPetunjuk, 'Petunjuk');
     
-    XLSX.writeFile(wb, 'Template_Data_Warga_KotoTangah.xlsx');
+    XLSX.writeFile(wb, 'Template_Import_Warga.xlsx');
 }
+
+window.downloadSkriningTemplate = function() {
+    if (typeof XLSX === 'undefined') return;
+
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Jorong Koto Tangah';
+
+    // Sheet 1: Data Skrining
+    const wsData = XLSX.utils.aoa_to_sheet([
+        ['No', 'NIK', 'Nama', 'Jorong', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Merokok', 'Konsumsi alkohol', 'Konsumsi garam yang terlalu banyak', 'Kurang aktivitas fisik dan olahraga', 'Stress', 'Faktor genetik (Orang tua riwayat HT)', 'Hipertensi (Kondisi)', 'Hipertensi Terkontrol (Ada minum obat)', 'Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)', 'Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'],
+        [1, '1305201001800001', 'Ahmad Contoh', exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', '-', '-'],
+        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+    ]);
+    
+    // Sheet 2: Petunjuk
+    const wsPetunjuk = XLSX.utils.aoa_to_sheet([
+        ['PETUNJUK PENGISIAN TEMPLATE DATA SKRINING'],
+        [''],
+        ['Kolom NIK: Isi dengan 16 digit NIK KTP warga (Harus sudah terdaftar di Data Warga!)'],
+        ['Kolom Nama: Isi nama lengkap warga'],
+        ['Kolom Tanggal Skrining: Format YYYY-MM-DD'],
+        ['Kolom Sistolik & Diastolik: Angka tensi darah'],
+        ['Kolom BB & TB: Berat Badan (kg) & Tinggi Badan (cm)'],
+        ['Kolom Pertanyaan (Merokok, dsb): Isi YA atau TIDAK'],
+        ['PENTING: Warga harus sudah ada di tab "Kelola Data Warga" agar riwayat ini bisa dimasukkan!']
+    ]);
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsData, 'Template Skrining');
+    XLSX.utils.book_append_sheet(wb, wsPetunjuk, 'Petunjuk');
+    XLSX.writeFile(wb, 'Template_Import_Skrining.xlsx');
+};
 
 // (Removed old handleSimpanWarga, replaced with the new window.handleSimpanWarga)
 
