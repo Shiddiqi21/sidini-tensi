@@ -592,7 +592,11 @@ const ScreeningDB = {
         });
 
         latestList.forEach(s => {
-            const jorong = s.jorong || 'Tidak Diketahui';
+            let jorong = s.jorong;
+            if (!jorong) {
+                const patient = patients.find(p => p.id === s.patientId);
+                jorong = (patient && patient.jorong) ? patient.jorong : 'Tidak Diketahui';
+            }
             if (!perJorong[jorong]) {
                 perJorong[jorong] = { total: 0, sehat: 0, htTerkontrol: 0, htTidakTerkontrol: 0, totalRiskScore: 0, faktorRisiko: { ...faktorRisikoCount } };
             }
