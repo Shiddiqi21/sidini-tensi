@@ -104,6 +104,9 @@ function populateBulanDropdown() {
     if (!filterBulan) return;
     if (typeof ScreeningDB === 'undefined') return;
     
+    const currentVal = filterBulan.value;
+    filterBulan.innerHTML = '<option value="">Semua Bulan</option>';
+    
     const screenings = ScreeningDB.getAll();
     const months = new Set();
     
@@ -129,6 +132,8 @@ function populateBulanDropdown() {
             }
         }
     });
+    
+    if (currentVal) filterBulan.value = currentVal;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -178,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-render saat data Firestore siap
     document.addEventListener('firestore-ready', () => {
+        populateBulanDropdown();
         const dp = document.getElementById('page-dashboard');
         if (dp && !dp.classList.contains('hidden')) {
             renderDashboard();
