@@ -220,7 +220,7 @@ function renderCharts(stats) {
     statusChartInstance = new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
-            labels: ['Sehat / Normal', 'HT Terkontrol', 'HT Tidak Terkontrol'],
+            labels: ['Bukan Hipertensi', 'HT Terkontrol', 'HT Tidak Terkontrol'],
             datasets: [{
                 data: [stats.sehat || 0, stats.htTerkontrol || 0, stats.htTidakTerkontrol || 0],
                 backgroundColor: ['#16a34a', '#2563eb', '#dc2626'],
@@ -493,9 +493,9 @@ function renderTable(filterJorong = '', searchQuery = '') {
                 const diastolik = s.diastolik || '-';
 
                 // Status HT (safe access)
-                const statusHT = (s.hasil && s.hasil.statusHT) ? s.hasil.statusHT : 'Normal';
+                const statusHT = (s.hasil && s.hasil.statusHT) ? s.hasil.statusHT : 'Bukan Hipertensi';
                 let statusHTClass = 'status-badge';
-                if (statusHT === 'Normal' || statusHT === 'Sehat') statusHTClass += ' normal';
+                if (statusHT === 'Bukan Hipertensi' || statusHT === 'Normal' || statusHT === 'Sehat') statusHTClass += ' normal';
                 else if (statusHT === 'Terkontrol') statusHTClass += ' terkontrol';
                 else statusHTClass += ' tidak-terkontrol';
 

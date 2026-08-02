@@ -26,44 +26,55 @@ class HypertensionScreening {
         return { nilai: parseFloat(imt.toFixed(1)), kategori };
     }
 
-    // ===================== KLASIFIKASI TEKANAN DARAH (JNC 8) =====================
+    // ===================== KLASIFIKASI TEKANAN DARAH (JNC 8 - Age-Adjusted) =====================
     classifyBP() {
         const sys = parseInt(this.data.sistolik);
         const dia = parseInt(this.data.diastolik);
+        const age = parseInt(this.data.umur) || 0;
         if (!sys || !dia) return { kode: 'unknown', label: 'Data Tidak Lengkap' };
 
+        // JNC 8: Untuk usia >= 60 tahun (tanpa diabetes/ginjal kronis),
+        // target/batas HT dinaikkan menjadi >= 150/90 mmHg
+        const hasDiabetes = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Diabetes')) || this.data.komorbiditas === 'yes';
+        const hasGinjal = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Ginjal'));
+        const isElderlyRelaxed = (age >= 60 && !hasDiabetes && !hasGinjal);
+
+        // Tahap 2 selalu sama: >= 160/100
         if (sys >= 160 || dia >= 100) return { kode: 'ht2', label: 'Hipertensi Tahap 2' };
-        if (sys >= 140 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
-        if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
+
+        if (isElderlyRelaxed) {
+            // Lansia (>=60, tanpa DM/GGK): Batas HT1 = 150/90
+            if (sys >= 150 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
+            if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
+        } else {
+            // Usia < 60 atau punya DM/GGK: Batas HT1 = 140/90
+            if (sys >= 140 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
+            if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
+        }
         return { kode: 'normal', label: 'Normal' };
     }
 
     // ===================== STATUS HIPERTENSI =====================
+    // 3 Status: "Bukan Hipertensi", "Terkontrol", "Tidak Terkontrol"
     determineHTStatus(bpClass) {
         const hasHistoryHT = this.data.riwayatHT === 'ya';
         const onMedication = this.data.minumObatHT === 'ya';
+        const isHTNow = (bpClass.kode === 'ht1' || bpClass.kode === 'ht2');
 
-        // Jika tekanan darah normal & punya riwayat HT & minum obat -> Terkontrol
-        if (hasHistoryHT && onMedication && (bpClass.kode === 'normal' || bpClass.kode === 'preht')) {
+        // 1. Bukan penderita HT: Tidak punya riwayat DAN tekanan darah saat ini tidak tinggi
+        if (!hasHistoryHT && !isHTNow) {
+            return 'Bukan Hipertensi';
+        }
+
+        // 2. Punya riwayat HT atau baru terdeteksi HT saat ini:
+        //    - Terkontrol = rutin minum obat (kepatuhan obat)
+        if (hasHistoryHT && onMedication) {
             return 'Terkontrol';
         }
 
-        // Jika tekanan darah masih tinggi meskipun sudah minum obat -> Tidak Terkontrol
-        if (hasHistoryHT && onMedication && (bpClass.kode === 'ht1' || bpClass.kode === 'ht2')) {
-            return 'Tidak Terkontrol';
-        }
-
-        // Jika tekanan darah tinggi & tidak ada riwayat / tidak minum obat -> Tidak Terkontrol
-        if (bpClass.kode === 'ht1' || bpClass.kode === 'ht2') {
-            return 'Tidak Terkontrol';
-        }
-
-        // Jika punya riwayat HT tapi tidak minum obat & tekanan darah normal -> Terkontrol (oleh gaya hidup)
-        if (hasHistoryHT && !onMedication && (bpClass.kode === 'normal' || bpClass.kode === 'preht')) {
-            return 'Terkontrol';
-        }
-
-        return 'Normal';
+        //    - Tidak Terkontrol = punya riwayat HT tapi TIDAK minum obat,
+        //      ATAU baru pertama kali ditemukan tekanan darah tinggi (HT baru)
+        return 'Tidak Terkontrol';
     }
 
     // ===================== SKOR RISIKO =====================
@@ -206,8 +217,9 @@ class HypertensionScreening {
         const hasDiabetes = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Diabetes')) || this.data.komorbiditas === 'yes';
         const hasKomorbid = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.length > 0) || this.data.komorbiditas === 'yes';
         const age = parseInt(this.data.umur) || 0;
+        const hasGinjal = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Ginjal'));
         let targetTD = '< 140/90 mmHg';
-        if (age >= 60 && !hasDiabetes) targetTD = '< 150/90 mmHg';
+        if (age >= 60 && !hasDiabetes && !hasGinjal) targetTD = '< 150/90 mmHg';
         if (hasDiabetes) targetTD = '< 140/90 mmHg (atau < 130/80 jika dapat ditoleransi)';
 
         if (bpClass.kode === 'ht2') {
@@ -243,6 +255,7 @@ class HypertensionScreening {
             followUp.push('Kontrol rutin: Setiap 3 bulan untuk memantau stabilitas.');
             followUp.push('Cek laboratorium (gula darah, fungsi ginjal) setiap 6 bulan.');
         } else {
+            // Bukan Hipertensi
             followUp.push('Skrining ulang: 1 tahun ke depan (jika tidak ada keluhan).');
             followUp.push('Edukasi preventif tetap diberikan.');
         }

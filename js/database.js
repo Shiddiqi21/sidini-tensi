@@ -599,7 +599,7 @@ const ScreeningDB = {
             perJorong[jorong].total++;
 
             if (s.hasil) {
-                if (s.hasil.statusHT === 'Normal') {
+                if (s.hasil.statusHT === 'Bukan Hipertensi' || s.hasil.statusHT === 'Normal' || s.hasil.statusHT === 'Sehat') {
                     sehat++;
                     perJorong[jorong].sehat++;
                 } else if (s.hasil.statusHT === 'Terkontrol') {
