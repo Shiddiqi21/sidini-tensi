@@ -558,8 +558,14 @@ const ScreeningDB = {
     },
 
     // Statistik untuk Dashboard
-    getStats() {
-        const screenings = this.getAll();
+    getStats(filterBulan = '') {
+        let screenings = this.getAll();
+        if (filterBulan) {
+            screenings = screenings.filter(s => {
+                if (!s.tanggalSkrining) return false;
+                return s.tanggalSkrining.substring(0, 7) === filterBulan;
+            });
+        }
         const patients = PatientDB.getAll();
         const totalPatients = patients.length;
 

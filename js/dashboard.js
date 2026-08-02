@@ -114,10 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDashboard();
     });
 
+    safeOn('filter-bulan', 'change', () => {
+        window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+        renderDashboard();
+    });
+
     safeOn('table-search', 'input', (e) => {
         window.statePage['skrining'] = 1;
         const jorong = document.getElementById('filter-jorong');
-        renderTable(jorong ? jorong.value : '', e.target.value);
+        const bulan = document.getElementById('filter-bulan');
+        renderTable(jorong ? jorong.value : '', e.target.value, bulan ? bulan.value : '');
     });
 
     safeOn('warga-search', 'input', () => { window.statePage['warga'] = 1; renderWargaTable(); });
@@ -156,7 +162,8 @@ function renderDashboard() {
         PatientDB.removeDuplicates();
     }
 
-    const globalStats = ScreeningDB.getStats();
+    const currentBulan = document.getElementById('filter-bulan')?.value || '';
+    const globalStats = ScreeningDB.getStats(currentBulan);
     const currentJorong = document.getElementById('filter-jorong').value;
     const currentSearch = document.getElementById('table-search').value;
 
@@ -189,14 +196,14 @@ function renderDashboard() {
 
     renderCharts(statsToUse);
     
-    renderTable(currentJorong, currentSearch);
+    renderTable(currentJorong, currentSearch, currentBulan);
     
     // NEW render warga table
     renderWargaTable(currentJorong);
 
     // NEW render follow-up tables
     if (typeof renderFollowUpTables === 'function') {
-        renderFollowUpTables();
+        renderFollowUpTables(currentJorong, currentBulan);
     }
 
     // NEW render Demografi
@@ -367,14 +374,19 @@ function renderDemografiChart(demoStats) {
     });
 }
 
-function renderTable(filterJorong = '', searchQuery = '') {
+function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
     const tableBody = document.getElementById('table-body');
+    if (!tableBody) return;
     tableBody.innerHTML = '';
 
     if (typeof ScreeningDB === 'undefined' || typeof PatientDB === 'undefined') return;
 
     // We only want to show patients who have at least one screening
-    const allScreenings = ScreeningDB.getAll();
+    let allScreenings = ScreeningDB.getAll();
+    if (filterBulan) {
+        allScreenings = allScreenings.filter(s => s.tanggalSkrining && s.tanggalSkrining.substring(0, 7) === filterBulan);
+    }
+    
     if (allScreenings.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 32px;">Belum ada data skrining.</td></tr>';
         return;
@@ -1166,10 +1178,9 @@ window.switchFollowUpTab = function(tabName) {
     }
 };
 
-window.renderFollowUpTables = function() {
+window.renderFollowUpTables = function(filterJorong = '', filterBulan = '') {
     if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') return;
 
-    const currentJorong = document.getElementById('filter-jorong')?.value || '';
     const patients = PatientDB.getAll();
     const screenings = ScreeningDB.getAll();
     
@@ -1185,10 +1196,12 @@ window.renderFollowUpTables = function() {
     let riskList = [];
 
     Object.values(latestScreenings).forEach(s => {
+        if (filterBulan && s.tanggalSkrining && s.tanggalSkrining.substring(0, 7) !== filterBulan) return;
+        
         const p = patients.find(pat => pat.id === s.patientId);
         if (!p) return;
 
-        if (currentJorong && currentJorong !== 'Semua Jorong' && p.jorong !== currentJorong) return;
+        if (filterJorong && filterJorong !== 'Semua Jorong' && p.jorong !== filterJorong) return;
 
         const data = {
             id: p.id,
@@ -1448,17 +1461,17 @@ window.updatePaginationUI = function(tableId, totalItems) {
 
 window.nextPage = function(tableId) {
     window.statePage[tableId]++;
-    if(tableId === 'warga') renderWargaTable();
-    else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value);
-    else renderFollowUpTables();
+    if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('search-warga').value);
+    else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
+    else if(tableId === 'followupHT' || tableId === 'followupRisk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
 };
 
 window.prevPage = function(tableId) {
     if (window.statePage[tableId] > 1) {
         window.statePage[tableId]--;
-        if(tableId === 'warga') renderWargaTable();
-        else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value);
-        else renderFollowUpTables();
+        if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('search-warga').value);
+        else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
+        else if(tableId === 'followupHT' || tableId === 'followupRisk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
     }
 };
 
