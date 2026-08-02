@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Buttons
     const btnSave = document.getElementById('btn-save');
     const btnPrint = document.getElementById('btn-print');
+    const btnWargaBaru = document.getElementById('btn-warga-baru');
 
     // State
     let currentResult = null;
@@ -77,6 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
             searchDropdown.classList.remove('open');
         }
     });
+
+    if (btnWargaBaru) {
+        btnWargaBaru.addEventListener('click', () => {
+            form.reset();
+            form.classList.remove('hidden');
+        });
+    }
 
     function fillPatientData(patient) {
         patientIdField.value = patient.id || '';
@@ -130,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Lock fields
         toggleDataDiriLock(true);
+        form.classList.remove('hidden');
     }
 
     function toggleDataDiriLock(isLocked) {
@@ -547,6 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Unlock fields
             toggleDataDiriLock(false);
+            
+            // Hide form again
+            form.classList.add('hidden');
         }, 10);
     });
 });

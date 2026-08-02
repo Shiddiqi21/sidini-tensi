@@ -244,12 +244,17 @@
                 <input type="text" id="patient-search" class="search-input" placeholder="Ketik NIK atau Nama warga..." autocomplete="off">
                 <div id="search-dropdown" class="search-dropdown"></div>
             </div>
-            <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
-                <i class="ph-fill ph-info"></i> Ketik minimal 2 karakter. Jika warga belum terdaftar, isi data secara manual di bawah ini.
-            </p>
+            <div style="margin-top: 16px;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                    <i class="ph-fill ph-info"></i> Ketik minimal 2 karakter. Atau jika warga belum terdaftar, klik tombol di bawah.
+                </p>
+                <button type="button" id="btn-warga-baru" class="btn btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+                    <i class="ph-bold ph-plus"></i> Tambah Warga Baru
+                </button>
+            </div>
         </div>
 
-        <form id="screening-form">
+        <form id="screening-form" class="hidden">
 
             <!-- SECTION A: Data Diri -->
             <div class="card" style="margin-bottom: 24px;">
