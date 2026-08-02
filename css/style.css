@@ -42,7 +42,7 @@
 
 /* ==== RESET ==== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: 17px; }
 body {
     font-family: var(--font);
     background: var(--bg);
@@ -434,7 +434,7 @@ img { max-width: 100%; height: auto; }
 .stat-card.purple .stat-icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 
 .stat-card .stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
-.stat-card .stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+.stat-card .stat-label { font-size: 0.95rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
 
 /* ==== CHARTS ==== */
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
@@ -442,10 +442,10 @@ img { max-width: 100%; height: auto; }
 
 /* ==== DATA TABLE ==== */
 .table-wrapper { overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 .data-table thead th {
     background: var(--bg); padding: 10px 12px;
-    text-align: left; font-weight: 700; font-size: 0.8rem;
+    text-align: left; font-weight: 700; font-size: 0.9rem;
     text-transform: uppercase; letter-spacing: 0.5px;
     color: var(--text-secondary); border-bottom: 2px solid var(--border);
     white-space: nowrap;
