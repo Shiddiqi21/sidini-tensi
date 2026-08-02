@@ -99,8 +99,41 @@ window.statePage = {
     'fu-risk': 1
 };
 
+function populateBulanDropdown() {
+    const filterBulan = document.getElementById('filter-bulan');
+    if (!filterBulan) return;
+    if (typeof ScreeningDB === 'undefined') return;
+    
+    const screenings = ScreeningDB.getAll();
+    const months = new Set();
+    
+    screenings.forEach(s => {
+        if (s.tanggalSkrining) {
+            months.add(s.tanggalSkrining.substring(0, 7));
+        }
+    });
+    
+    const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    sortedMonths.forEach(m => {
+        const parts = m.split('-');
+        if (parts.length === 2) {
+            const year = parts[0];
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            if (!isNaN(monthIdx) && monthIdx >= 0 && monthIdx < 12) {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = `${monthNames[monthIdx]} ${year}`;
+                filterBulan.appendChild(option);
+            }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
+    populateBulanDropdown();
 
     // Helper to safely add event listener (element might not exist)
     function safeOn(id, event, handler) {
