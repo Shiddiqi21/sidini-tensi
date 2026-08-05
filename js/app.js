@@ -238,20 +238,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let [key, value] of formData.entries()) {
             if (['beratBadan', 'tinggiBadan', 'sistolik', 'diastolik'].includes(key)) {
                 data[key] = parseFloat(value) || 0;
-            } else if (key === 'komplikasiHT' || key === 'komorbiditas') {
+            } else if (['komplikasiHT', 'komorbiditas', 'stress'].includes(key)) {
                 // Ignore here, will handle array below
             } else {
                 data[key] = value;
             }
         }
         
-        // Get all selected checkboxes for komplikasiHT
-        const komplikasiCheckboxes = form.querySelectorAll('input[name="komplikasiHT"]:checked');
-        data.komplikasiHT = Array.from(komplikasiCheckboxes).map(cb => cb.value);
-
-        // Get all selected checkboxes for komorbiditas
-        const komorbiditasCheckboxes = form.querySelectorAll('input[name="komorbiditas"]:checked');
-        data.komorbiditas = Array.from(komorbiditasCheckboxes).map(cb => cb.value);
+        data.komplikasiHT = Array.from(form.querySelectorAll('input[name="komplikasiHT"]:checked')).map(cb => cb.value);
+        data.komorbiditas = Array.from(form.querySelectorAll('input[name="komorbiditas"]:checked')).map(cb => cb.value);
+        data.stress = Array.from(form.querySelectorAll('input[name="stress"]:checked')).map(cb => cb.value);
 
         const umurVal = parseFloat(document.getElementById('umur')?.value) || 0;
         const umurUnit = document.getElementById('umurUnit')?.value || 'tahun';
@@ -382,10 +378,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let [key, value] of formData.entries()) {
             if (['beratBadan', 'tinggiBadan', 'sistolik', 'diastolik'].includes(key)) {
                 data[key] = parseFloat(value) || 0;
+            } else if (['komplikasiHT', 'komorbiditas', 'stress'].includes(key)) {
+                // Ignore here, will collect as array below
             } else {
                 data[key] = value;
             }
         }
+        
+        data.komplikasiHT = Array.from(form.querySelectorAll('input[name="komplikasiHT"]:checked')).map(cb => cb.value);
+        data.komorbiditas = Array.from(form.querySelectorAll('input[name="komorbiditas"]:checked')).map(cb => cb.value);
+        data.stress = Array.from(form.querySelectorAll('input[name="stress"]:checked')).map(cb => cb.value);
 
         const umurVal = parseFloat(document.getElementById('umur')?.value) || 0;
         const umurUnit = document.getElementById('umurUnit')?.value || 'tahun';
@@ -476,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
             komorbiditas: data.komorbiditas,
             komplikasiHT: data.komplikasiHT || [],
             penyakitPenyerta: data.penyakitPenyerta || '',
-            stress: data.stress || 'tidak',
+            stress: data.stress || [],
             riwayatHT: data.riwayatHT,
             minumObatHT: data.minumObatHT,
             edukasi: data.edukasi,

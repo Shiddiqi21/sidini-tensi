@@ -409,11 +409,14 @@
                             <option value="rare">Jarang / Tidak Pernah</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Tingkat Stres Tinggi?</label>
-                        <div class="radio-row">
-                            <label class="radio-card-label"><input type="radio" name="stress" value="ya"><span class="label-content">Ya</span></label>
-                            <label class="radio-card-label"><input type="radio" name="stress" value="tidak" checked><span class="label-content">Tidak</span></label>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Faktor Stres</label>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Centang jika ada (bisa lebih dari satu)</p>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label"><input type="checkbox" name="stress" value="Perekonomian"> Perekonomian</label>
+                            <label class="checkbox-label"><input type="checkbox" name="stress" value="KDRT"> KDRT (Rumah Tangga)</label>
+                            <label class="checkbox-label"><input type="checkbox" name="stress" value="Kesehatan"> Kesehatan</label>
+                            <label class="checkbox-label"><input type="checkbox" name="stress" value="Sosial"> Sosial</label>
                         </div>
                     </div>
                 </div>
@@ -474,6 +477,12 @@
                         <div class="stat-label">Skor Risiko</div>
                         <div class="stat-value" id="res-risk-val">—</div>
                     </div>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin: 16px 24px 0 24px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; line-height: 1.5;">
+                    <i class="ph-bold ph-info" style="color: var(--primary);"></i> <b>Keterangan Skor Risiko Kardiovaskular:</b><br>
+                    • <b>Rendah (0-4 poin)</b>: Risiko komplikasi rendah. Tetap pertahankan gaya hidup sehat.<br>
+                    • <b>Sedang (5-8 poin)</b>: Waspada. Perlu perbaikan gaya hidup atau observasi medis berkala.<br>
+                    • <b>Tinggi (&ge; 9 poin)</b>: Risiko tinggi. Segera rujuk dan mulai tata laksana medis intensif.
                 </div>
 
                 <!-- Risiko Kardiovaskular -->

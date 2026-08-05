@@ -117,6 +117,11 @@ class HypertensionScreening {
         if (this.data.aktivitasFisik === 'rare') score += 2;
         else if (this.data.aktivitasFisik === 'moderate') score += 1;
 
+        // Faktor Stres (1 poin per faktor)
+        if (Array.isArray(this.data.stress) && this.data.stress.length > 0) {
+            score += this.data.stress.length;
+        }
+
         return score;
     }
 
@@ -211,6 +216,10 @@ class HypertensionScreening {
 
         if (this.data.alkohol === 'ya') {
             intervensi.push('Berhenti konsumsi alkohol: Alkohol meningkatkan tekanan darah secara signifikan.');
+        }
+
+        if (Array.isArray(this.data.stress) && this.data.stress.length > 0) {
+            intervensi.push(`Manajemen Stres (${this.data.stress.join(', ')}): Anjurkan metode relaksasi, koping stres positif, atau rujuk ke layanan konseling jika diperlukan.`);
         }
 
         // Target BP JNC 8 & Kemkes

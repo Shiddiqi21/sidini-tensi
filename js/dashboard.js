@@ -578,18 +578,12 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
                 const garamStr = s.polaGaram === 'high' ? 'Tinggi' : (s.polaGaram === 'medium' ? 'Sedang' : 'Rendah');
                 const alkoholStr = s.alkohol === 'ya' ? 'Ya' : 'Tidak';
                 const fisikStr = s.aktivitasFisik === 'active' ? 'Aktif' : (s.aktivitasFisik === 'moderate' ? 'Sedang' : 'Kurang');
-                const stresStr = s.stress === 'ya' ? 'Ya' : 'Tidak';
+                const komorStr = Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0 ? s.komorbiditas.join(', ') : '-';
+                const kompStr = Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0 ? s.komplikasiHT.join(', ') : '-';
+                const stresStr = Array.isArray(s.stress) ? (s.stress.length > 0 ? s.stress.join(', ') : 'Tidak Ada') : (s.stress === 'ya' ? 'Ya' : 'Tidak Ada');
                 const riwHtStr = s.riwayatHT === 'ya' ? 'Ya' : 'Tidak';
                 const obatHtStr = s.minumObatHT === 'ya' ? 'Ya' : 'Tidak';
                 
-                let komorbidStr = '-';
-                if (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) {
-                    komorbidStr = s.komorbiditas.join(', ');
-                } else if (s.komorbiditas === 'yes') {
-                    komorbidStr = 'Ada';
-                }
-                
-                const komplikasiStr = (s.komplikasiHT && Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-';
                 const penyertaStr = s.penyakitPenyerta || '-';
 
                 // Edukasi (safe access)
@@ -621,8 +615,8 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
                     <td style="font-size: 0.85em;">${stresStr}</td>
                     <td style="font-size: 0.85em;">${riwHtStr}</td>
                     <td style="font-size: 0.85em;">${obatHtStr}</td>
-                    <td style="font-size: 0.85em;">${komorbidStr}</td>
-                    <td style="font-size: 0.85em;">${komplikasiStr}</td>
+                    <td style="font-size: 0.85em;">${komorStr}</td>
+                    <td style="font-size: 0.85em;">${kompStr}</td>
                     <td style="font-size: 0.85em;">${penyertaStr}</td>
                     <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
                     <td style="text-align:center;">
@@ -760,17 +754,17 @@ function handleExcelImport(e) {
                         diastolik: diastolik,
                         beratBadan: bb,
                         tinggiBadan: tb,
-                        merokok: checkStrMerokok(row['Merokok (Aktif/Pasif/Tidak)'] || row['Merokok']),
-                        alkohol: checkStr(row['Konsumsi Alkohol (Ya/Tidak)'] || row['Konsumsi alkohol']),
-                        polaGaram: checkStr(row['Konsumsi Garam Berlebih (Ya/Tidak)'] || row['Konsumsi garam yang terlalu banyak']) === 'ya' ? 'high' : 'low',
-                        aktivitasFisik: checkStr(row['Kurang Aktivitas Fisik (Ya/Tidak)'] || row['Kurang aktivitas fisik dan olahraga']) === 'ya' ? 'rare' : 'active',
-                        riwayatKeluarga: checkStr(row['Riwayat Keluarga / Genetik HT (Ya/Tidak)'] || row['Faktor genetik (Orang tua riwayat HT)']) === 'ya' ? 'yes' : 'no',
-                        stress: checkStr(row['Stress (Ya/Tidak)'] || row['Stress']),
-                        riwayatHT: checkStr(row['Riwayat Hipertensi (Ya/Tidak)'] || row['Hipertensi (Kondisi)'] || row['Hipertensi']), 
-                        minumObatHT: checkStr(row['Rutin Minum Obat HT (Ya/Tidak)'] || row['Hipertensi Terkontrol (Ada minum obat)']),
-                        komorbiditas: (row['Komorbid (Ketik: Diabetes / Ginjal / Jantung)'] || row['Komorbid'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-'),
-                        penyakitPenyerta: String(row['Penyakit Penyerta Lainnya'] || row['Penyakit penyerta (asma, kolesterol, tumor, OA, dsb)'] || row['Pemyakit penyerta (asma, kolesterol, tumor, OA, dsb'] || '').replace('-', '').trim(),
-                        komplikasiHT: (row['Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)'] || row['Komplikasi Hipertensi (Stroke, Ginjal, Mata, Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-')
+                        merokok: checkStrMerokok(row['Merokok (Aktif/Pasif/Tidak)']),
+                        polaGaram: checkStr(row['Konsumsi Garam Berlebih (Ya/Tidak)']),
+                        alkohol: checkStr(row['Konsumsi Alkohol (Ya/Tidak)']),
+                        aktivitasFisik: checkStr(row['Kurang Aktivitas Fisik (Ya/Tidak)']) === 'ya' ? 'rare' : 'active',
+                        stress: (row['Faktor Stress'] || row['Stress (Ya/Tidak)'] || row['Stress'] || '').toString().split(',').map(x => x.trim()).filter(Boolean),
+                        riwayatKeluarga: checkStr(row['Riwayat Keluarga / Genetik HT (Ya/Tidak)']) === 'ya' ? 'yes' : 'no',
+                        riwayatHT: checkStr(row['Riwayat Hipertensi (Ya/Tidak)']), 
+                        minumObatHT: checkStr(row['Rutin Minum Obat HT (Ya/Tidak)']),
+                        komorbiditas: (row['Komorbid (Ketik: Diabetes / Ginjal / Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-'),
+                        penyakitPenyerta: String(row['Penyakit Penyerta Lainnya'] || '').replace('-', '').trim(),
+                        komplikasiHT: (row['Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)'] || '').toString().split(',').map(x => x.trim()).filter(Boolean)
                     };
 
                     if (typeof HypertensionScreening !== 'undefined') {
@@ -871,12 +865,6 @@ function handleExcelExport() {
             if (patient && patient.tanggalLahir && tanggalLahir === '-') tanggalLahir = new Date(patient.tanggalLahir).toLocaleDateString('id-ID');
         }
 
-        const isHT = s.hasil?.statusHT === 'Terkontrol' || s.hasil?.statusHT === 'Tidak Terkontrol' || (s.riwayatHT === 'ya');
-        const isHTTerkontrol = s.hasil?.statusHT === 'Terkontrol';
-        const isHTTidakTerkontrol = s.hasil?.statusHT === 'Tidak Terkontrol';
-        const isOverweight = s.hasil?.imt?.kategori === 'Obesitas' || s.hasil?.imt?.kategori === 'Overweight' || s.hasil?.imt?.kategori === 'Pre-Obese';
-        const isDegeneratif = s.umur > 60;
-
         let edukasiExport = [];
         if (s.edukasi?.hipertensi) edukasiExport.push('Penjelasan HT');
         if (s.edukasi?.dashDiet) edukasiExport.push('DASH Diet');
@@ -904,7 +892,7 @@ function handleExcelExport() {
             
             // Status Hipertensi & Komplikasi
             'Riwayat Hipertensi (Ya/Tidak)': s.riwayatHT === 'ya' ? 'Ya' : 'Tidak',
-            'Rutin Minum Obat HT (Ya/Tidak)': isHTTerkontrol ? 'Ya' : 'Tidak',
+            'Rutin Minum Obat HT (Ya/Tidak)': s.minumObatHT === 'ya' ? 'Ya' : 'Tidak',
             'Komorbid (Ketik: Diabetes / Ginjal / Jantung)': (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) ? s.komorbiditas.join(', ') : '-',
             'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
             'Penyakit Penyerta Lainnya': s.penyakitPenyerta || '-',
@@ -915,11 +903,9 @@ function handleExcelExport() {
             'Konsumsi Garam Berlebih (Ya/Tidak)': s.polaGaram === 'high' ? 'Ya' : 'Tidak',
             'Konsumsi Alkohol (Ya/Tidak)': s.alkohol === 'ya' ? 'Ya' : 'Tidak',
             'Kurang Aktivitas Fisik (Ya/Tidak)': s.aktivitasFisik === 'rare' ? 'Ya' : 'Tidak',
-            'Stress (Ya/Tidak)': s.stress === 'ya' ? 'Ya' : 'Tidak',
+            'Faktor Stress': Array.isArray(s.stress) ? s.stress.join(', ') : (s.stress || ''),
             
             // Output Sistem Tambahan
-            'IMT': (s.hasil?.imt?.nilai !== undefined && s.hasil?.imt?.nilai !== null) ? s.hasil.imt.nilai : '-',
-            'Kategori IMT': s.hasil?.imt?.kategori || '-',
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
@@ -999,10 +985,9 @@ window.downloadSkriningTemplate = function() {
     const exampleJorong1 = filterJorong && filterJorong !== 'Semua Jorong' ? filterJorong : 'Anduriang Munggu Gadang';
 
     // Sheet 1: Data Skrining
-    const wsData = XLSX.utils.aoa_to_sheet([
-        ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Stress (Ya/Tidak)'],
-        [1, '1305201001800001', 'Ahmad Contoh', 'L', '1960-01-01', 66, exampleJorong1, '2026-07-31', 140, 90, 65, 160, 'Ya', 'Ya', 'Diabetes, Ginjal', 'Stroke', 'Asma', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak', 'Tidak'],
-        ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+    const wsTemplate = XLSX.utils.aoa_to_sheet([
+        ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Faktor Stress'],
+        ['1', '1234567890123456', 'Jhon Doe', 'Laki-laki', '1980-01-01', '45', exampleJorong1, '2024-07-29', '140', '90', '70', '165', 'Ya', 'Tidak', 'Diabetes, Jantung', 'Mata', '-', 'Ya', 'Aktif', 'Ya', 'Tidak', 'Ya', 'Perekonomian, KDRT']
     ]);
     
     // Sheet 2: Petunjuk
