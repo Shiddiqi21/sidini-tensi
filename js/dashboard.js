@@ -59,29 +59,57 @@ window.renderJorongDropdowns = function() {
     if (typeof window.getAllJorongs !== 'function') return;
     const jorongs = window.getAllJorongs();
     
+    // Cek apakah user adalah admin jorong
+    const isAdminJorong = window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong;
+    const myJorong = isAdminJorong ? window.currentUser.jorong : null;
+
     const filterSelect = document.getElementById('filter-jorong');
     if (filterSelect) {
         const currentVal = filterSelect.value;
-        filterSelect.innerHTML = '<option value="">Semua Jorong</option>';
-        jorongs.forEach(j => {
+        filterSelect.innerHTML = isAdminJorong ? '' : '<option value="">Semua Jorong</option>';
+        
+        if (isAdminJorong) {
             const opt = document.createElement('option');
-            opt.value = j; opt.textContent = j;
+            opt.value = myJorong; opt.textContent = myJorong;
             filterSelect.appendChild(opt);
-        });
-        if (currentVal && (jorongs.includes(currentVal) || currentVal === '')) filterSelect.value = currentVal;
-    }
-
-    const jorongSelects = [document.getElementById('jorong'), document.getElementById('tw-jorong')];
-    jorongSelects.forEach(select => {
-        if (select) {
-            const currentVal = select.value;
-            select.innerHTML = '<option value="" disabled selected>Pilih Jorong...</option>';
+            filterSelect.value = myJorong;
+            filterSelect.style.pointerEvents = 'none';
+            filterSelect.style.background = '#e9ecef';
+        } else {
             jorongs.forEach(j => {
                 const opt = document.createElement('option');
                 opt.value = j; opt.textContent = j;
-                select.appendChild(opt);
+                filterSelect.appendChild(opt);
             });
-            if (currentVal && jorongs.includes(currentVal)) select.value = currentVal;
+            if (currentVal && (jorongs.includes(currentVal) || currentVal === '')) filterSelect.value = currentVal;
+            filterSelect.style.pointerEvents = 'auto';
+            filterSelect.style.background = '#fff';
+        }
+    }
+
+    const jorongSelects = [document.getElementById('jorong'), document.getElementById('tw-jorong'), document.getElementById('admin-jorong')];
+    jorongSelects.forEach(select => {
+        if (select) {
+            const currentVal = select.value;
+            select.innerHTML = isAdminJorong ? '' : '<option value="" disabled selected>Pilih Jorong...</option>';
+            
+            if (isAdminJorong) {
+                const opt = document.createElement('option');
+                opt.value = myJorong; opt.textContent = myJorong;
+                select.appendChild(opt);
+                select.value = myJorong;
+                select.style.pointerEvents = 'none';
+                select.style.background = '#e9ecef';
+            } else {
+                jorongs.forEach(j => {
+                    const opt = document.createElement('option');
+                    opt.value = j; opt.textContent = j;
+                    select.appendChild(opt);
+                });
+                if (currentVal && jorongs.includes(currentVal)) select.value = currentVal;
+                select.style.pointerEvents = 'auto';
+                select.style.background = '#fff';
+            }
         }
     });
 };
@@ -89,6 +117,7 @@ window.renderJorongDropdowns = function() {
 let statusChartInstance = null;
 let risikoChartInstance = null;
 let demografiChartInstance = null;
+let trenKasusChartInstance = null;
 
 // Pagination & Search State
 const PAGE_SIZE = 10;
@@ -157,6 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDashboard();
     });
 
+    safeOn('filter-gender', 'change', () => {
+        window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+        renderDashboard();
+    });
+
     safeOn('table-search', 'input', (e) => {
         window.statePage['skrining'] = 1;
         const jorong = document.getElementById('filter-jorong');
@@ -202,7 +236,8 @@ function renderDashboard() {
     }
 
     const currentBulan = document.getElementById('filter-bulan')?.value || '';
-    const globalStats = ScreeningDB.getStats(currentBulan);
+    const currentGender = document.getElementById('filter-gender')?.value || '';
+    const globalStats = ScreeningDB.getStats(currentBulan, currentGender);
     const currentJorong = document.getElementById('filter-jorong').value;
     const currentSearch = document.getElementById('table-search').value;
 
@@ -235,8 +270,11 @@ function renderDashboard() {
 
     renderCharts(statsToUse);
     
-    renderTable(currentJorong, currentSearch, currentBulan);
+    renderTable(currentJorong, currentSearch, currentBulan, currentGender);
     
+    // Render tren kasus hipertensi
+    renderTrenKasus(currentJorong, currentGender);
+
     // NEW render warga table
     renderWargaTable(currentJorong);
 
@@ -248,7 +286,7 @@ function renderDashboard() {
     // NEW render Demografi
     if (typeof PatientDB !== 'undefined' && typeof PatientDB.getDemographicsStats === 'function') {
         const filterStr = currentJorong === 'Semua Jorong' ? '' : currentJorong;
-        const demoStats = PatientDB.getDemographicsStats(filterStr);
+        const demoStats = PatientDB.getDemographicsStats(filterStr, currentGender);
         const totalPendudukEl = document.getElementById('stat-total-penduduk');
         if (totalPendudukEl) {
             totalPendudukEl.textContent = demoStats.total;
@@ -413,7 +451,7 @@ function renderDemografiChart(demoStats) {
     });
 }
 
-function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
+function renderTable(filterJorong = '', searchQuery = '', filterBulan = '', filterGender = '') {
     const tableBody = document.getElementById('table-body');
     if (!tableBody) return;
     tableBody.innerHTML = '';
@@ -426,6 +464,15 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
         allScreenings = allScreenings.filter(s => s.tanggalSkrining && s.tanggalSkrining.substring(0, 7) === filterBulan);
     }
     
+    // Gender filter
+    if (filterGender) {
+        allScreenings = allScreenings.filter(s => {
+            const patient = PatientDB.getById(s.patientId) || {};
+            const jk = patient.jenisKelamin || s.jenisKelamin || '';
+            return jk === filterGender;
+        });
+    }
+
     if (allScreenings.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 32px;">Belum ada data skrining.</td></tr>';
         return;
@@ -598,6 +645,13 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
                 const safeId = String(s.id || '').replace(/'/g, "\\'");
                 const safePid = String(patientId).replace(/'/g, "\\'");
 
+                // Kategori Kasus (safe access)
+                const katKasus = (s.hasil && s.hasil.kategoriKasus) ? s.hasil.kategoriKasus : '-';
+                let katClass = 'status-badge';
+                if (katKasus === 'Baru') katClass += ' warning';
+                else if (katKasus === 'Lama') katClass += ' info';
+                else katClass += ' normal';
+
                 tr.innerHTML = `
                     <td style="font-weight:bold;">${s._ke || '-'}</td>
                     <td>${dateStr}</td>
@@ -605,6 +659,7 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
                     <td><span class="${imtClass}">${imtVal}</span></td>
                     <td>${sistolik}/${diastolik}</td>
                     <td><span class="${statusHTClass}">${statusHT}</span></td>
+                    <td><span class="${katClass}">${katKasus}</span></td>
                     <td><span class="${riskClass}">${riskLabel}</span></td>
                     <td>${cvdRisk}</td>
                     <td style="font-size: 0.85em;">${riwKelStr}</td>
@@ -620,9 +675,12 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '') {
                     <td style="font-size: 0.85em;">${penyertaStr}</td>
                     <td style="font-size: 0.85em; line-height: 1.3;">${eduStr}</td>
                     <td style="text-align:center;">
-                        <button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${safeId}', '${safePid}')" title="Hapus riwayat ini">
-                            <i class="ph-bold ph-trash"></i>
-                        </button>
+                        ${(window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong !== (patient ? patient.jorong : '')) ? 
+                            '<span style="color:var(--text-muted); font-size: 0.85rem;" title="Beda Jorong"><i class="ph-bold ph-lock"></i></span>' :
+                            `<button class="btn btn-danger btn-sm" onclick="deleteScreeningRecord('${safeId}', '${safePid}')" title="Hapus riwayat ini">
+                                <i class="ph-bold ph-trash"></i>
+                            </button>`
+                        }
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -667,6 +725,12 @@ function closeHistoryModal() {
 }
 
 function handleExcelImport(e) {
+    if (window.currentUser && window.currentUser.role !== 'superadmin') {
+        Swal.fire('Akses Ditolak', 'Hanya Super Admin yang dapat mengimpor data masal.', 'error');
+        e.target.value = '';
+        return;
+    }
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -764,6 +828,7 @@ function handleExcelImport(e) {
                         minumObatHT: checkStr(row['Rutin Minum Obat HT (Ya/Tidak)']),
                         komorbiditas: (row['Komorbid (Ketik: Diabetes / Ginjal / Jantung)'] || '').split(',').map(s=>s.trim()).filter(s=>s && s !== '-'),
                         penyakitPenyerta: String(row['Penyakit Penyerta Lainnya'] || '').replace('-', '').trim(),
+                        obatAntihipertensi: String(row['Obat Antihipertensi'] || '').replace('-', '').trim(),
                         komplikasiHT: (row['Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)'] || '').toString().split(',').map(x => x.trim()).filter(Boolean)
                     };
 
@@ -896,6 +961,7 @@ function handleExcelExport() {
             'Komorbid (Ketik: Diabetes / Ginjal / Jantung)': (Array.isArray(s.komorbiditas) && s.komorbiditas.length > 0) ? s.komorbiditas.join(', ') : '-',
             'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)': (Array.isArray(s.komplikasiHT) && s.komplikasiHT.length > 0) ? s.komplikasiHT.join(', ') : '-',
             'Penyakit Penyerta Lainnya': s.penyakitPenyerta || '-',
+            'Obat Antihipertensi': s.obatAntihipertensi || '-',
             
             // Faktor Risiko Detail
             'Riwayat Keluarga / Genetik HT (Ya/Tidak)': s.riwayatKeluarga === 'yes' ? 'Ya' : 'Tidak',
@@ -908,6 +974,7 @@ function handleExcelExport() {
             // Output Sistem Tambahan
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
+            'Kategori Kasus': s.hasil?.kategoriKasus || '-',
             'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
             'Skor Risiko': (s.hasil?.riskScore !== undefined && s.hasil?.riskScore !== null) ? s.hasil.riskScore : 0,
             'Edukasi Diberikan': eduExportStr
@@ -986,7 +1053,7 @@ window.downloadSkriningTemplate = function() {
 
     // Sheet 1: Data Skrining
     const wsTemplate = XLSX.utils.aoa_to_sheet([
-        ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Faktor Stress'],
+        ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Obat Antihipertensi', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Faktor Stress'],
         ['1', '1234567890123456', 'Jhon Doe', 'Laki-laki', '1980-01-01', '45', exampleJorong1, '2024-07-29', '140', '90', '70', '165', 'Ya', 'Tidak', 'Diabetes, Jantung', 'Mata', '-', 'Ya', 'Aktif', 'Ya', 'Tidak', 'Ya', 'Perekonomian, KDRT']
     ]);
     
@@ -1080,6 +1147,20 @@ function renderWargaTable() {
             }
         }
 
+        let actions = '';
+        if (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong !== p.jorong) {
+            actions = `
+                <button class="btn btn-outline btn-sm" onclick="showInfoWarga('${p.id}')"><i class="ph-bold ph-info"></i> Info</button>
+                <span style="color:var(--text-muted); font-size: 0.85rem; margin-left:4px;" title="Beda Jorong"><i class="ph-bold ph-lock"></i></span>
+            `;
+        } else {
+            actions = `
+                <button class="btn btn-outline btn-sm" onclick="showInfoWarga('${p.id}')"><i class="ph-bold ph-info"></i> Info</button>
+                <button class="btn btn-primary btn-sm" onclick="editWarga('${p.id}')" style="margin-left: 4px;"><i class="ph-bold ph-pencil"></i> Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteWarga('${p.id}', '${p.nama}')" style="margin-left: 4px;"><i class="ph-bold ph-trash"></i> Hapus</button>
+            `;
+        }
+
         tr.innerHTML = `
             <td>${globalIndex}</td>
             <td>${p.nik || '-'}</td>
@@ -1089,8 +1170,7 @@ function renderWargaTable() {
             <td>${p.jorong || '-'}</td>
             <td>${statusBadge}</td>
             <td style="text-align: center;">
-                <button class="btn btn-primary btn-sm" onclick="editWarga('${p.id}')"><i class="ph-bold ph-pencil"></i> Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteWarga('${p.id}', '${p.nama}')" style="margin-left: 4px;"><i class="ph-bold ph-trash"></i> Hapus</button>
+                ${actions}
             </td>
         `;
         
@@ -1204,6 +1284,11 @@ window.switchFollowUpTab = function(tabName) {
 
 window.renderFollowUpTables = function(filterJorong = '', filterBulan = '') {
     if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') return;
+
+    // RBAC: Override jorong if regular admin, so Follow-Up only shows their own jorong
+    if (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong) {
+        filterJorong = window.currentUser.jorong;
+    }
 
     const patients = PatientDB.getAll();
     const screenings = ScreeningDB.getAll();
@@ -1324,8 +1409,16 @@ window.openFollowUpModal = function(patientId) {
 
     document.getElementById('fu-patient-name').textContent = patient.nama;
     document.getElementById('fu-patient-id').value = patient.id;
+    document.getElementById('fu-edit-id').value = '';
     document.getElementById('fu-tanggal').value = new Date().toISOString().split('T')[0];
-    document.getElementById('fu-catatan').value = '';
+    
+    // Clear Q&A container and add one empty row
+    const qaContainer = document.getElementById('fu-qa-container');
+    qaContainer.innerHTML = '';
+    window.addFollowUpQA();
+    
+    const catatanPetugas = document.getElementById('fu-catatan-petugas');
+    if (catatanPetugas) catatanPetugas.value = '';
 
     const historyContainer = document.getElementById('fu-history-list');
     historyContainer.innerHTML = '';
@@ -1338,15 +1431,35 @@ window.openFollowUpModal = function(patientId) {
     } else {
         sortedFUs.forEach(fu => {
             const dateStr = new Date(fu.tanggal).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let contentHtml = '';
+            if (fu.qaList && Array.isArray(fu.qaList)) {
+                contentHtml = '<ul style="padding-left:20px; margin:0; margin-bottom:8px;">';
+                fu.qaList.forEach(item => {
+                    contentHtml += `<li style="margin-bottom:8px;"><b>Q:</b> ${item.q}<br><b>A:</b> ${item.a}</li>`;
+                });
+                contentHtml += '</ul>';
+                if (fu.catatanPetugas) {
+                    contentHtml += `<div style="background:var(--bg-hover); padding:8px; border-radius:4px; font-size:0.9rem;"><b>Catatan Petugas:</b><br>${fu.catatanPetugas}</div>`;
+                }
+            } else {
+                contentHtml = fu.catatan || '';
+            }
+
             historyContainer.innerHTML += `
                 <div style="background: var(--bg); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-                    <div>
+                    <div style="flex: 1;">
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</div>
-                        <div style="color: var(--text); font-size: 0.95rem; line-height: 1.5;">${fu.catatan}</div>
+                        <div style="color: var(--text); font-size: 0.95rem; line-height: 1.5;">${contentHtml}</div>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="deleteFollowUpRecord('${patient.id}', '${fu.id}')" title="Hapus catatan ini" style="padding: 6px 8px;">
-                        <i class="ph-bold ph-trash"></i>
-                    </button>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-warning btn-sm" onclick="editFollowUpRecord('${patient.id}', '${fu.id}')" title="Edit catatan ini" style="padding: 6px 8px;">
+                            <i class="ph-bold ph-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteFollowUpRecord('${patient.id}', '${fu.id}')" title="Hapus catatan ini" style="padding: 6px 8px;">
+                            <i class="ph-bold ph-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `;
         });
@@ -1379,24 +1492,182 @@ window.deleteFollowUpRecord = async function(patientId, followUpId) {
     }
 };
 
-window.saveFollowUp = function() {
-    const patientId = document.getElementById('fu-patient-id').value;
-    const tanggal = document.getElementById('fu-tanggal').value;
-    const catatan = document.getElementById('fu-catatan').value;
+window.editFollowUpRecord = function(patientId, followUpId) {
+    const patient = PatientDB.getById(patientId);
+    if (!patient || !patient.followUps) return;
 
-    if (!patientId || !tanggal || !catatan) {
-        showToast('Mohon lengkapi data follow-up.', 'warning');
+    const fu = patient.followUps.find(f => f.id === followUpId);
+    if (!fu) return;
+
+    // Set Edit ID
+    document.getElementById('fu-edit-id').value = fu.id;
+    document.getElementById('fu-tanggal').value = fu.tanggal;
+    
+    const catatanPetugas = document.getElementById('fu-catatan-petugas');
+    if (catatanPetugas) catatanPetugas.value = fu.catatanPetugas || '';
+
+    // Render Q&A
+    const qaContainer = document.getElementById('fu-qa-container');
+    qaContainer.innerHTML = '';
+    
+    if (fu.qaList && fu.qaList.length > 0) {
+        fu.qaList.forEach(item => {
+            const id = Date.now() + Math.floor(Math.random() * 1000);
+            const html = `
+                <div id="qa-${id}" style="display: flex; gap: 12px; align-items: flex-start; background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                        <input type="text" class="form-input fu-q-input" value="${item.q}" required>
+                        <textarea class="form-input fu-a-input" rows="2" required>${item.a}</textarea>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('qa-${id}').remove()" style="padding: 8px;" title="Hapus Pertanyaan">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
+                </div>
+            `;
+            qaContainer.insertAdjacentHTML('beforeend', html);
+        });
+    } else {
+        window.addFollowUpQA();
+    }
+};
+
+window.addFollowUpQA = function() {
+    const container = document.getElementById('fu-qa-container');
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    const html = `
+        <div id="qa-${id}" style="display: flex; gap: 12px; align-items: flex-start; background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" class="form-input fu-q-input" placeholder="Pertanyaan (misal: Apakah bapak sudah mengurangi makan garam?)" required>
+                <textarea class="form-input fu-a-input" rows="2" placeholder="Jawaban / Keterangan Nakes..." required></textarea>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('qa-${id}').remove()" style="padding: 8px;" title="Hapus Pertanyaan">
+                <i class="ph-bold ph-trash"></i>
+            </button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+};
+
+window.saveAndPrintFollowUp = function() {
+    const patientId = document.getElementById('fu-patient-id').value;
+    const editId = document.getElementById('fu-edit-id').value;
+    const tanggal = document.getElementById('fu-tanggal').value;
+    const qInputs = document.querySelectorAll('.fu-q-input');
+    const aInputs = document.querySelectorAll('.fu-a-input');
+    const catatanPetugas = document.getElementById('fu-catatan-petugas')?.value || '';
+
+    if (!patientId || !tanggal || qInputs.length === 0) {
+        showToast('Mohon isi minimal satu pertanyaan dan jawaban.', 'warning');
         return;
     }
 
-    showLoading('Menyimpan follow-up...');
+    let qaList = [];
+    for(let i = 0; i < qInputs.length; i++) {
+        if(qInputs[i].value.trim() && aInputs[i].value.trim()) {
+            qaList.push({
+                q: qInputs[i].value.trim(),
+                a: aInputs[i].value.trim()
+            });
+        }
+    }
+
+    if (qaList.length === 0) {
+        showToast('Pastikan pertanyaan dan jawaban tidak kosong.', 'warning');
+        return;
+    }
+
+    showLoading('Menyimpan & Mencetak...');
     setTimeout(() => {
-        PatientDB.addFollowUp(patientId, {
-            tanggal: tanggal,
-            catatan: catatan
+        // Save to Database
+        if (editId) {
+            PatientDB.updateFollowUp(patientId, editId, {
+                tanggal: tanggal,
+                qaList: qaList,
+                catatanPetugas: catatanPetugas,
+                catatan: 'Wawancara Follow-Up'
+            });
+        } else {
+            PatientDB.addFollowUp(patientId, {
+                tanggal: tanggal,
+                qaList: qaList,
+                catatanPetugas: catatanPetugas,
+                catatan: 'Wawancara Follow-Up'
+            });
+        }
+
+        // Get Patient Data for Doc
+        const patient = PatientDB.getById(patientId);
+        const screenings = ScreeningDB.getByPatientId(patientId).sort((a,b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
+        const latestBP = screenings.length > 0 ? `${screenings[0].sistolik}/${screenings[0].diastolik} mmHg` : '-';
+
+        // Generate HTML for Word Document
+        const dateStr = new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        
+        let qaHtml = '<ol style="font-family: Arial, sans-serif;">';
+        qaList.forEach(item => {
+            qaHtml += `
+                <li style="margin-bottom: 12px;">
+                    <p style="margin: 0; font-weight: bold;">Tanya: ${item.q}</p>
+                    <p style="margin: 0; margin-top: 4px;">Jawab: ${item.a}</p>
+                </li>
+            `;
         });
+        qaHtml += '</ol>';
+
+        let catatanPetugasHtml = '';
+        if (catatanPetugas) {
+            catatanPetugasHtml = `
+                <div style="margin-top: 20px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #4CAF50;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px;">Catatan Tambahan Petugas:</h4>
+                    <p style="margin: 0; line-height: 1.5;">${catatanPetugas.replace(/\\n/g, '<br>')}</p>
+                </div>
+            `;
+        }
+
+        const html = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Hasil Follow-Up</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+                <div style="text-align: center; border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px;">
+                    <h2 style="margin: 0; font-size: 20px;">HASIL WAWANCARA FOLLOW-UP HIPERTENSI</h2>
+                    <h3 style="margin: 5px 0 0 0; font-size: 16px; color: #555;">SiDini-Tensi Nagari Koto Tangah</h3>
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+                    <tr><td style="width: 150px; padding: 4px;"><b>Tanggal Follow-up</b></td><td>: ${dateStr}</td></tr>
+                    <tr><td style="padding: 4px;"><b>Nama Pasien</b></td><td>: ${patient.nama}</td></tr>
+                    <tr><td style="padding: 4px;"><b>NIK</b></td><td>: ${patient.nik || '-'}</td></tr>
+                    <tr><td style="padding: 4px;"><b>Jorong</b></td><td>: ${patient.jorong || '-'}</td></tr>
+                    <tr><td style="padding: 4px;"><b>Umur / JK</b></td><td>: ${patient.umur} thn / ${patient.jenisKelamin === 'female' ? 'Perempuan' : 'Laki-laki'}</td></tr>
+                    <tr><td style="padding: 4px;"><b>Tekanan Darah (Terakhir)</b></td><td>: ${latestBP}</td></tr>
+                </table>
+
+                <h4 style="font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Daftar Pertanyaan & Jawaban:</h4>
+                ${qaHtml}
+                
+                ${catatanPetugasHtml}
+
+                <div style="margin-top: 50px; text-align: right;">
+                    <p style="margin-bottom: 60px;">Petugas / Nakes,</p>
+                    <p>_______________________</p>
+                </div>
+            </body>
+            </html>
+        `;
+
+        // Create Blob and Download
+        const blob = new Blob(['\\ufeff', html], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `FollowUp_${patient.nama.replace(/\\s+/g, '_')}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
         hideLoading();
-        showToast('Catatan follow-up berhasil disimpan!', 'success');
+        showToast('Catatan follow-up disimpan & diunduh!', 'success');
         openFollowUpModal(patientId);
         renderDashboard();
     }, 400);
@@ -1485,17 +1756,17 @@ window.updatePaginationUI = function(tableId, totalItems) {
 
 window.nextPage = function(tableId) {
     window.statePage[tableId]++;
-    if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('search-warga').value);
+    if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('warga-search').value);
     else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
-    else if(tableId === 'followupHT' || tableId === 'followupRisk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
+    else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
 };
 
 window.prevPage = function(tableId) {
     if (window.statePage[tableId] > 1) {
         window.statePage[tableId]--;
-        if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('search-warga').value);
+        if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('warga-search').value);
         else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
-        else if(tableId === 'followupHT' || tableId === 'followupRisk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
+        else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
     }
 };
 
@@ -1827,6 +2098,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // HAPUS SELURUH DATA SISTEM
 window.handleResetData = function() {
+    if (window.currentUser && window.currentUser.role !== 'superadmin') {
+        Swal.fire('Akses Ditolak', 'Hanya Super Admin yang dapat menghapus seluruh data.', 'error');
+        return;
+    }
+
     Swal.fire({
         title: 'PERINGATAN KRITIKAL!',
         html: `Anda yakin ingin menghapus <b>SELURUH DATA Warga, Riwayat Skrining, dan Follow-Up</b> secara permanen?<br><br><span style="color:red">Data yang dihapus tidak dapat dikembalikan.</span>`,
@@ -1856,4 +2132,343 @@ window.handleResetData = function() {
             });
         }
     });
+};
+
+// ===================== TREN KASUS HIPERTENSI PER BULAN =====================
+function renderTrenKasus(filterJorong = '', filterGender = '') {
+    const canvas = document.getElementById('chart-tren-kasus');
+    if (!canvas) return;
+
+    if (trenKasusChartInstance) {
+        trenKasusChartInstance.destroy();
+        trenKasusChartInstance = null;
+    }
+
+    let allScreenings = ScreeningDB.getAll();
+    
+    // Apply filters
+    if (filterJorong && filterJorong !== '' && filterJorong !== 'Semua Jorong') {
+        allScreenings = allScreenings.filter(s => s.jorong === filterJorong);
+    }
+    if (filterGender) {
+        allScreenings = allScreenings.filter(s => {
+            const patient = PatientDB.getById(s.patientId) || {};
+            return (patient.jenisKelamin || s.jenisKelamin || '') === filterGender;
+        });
+    }
+
+    // Group by month
+    const monthData = {};
+    allScreenings.forEach(s => {
+        const monthKey = (s.tanggalSkrining || s.createdAt || '').substring(0, 7);
+        if (!monthKey || monthKey.length < 7) return;
+
+        if (!monthData[monthKey]) {
+            monthData[monthKey] = { total: 0, baru: 0, lama: 0 };
+        }
+
+        const klasTD = s.hasil?.klasifikasiTD || '';
+        const isHT = klasTD.includes('Hipertensi');
+        
+        if (isHT) {
+            monthData[monthKey].total++;
+            const kategori = s.hasil?.kategoriKasus || '';
+            if (kategori === 'Baru') {
+                monthData[monthKey].baru++;
+            } else if (kategori === 'Lama') {
+                monthData[monthKey].lama++;
+            } else {
+                // Legacy data without kategoriKasus: use riwayatHT
+                if (s.riwayatHT === 'ya') {
+                    monthData[monthKey].lama++;
+                } else {
+                    monthData[monthKey].baru++;
+                }
+            }
+        }
+    });
+
+    // Sort months
+    const sortedMonths = Object.keys(monthData).sort();
+    
+    if (sortedMonths.length === 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '14px Outfit, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.fillText('Belum ada data kasus hipertensi', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const labels = sortedMonths.map(m => {
+        const [y, mo] = m.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return `${monthNames[parseInt(mo) - 1]} ${y}`;
+    });
+
+    trenKasusChartInstance = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Kasus HT',
+                    data: sortedMonths.map(m => monthData[m].total),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 2.5
+                },
+                {
+                    label: 'Kasus Baru',
+                    data: sortedMonths.map(m => monthData[m].baru),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2,
+                    borderDash: [5, 3]
+                },
+                {
+                    label: 'Kasus Lama',
+                    data: sortedMonths.map(m => monthData[m].lama),
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'Outfit', size: 13 }, padding: 20, usePointStyle: true }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { family: 'Outfit', size: 13 },
+                    bodyFont: { family: 'Outfit', size: 12 },
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, font: { family: 'Outfit' } },
+                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                },
+                x: {
+                    ticks: { font: { family: 'Outfit' } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+window.showInfoWarga = function(patientId) {
+    if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') return;
+
+    const patient = PatientDB.getById(patientId);
+    if (!patient) return;
+
+    const screenings = ScreeningDB.getByPatientId(patientId).sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
+    const latestScreening = screenings[0] || null;
+
+    let riwayatHtml = '';
+    if (screenings.length === 0) {
+        riwayatHtml = '<p style="color: var(--text-muted); font-style: italic;">Belum ada riwayat skrining.</p>';
+    } else {
+        riwayatHtml = '<ul style="padding-left: 20px; margin-top: 8px;">';
+        screenings.forEach(s => {
+            const tgl = new Date(s.tanggalSkrining).toLocaleDateString('id-ID');
+            riwayatHtml += `<li><b>${tgl}</b>: TD ${s.sistolik}/${s.diastolik} mmHg &mdash; <span class="status-badge ${s.hasil?.statusHT === 'Terkontrol' ? 'terkontrol' : (s.hasil?.statusHT === 'Tidak Terkontrol' ? 'tidak-terkontrol' : (s.hasil?.statusHT === 'Bukan Hipertensi' ? 'normal' : ''))}">${s.hasil?.statusHT || '-'}</span></li>`;
+        });
+        riwayatHtml += '</ul>';
+    }
+
+    const komorbidStr = Array.isArray(latestScreening?.komorbiditas) ? latestScreening.komorbiditas.join(', ') : (latestScreening?.komorbiditas || '-');
+    const obatStr = latestScreening?.obatAntihipertensi || '-';
+    const penyertaStr = latestScreening?.penyakitPenyerta || '-';
+
+    const html = `
+        <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+            <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px;">
+                <h4 style="margin-bottom: 12px; color: var(--primary);"><i class="ph-fill ph-user"></i> Identitas Diri</h4>
+                <table style="width: 100%; font-size: 0.95rem;">
+                    <tr><td style="width: 120px; padding: 4px 0; color: var(--text-secondary);">Nama</td><td>: <b>${patient.nama}</b></td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">NIK</td><td>: ${patient.nik || '-'}</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Jenis Kelamin</td><td>: ${patient.jenisKelamin === 'female' ? 'Perempuan' : 'Laki-laki'}</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Umur</td><td>: ${patient.umur || 0} Tahun</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Alamat</td><td>: ${patient.alamat || '-'}</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Jorong</td><td>: ${patient.jorong || '-'}</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">No. HP</td><td>: ${patient.noHp || '-'}</td></tr>
+                </table>
+            </div>
+
+            <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px;">
+                <h4 style="margin-bottom: 12px; color: var(--primary);"><i class="ph-fill ph-heartbeat"></i> Riwayat Medis Terakhir</h4>
+                <table style="width: 100%; font-size: 0.95rem;">
+                    <tr><td style="width: 150px; padding: 4px 0; color: var(--text-secondary);">Komorbiditas</td><td>: <b>${komorbidStr || '-'}</b></td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Penyakit Lainnya</td><td>: ${penyertaStr}</td></tr>
+                    <tr><td style="padding: 4px 0; color: var(--text-secondary);">Obat Antihipertensi</td><td>: <b style="color: var(--warning);">${obatStr}</b></td></tr>
+                </table>
+            </div>
+
+            <div style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px;">
+                <h4 style="margin-bottom: 12px; color: var(--primary);"><i class="ph-fill ph-clock-counter-clockwise"></i> Riwayat Skrining</h4>
+                <div style="font-size: 0.95rem; max-height: 150px; overflow-y: auto;">
+                    ${riwayatHtml}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('info-warga-body').innerHTML = html;
+    document.getElementById('info-warga-modal').classList.remove('hidden');
+};
+
+window.showListModal = function(type) {
+    if (typeof ScreeningDB === 'undefined' || typeof PatientDB === 'undefined') return;
+
+    const currentJorong = document.getElementById('filter-jorong')?.value || '';
+    const currentBulan = document.getElementById('filter-bulan')?.value || '';
+    const currentGender = document.getElementById('filter-gender')?.value || '';
+
+    let allScreenings = ScreeningDB.getAll();
+
+    // Apply jorong filter
+    if (currentJorong && currentJorong !== '' && currentJorong !== 'Semua Jorong') {
+        allScreenings = allScreenings.filter(s => s.jorong === currentJorong);
+    }
+
+    // Apply bulan filter
+    if (currentBulan) {
+        allScreenings = allScreenings.filter(s => {
+            const tgl = s.tanggalSkrining || s.tanggal || s.createdAt || '';
+            return tgl.startsWith(currentBulan);
+        });
+    }
+
+    // Apply gender filter
+    if (currentGender) {
+        allScreenings = allScreenings.filter(s => s.jenisKelamin === currentGender);
+    }
+
+    // Get latest screening per patient (dedup)
+    const latestByPatient = {};
+    allScreenings.forEach(s => {
+        const pid = s.patientId;
+        if (!latestByPatient[pid] || new Date(s.tanggalSkrining || s.createdAt) > new Date(latestByPatient[pid].tanggalSkrining || latestByPatient[pid].createdAt)) {
+            latestByPatient[pid] = s;
+        }
+    });
+    let filtered = Object.values(latestByPatient);
+
+    // Filter by type
+    let title = 'Daftar Warga';
+    let iconClass = 'ph-fill ph-users';
+
+    if (type === 'all') {
+        title = 'Semua Warga Yang Diskrining';
+        iconClass = 'ph-fill ph-users';
+    } else if (type === 'sehat') {
+        title = 'Daftar Warga Bukan Hipertensi';
+        iconClass = 'ph-fill ph-heart';
+        filtered = filtered.filter(s => s.hasil?.statusHT === 'Bukan Hipertensi');
+    } else if (type === 'terkontrol') {
+        title = 'Daftar Warga HT Terkontrol';
+        iconClass = 'ph-fill ph-check-circle';
+        filtered = filtered.filter(s => s.hasil?.statusHT === 'Terkontrol');
+    } else if (type === 'tidak-terkontrol') {
+        title = 'Daftar Warga HT Tidak Terkontrol';
+        iconClass = 'ph-fill ph-warning-circle';
+        filtered = filtered.filter(s => s.hasil?.statusHT === 'Tidak Terkontrol');
+    }
+
+    // Sort by name
+    filtered.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+
+    // Store for search filtering
+    window._listModalData = filtered;
+
+    document.getElementById('list-modal-title').textContent = title;
+    const iconEl = document.getElementById('list-modal-icon');
+    if (iconEl) iconEl.className = iconClass;
+
+    // Clear search input
+    const searchInput = document.getElementById('list-modal-search');
+    if (searchInput) searchInput.value = '';
+
+    // Render
+    renderListModalRows(filtered);
+
+    document.getElementById('list-modal').classList.remove('hidden');
+};
+
+function renderListModalRows(data) {
+    const tbody = document.getElementById('list-modal-body');
+    tbody.innerHTML = '';
+    document.getElementById('list-modal-count').textContent = `Total: ${data.length} orang`;
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 24px;">Tidak ada data ditemukan.</td></tr>';
+        return;
+    }
+
+    data.forEach((s, i) => {
+        const patient = PatientDB.getById(s.patientId) || {};
+        const jk = (s.jenisKelamin === 'female' || patient.jenisKelamin === 'female') ? 'P' : 'L';
+        const statusHT = s.hasil?.statusHT || '-';
+        let badgeCls = '';
+        if (statusHT === 'Bukan Hipertensi') badgeCls = 'normal';
+        else if (statusHT === 'Terkontrol') badgeCls = 'terkontrol';
+        else if (statusHT === 'Tidak Terkontrol') badgeCls = 'tidak-terkontrol';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td><b>${s.nama || patient.nama || '-'}</b></td>
+            <td style="font-size:0.85rem">${patient.nik || s.nik || '-'}</td>
+            <td>${s.umur || patient.umur || '-'} thn</td>
+            <td>${jk}</td>
+            <td>${s.jorong || patient.jorong || '-'}</td>
+            <td>${s.sistolik || '-'}/${s.diastolik || '-'}</td>
+            <td><span class="status-badge ${badgeCls}">${statusHT}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.filterListModal = function() {
+    const query = (document.getElementById('list-modal-search')?.value || '').toLowerCase().trim();
+    if (!window._listModalData) return;
+
+    if (!query) {
+        renderListModalRows(window._listModalData);
+        return;
+    }
+
+    const result = window._listModalData.filter(s => {
+        const patient = PatientDB.getById(s.patientId) || {};
+        const nama = (s.nama || patient.nama || '').toLowerCase();
+        const nik = (patient.nik || s.nik || '').toLowerCase();
+        const jorong = (s.jorong || patient.jorong || '').toLowerCase();
+        return nama.includes(query) || nik.includes(query) || jorong.includes(query);
+    });
+
+    renderListModalRows(result);
 };

@@ -410,7 +410,10 @@ img { max-width: 100%; height: auto; }
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius-lg); padding: 20px;
     box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: all 0.3s ease;
 }
+.stat-card[onclick] { cursor: pointer; }
+.stat-card[onclick]:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: var(--primary); }
 .stat-card::after {
     content: ''; position: absolute; top: 0; right: 0;
     width: 80px; height: 80px; border-radius: 50%;

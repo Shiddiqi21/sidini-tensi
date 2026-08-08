@@ -369,10 +369,32 @@ const PatientDB = {
         return false;
     },
 
-    getDemographicsStats(filterJorong = '') {
+    updateFollowUp(patientId, followUpId, updatedData) {
+        const patients = this.getAll();
+        const idx = patients.findIndex(p => p.id === patientId);
+        if (idx !== -1 && patients[idx].followUps) {
+            const fuIdx = patients[idx].followUps.findIndex(f => f.id === followUpId);
+            if (fuIdx !== -1) {
+                patients[idx].followUps[fuIdx] = {
+                    ...patients[idx].followUps[fuIdx],
+                    ...updatedData,
+                    updatedAt: new Date().toISOString()
+                };
+                saveToStorage(DB_KEYS.PATIENTS, patients);
+                FirestoreSync.updatePatient(patients[idx]);
+                return patients[idx].followUps[fuIdx];
+            }
+        }
+        return null;
+    },
+
+    getDemographicsStats(filterJorong = '', filterGender = '') {
         let patients = this.getAll();
         if (filterJorong && filterJorong !== 'Semua Jorong') {
             patients = patients.filter(p => p.jorong === filterJorong);
+        }
+        if (filterGender) {
+            patients = patients.filter(p => p.jenisKelamin === filterGender);
         }
 
         const stats = {
@@ -558,15 +580,25 @@ const ScreeningDB = {
     },
 
     // Statistik untuk Dashboard
-    getStats(filterBulan = '') {
+    getStats(filterBulan = '', filterGender = '') {
         let screenings = this.getAll();
+        
+        const patients = PatientDB.getAll();
+
         if (filterBulan) {
             screenings = screenings.filter(s => {
                 if (!s.tanggalSkrining) return false;
                 return s.tanggalSkrining.substring(0, 7) === filterBulan;
             });
         }
-        const patients = PatientDB.getAll();
+        
+        if (filterGender) {
+            screenings = screenings.filter(s => {
+                const patient = patients.find(p => p.id === s.patientId) || {};
+                return (patient.jenisKelamin || s.jenisKelamin) === filterGender;
+            });
+        }
+        
         const totalPatients = patients.length;
 
         const latestPerPatient = {};

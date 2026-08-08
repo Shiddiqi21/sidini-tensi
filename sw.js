@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sidini-tensi-v1';
+const CACHE_NAME = 'sidini-tensi-v3';
 const urlsToCache = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const urlsToCache = [
 
 // Instalasi Service Worker
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Memaksa SW baru untuk langsung aktif (bypass waiting state)
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -42,16 +43,17 @@ self.addEventListener('fetch', event => {
 
 // Aktivasi & Pembersihan Cache Lama
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      return self.clients.claim(); // Memaksa SW baru mengambil alih semua tab yang terbuka
     })
   );
 });

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -37,6 +37,7 @@
                 <a href="#home" id="nav-home" class="nav-link active"><i class="ph ph-house"></i> <span>Beranda</span></a>
                 <a href="#skrining" id="nav-skrining" class="nav-link"><i class="ph ph-clipboard-text"></i> <span>Skrining</span></a>
                 <a href="#dashboard" id="nav-dashboard" class="nav-link"><i class="ph ph-chart-bar"></i> <span>Dashboard</span></a>
+                <a href="#admin" id="nav-admin" class="nav-link hidden"><i class="ph ph-users-three"></i> <span>Kelola Admin</span></a>
                 <button id="btn-logout" class="nav-link hidden" onclick="if(typeof handleLogout === 'function') handleLogout();"><i class="ph ph-sign-out"></i> <span>Keluar</span></button>
             </div>
             <div class="nav-logos">
@@ -315,6 +316,10 @@
                         <label>Penyakit Penyerta Lainnya (Ketik jika ada)</label>
                         <input type="text" id="penyakitPenyerta" name="penyakitPenyerta" class="form-input" placeholder="Contoh: Asma, Kolesterol, Tumor, OA, dsb. Kosongkan jika tidak ada">
                     </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Obat Antihipertensi yang Dikonsumsi (Ketik jika ada)</label>
+                        <input type="text" id="obatAntihipertensi" name="obatAntihipertensi" class="form-input" placeholder="Contoh: Amlodipine 5mg, Captopril, dsb. Kosongkan jika tidak ada">
+                    </div>
                 </div>
             </div>
 
@@ -341,11 +346,41 @@
                     </div>
                     <div class="form-group">
                         <label>Tekanan Darah Sistolik (Atas) <span class="required">*</span></label>
-                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Contoh: 130" required min="60" max="300">
+                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Pengukuran 1" required min="60" max="300">
                     </div>
                     <div class="form-group">
                         <label>Tekanan Darah Diastolik (Bawah) <span class="required">*</span></label>
-                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Contoh: 85" required min="30" max="200">
+                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Pengukuran 1" required min="30" max="200">
+                    </div>
+
+                    <!-- Pengukuran 2 & 3 (muncul otomatis jika pasien baru & tensi tinggi) -->
+                    <div id="extra-bp-section" class="hidden" style="grid-column: 1 / -1;">
+                        <div class="alert alert-warning" style="margin-bottom: 12px;">
+                            <i class="ph-bold ph-warning-circle"></i>
+                            <span><b>Tensi tinggi terdeteksi pada pasien tanpa riwayat HT.</b> Lakukan 2 pengukuran tambahan untuk mendapatkan rata-rata yang akurat.</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Sistolik Pengukuran 2</label>
+                                <input type="number" id="sistolik2" name="sistolik2" class="form-input" placeholder="Pengukuran 2" min="60" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolik Pengukuran 2</label>
+                                <input type="number" id="diastolik2" name="diastolik2" class="form-input" placeholder="Pengukuran 2" min="30" max="200">
+                            </div>
+                            <div class="form-group">
+                                <label>Sistolik Pengukuran 3</label>
+                                <input type="number" id="sistolik3" name="sistolik3" class="form-input" placeholder="Pengukuran 3" min="60" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolik Pengukuran 3</label>
+                                <input type="number" id="diastolik3" name="diastolik3" class="form-input" placeholder="Pengukuran 3" min="30" max="200">
+                            </div>
+                        </div>
+                        <div id="avg-bp-display" class="hidden" style="padding: 10px 14px; background: var(--primary-fade); border-radius: 8px; margin-top: 8px; font-size: 0.95rem;">
+                            <i class="ph-bold ph-calculator" style="color: var(--primary);"></i>
+                            <b>Rata-rata Tensi:</b> <span id="avg-bp-value">—/—</span> mmHg
+                        </div>
                     </div>
                 </div>
             </div>
@@ -362,6 +397,14 @@
                             <label class="radio-card-label"><input type="radio" name="riwayatHT" value="ya"><span class="label-content">Ya</span></label>
                             <label class="radio-card-label"><input type="radio" name="riwayatHT" value="tidak" checked><span class="label-content">Tidak</span></label>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori Kasus Hipertensi</label>
+                        <select id="kategoriKasus" name="kategoriKasus" class="form-select">
+                            <option value="-" selected>— Tidak Ada / Bukan HT</option>
+                            <option value="Baru">Kasus Baru</option>
+                            <option value="Lama">Kasus Lama</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Sedang Minum Obat Antihipertensi?</label>
@@ -477,12 +520,39 @@
                         <div class="stat-label">Skor Risiko</div>
                         <div class="stat-value" id="res-risk-val">—</div>
                     </div>
+                    <div class="result-stat" id="res-kategori" style="display:none;">
+                        <div class="stat-label">Kategori Kasus</div>
+                        <div class="stat-value" id="res-kategori-val">—</div>
+                    </div>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--text-secondary); margin: 16px 24px 0 24px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; line-height: 1.5;">
-                    <i class="ph-bold ph-info" style="color: var(--primary);"></i> <b>Keterangan Skor Risiko Kardiovaskular:</b><br>
-                    • <b>Rendah (0-4 poin)</b>: Risiko komplikasi rendah. Tetap pertahankan gaya hidup sehat.<br>
-                    • <b>Sedang (5-8 poin)</b>: Waspada. Perlu perbaikan gaya hidup atau observasi medis berkala.<br>
-                    • <b>Tinggi (&ge; 9 poin)</b>: Risiko tinggi. Segera rujuk dan mulai tata laksana medis intensif.
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 16px 24px 0 24px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                    <div>
+                        <i class="ph-bold ph-info" style="color: var(--primary);"></i> <b style="color: var(--text)">Klasifikasi IMT (Asia Pasifik)</b><br>
+                        <div style="margin-top: 6px; display: grid; grid-template-columns: 80px 1fr; gap: 4px;">
+                            <div>&lt; 18.5</div><div>: Kurus</div>
+                            <div>18.5 - 22.9</div><div>: Normal</div>
+                            <div>23.0 - 24.9</div><div>: Pre-Obese</div>
+                            <div>25.0 - 29.9</div><div>: Obesitas Tipe 1</div>
+                            <div>&ge; 30.0</div><div>: Obesitas Tipe 2</div>
+                        </div>
+                    </div>
+                    <div>
+                        <i class="ph-bold ph-info" style="color: var(--primary);"></i> <b style="color: var(--text)">Klasifikasi TD (Dewasa)</b><br>
+                        <div style="margin-top: 6px; display: grid; grid-template-columns: 110px 1fr; gap: 4px;">
+                            <div>Normal</div><div>: &lt; 120 / &lt; 80</div>
+                            <div>Pre-hipertensi</div><div>: 120-139 / 80-89</div>
+                            <div>HT Tingkat 1</div><div>: 140-159 / 90-99</div>
+                            <div>HT Tingkat 2</div><div>: &ge; 160 / &ge; 100</div>
+                        </div>
+                    </div>
+                    <div>
+                        <i class="ph-bold ph-info" style="color: var(--primary);"></i> <b style="color: var(--text)">Skor Risiko KV</b><br>
+                        <div style="margin-top: 6px;">
+                            <span style="display:inline-block; margin-bottom:4px"><b>Rendah (0-4)</b>: Risiko komplikasi rendah. Tetap pertahankan gaya hidup sehat.</span>
+                            <span style="display:inline-block; margin-bottom:4px"><b>Sedang (5-8)</b>: Waspada. Perlu perbaikan gaya hidup atau observasi.</span>
+                            <span style="display:inline-block"><b>Tinggi (&ge; 9)</b>: Risiko tinggi. Segera rujuk dan mulai tata laksana medis intensif.</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Risiko Kardiovaskular -->
@@ -523,12 +593,17 @@
                     <p>Rekapitulasi data skrining hipertensi warga Nagari Koto Tangah.</p>
                 </div>
                 <div>
-                    <div style="display:flex; gap: 8px;">
+                    <div style="display:flex; gap: 8px; flex-wrap: wrap;">
                         <select id="filter-bulan" class="form-select" style="min-width: 150px; padding-top: 10px; padding-bottom: 10px;" title="Filter Bulan">
                             <option value="">Semua Bulan</option>
                         </select>
                         <select id="filter-jorong" class="form-select" style="min-width: 200px; padding-top: 10px; padding-bottom: 10px;">
                             <option value="">Semua Jorong</option>
+                        </select>
+                        <select id="filter-gender" class="form-select" style="min-width: 160px; padding-top: 10px; padding-bottom: 10px;" title="Filter Jenis Kelamin">
+                            <option value="">Semua Jenis Kelamin</option>
+                            <option value="male">Laki-laki</option>
+                            <option value="female">Perempuan</option>
                         </select>
                     </div>
                 </div>
@@ -536,23 +611,24 @@
         </div>
 
         <div class="container" style="padding-bottom: 48px;">
-            <div class="stats-row">
-                <div class="stat-card teal">
+            <!-- STATS CARDS -->
+            <div class="stats-row" style="margin-bottom: 24px;">
+                <div class="stat-card teal" style="cursor:pointer;" onclick="showListModal('all')" title="Klik untuk melihat daftar">
                     <div class="stat-icon"><i class="ph-fill ph-users"></i></div>
                     <div class="stat-number" id="stat-total">0</div>
                     <div class="stat-label">Total Warga Diskrining</div>
                 </div>
-                <div class="stat-card green">
+                <div class="stat-card green" style="cursor:pointer;" onclick="showListModal('sehat')" title="Klik untuk melihat daftar">
                     <div class="stat-icon"><i class="ph-fill ph-heart"></i></div>
                     <div class="stat-number" id="stat-sehat">0</div>
                     <div class="stat-label">Bukan Hipertensi</div>
                 </div>
-                <div class="stat-card orange">
+                <div class="stat-card orange" style="cursor:pointer;" onclick="showListModal('terkontrol')" title="Klik untuk melihat daftar">
                     <div class="stat-icon"><i class="ph-fill ph-check-circle"></i></div>
                     <div class="stat-number" id="stat-terkontrol">0</div>
                     <div class="stat-label">HT Terkontrol</div>
                 </div>
-                <div class="stat-card red">
+                <div class="stat-card red" style="cursor:pointer;" onclick="showListModal('tidak-terkontrol')" title="Klik untuk melihat daftar">
                     <div class="stat-icon"><i class="ph-fill ph-warning-circle"></i></div>
                     <div class="stat-number" id="stat-tidak-terkontrol">0</div>
                     <div class="stat-label">HT Tidak Terkontrol</div>
@@ -593,6 +669,16 @@
                     <div class="chart-container">
                         <canvas id="chart-risiko"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tren Kasus Hipertensi -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3><i class="ph-fill ph-trend-up"></i> Tren Kasus Hipertensi per Bulan</h3>
+                </div>
+                <div class="chart-container" style="height: 320px;">
+                    <canvas id="chart-tren-kasus"></canvas>
                 </div>
             </div>
 
@@ -777,8 +863,6 @@
                         <input type="text" id="table-search" placeholder="Cari nama/NIK...">
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary btn-sm" onclick="if(typeof downloadSkriningTemplate==='function')downloadSkriningTemplate()"><i class="ph-bold ph-file-xls"></i> Template Skrining</button>
-                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('file-excel').click()"><i class="ph-bold ph-upload-simple"></i> Import Skrining</button>
                         <button id="btn-export" class="btn btn-success btn-sm" onclick="if(typeof handleExcelExport==='function')handleExcelExport()"><i class="ph-bold ph-download-simple"></i> Export Skrining</button>
                         <button id="btn-reset-data" class="btn btn-danger btn-sm" onclick="if(typeof handleResetData==='function')handleResetData()"><i class="ph-bold ph-trash"></i> Reset Data</button>
                     </div>
@@ -828,6 +912,7 @@
                                     <th>IMT</th>
                                     <th>Tensi</th>
                                     <th>Status HT</th>
+                                    <th>Kategori Kasus</th>
                                     <th>Skor Risiko</th>
                                     <th>Risiko CVD</th>
                                     <th>Riw. Kel HT</th>
@@ -857,25 +942,40 @@
         
         <!-- Follow-Up Modal -->
         <div id="followup-modal" class="modal hidden">
-            <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-content" style="max-width: 800px;">
                 <div class="modal-header">
-                    <h3><i class="ph-fill ph-notebook"></i> Catat Follow-Up: <span id="fu-patient-name" style="color:var(--primary);"></span></h3>
+                    <h3><i class="ph-fill ph-notebook"></i> Wawancara Follow-Up: <span id="fu-patient-name" style="color:var(--primary);"></span></h3>
                     <button class="btn-close" onclick="document.getElementById('followup-modal').classList.add('hidden')"><i class="ph-bold ph-x"></i></button>
                 </div>
                 <div class="modal-body">
-                    <form id="form-followup" onsubmit="event.preventDefault(); saveFollowUp();">
+                    <form id="form-followup" onsubmit="event.preventDefault(); saveAndPrintFollowUp();">
                         <input type="hidden" id="fu-patient-id">
-                        <div class="form-group">
-                            <label>Tanggal Follow-Up <span class="required">*</span></label>
-                            <input type="date" id="fu-tanggal" class="form-input" required>
+                        <input type="hidden" id="fu-edit-id">
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Tanggal Wawancara <span class="required">*</span></label>
+                                <input type="date" id="fu-tanggal" class="form-input" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Catatan Observasi Gaya Hidup / Terapi <span class="required">*</span></label>
-                            <textarea id="fu-catatan" class="form-input" rows="4" placeholder="Misal: Pasien sudah mulai mengurangi garam, rutin jalan pagi 30 menit." required></textarea>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 8px;">
+                            <label style="margin: 0;">Daftar Pertanyaan & Jawaban <span class="required">*</span></label>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="addFollowUpQA()"><i class="ph-bold ph-plus"></i> Tambah Pertanyaan</button>
                         </div>
-                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                        
+                        <div id="fu-qa-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                            <!-- QA Rows will be injected here -->
+                        </div>
+
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label>Catatan Petugas <span class="required">*</span></label>
+                            <textarea id="fu-catatan-petugas" class="form-input" rows="3" placeholder="Tambahkan catatan kesimpulan atau instruksi dari Nakes..." required></textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
                             <button type="button" class="btn btn-outline" onclick="document.getElementById('followup-modal').classList.add('hidden')">Batal</button>
-                            <button type="submit" class="btn btn-success"><i class="ph-bold ph-floppy-disk"></i> Simpan Catatan</button>
+                            <button type="submit" class="btn btn-primary"><i class="ph-bold ph-printer"></i> Simpan & Cetak ke Word</button>
                         </div>
                     </form>
 
@@ -883,6 +983,75 @@
                     <div id="fu-history-list" style="display: flex; flex-direction: column; gap: 12px;">
                         <!-- History items go here -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PAGE: KELOLA ADMIN -->
+    <main id="page-admin" class="hidden">
+        <div class="page-header text-center">
+            <h2 class="title">Manajemen Akun Admin</h2>
+            <p class="subtitle">Kelola akun akses untuk admin di masing-masing Jorong.</p>
+        </div>
+        <div class="container" style="max-width: 900px; padding-bottom: 50px;">
+            <div class="form-card">
+                <div class="card-header">
+                    <h3><i class="ph-fill ph-user-plus"></i> Tambah Admin Baru</h3>
+                </div>
+                <div class="card-body">
+                    <form id="form-add-admin">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" id="admin-email" class="form-input" required placeholder="email@puskesmas.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Password <span class="required">*</span></label>
+                                <input type="text" id="admin-password" class="form-input" required placeholder="Minimal 6 karakter">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Role <span class="required">*</span></label>
+                                <select id="admin-role" class="form-select" required onchange="document.getElementById('admin-jorong-group').style.display = this.value === 'admin' ? 'block' : 'none'">
+                                    <option value="admin">Admin Jorong</option>
+                                    <option value="superadmin">Super Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="admin-jorong-group">
+                                <label>Jorong Penugasan <span class="required">*</span></label>
+                                <select id="admin-jorong" class="form-select">
+                                    <option value="" disabled selected>Pilih Jorong...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-top: 15px;">
+                            <button type="submit" class="btn btn-primary" id="btn-save-admin"><i class="ph-bold ph-plus"></i> Buat Akun</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-card mt-4">
+                <div class="card-header">
+                    <h3><i class="ph-fill ph-users-three"></i> Daftar Akun</h3>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Jorong</th>
+                                <th>Password</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-admin-body">
+                            <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1033,11 +1202,65 @@
         </div>
     </footer>
 
-    <script src="js/firebase-config.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/expertSystem.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/dashboard.js"></script>
+    <!-- List Modal (for Stat Cards) -->
+    <div id="list-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="ph-fill ph-users" id="list-modal-icon"></i> <span id="list-modal-title">Daftar Warga</span></h3>
+                <button class="btn-close" onclick="document.getElementById('list-modal').classList.add('hidden')"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div style="padding: 12px 24px; border-bottom: 1px solid var(--border);">
+                <div style="position: relative;">
+                    <i class="ph-bold ph-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+                    <input type="text" id="list-modal-search" class="form-input" placeholder="Cari nama atau NIK..." style="padding-left: 36px; width: 100%;" oninput="filterListModal()">
+                </div>
+            </div>
+            <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
+                <table class="data-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>NIK</th>
+                            <th>Umur</th>
+                            <th>JK</th>
+                            <th>Jorong</th>
+                            <th>TD</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-modal-body"></tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border);">
+                <span id="list-modal-count" style="font-size: 0.9rem; color: var(--text-secondary);"></span>
+                <button class="btn btn-outline" onclick="document.getElementById('list-modal').classList.add('hidden')"><i class="ph-bold ph-x"></i> Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Warga Modal -->
+    <div id="info-warga-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><i class="ph-bold ph-info"></i> Info Detail Warga</h3>
+                <button class="btn-close" onclick="document.getElementById('info-warga-modal').classList.add('hidden')"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div class="modal-body" id="info-warga-body" style="line-height: 1.6; max-height: 70vh; overflow-y: auto;">
+                <!-- Content will be injected here via dashboard.js -->
+            </div>
+            <div style="display: flex; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--border);">
+                <button class="btn btn-outline" onclick="document.getElementById('info-warga-modal').classList.add('hidden')"><i class="ph-bold ph-x"></i> Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/firebase-config.js?v=2"></script>
+    <script src="js/database.js?v=2"></script>
+    <script src="js/expertSystem.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
+    <script src="js/dashboard.js?v=2"></script>
+    <script src="js/admin.js?v=2"></script>
 
     <!-- SPA Router -->
     <script>
@@ -1047,16 +1270,12 @@
         function handleRouting() {
             const hash = window.location.hash || '#home';
             
-            // Protect routes
-            if (window.isAuthReady && !window.currentUser && (hash === '#skrining' || hash === '#dashboard')) {
-                window.location.hash = '#home';
-                document.getElementById('login-modal').classList.remove('hidden');
-                return;
-            }
             
             const pageHome = document.getElementById('page-home');
             const pageSkrining = document.getElementById('page-skrining');
             const pageDashboard = document.getElementById('page-dashboard');
+            const pageAdmin = document.getElementById('page-admin');
+
             
             const navHome = document.getElementById('nav-home');
             const navSkrining = document.getElementById('nav-skrining');
@@ -1071,23 +1290,53 @@
             navHome.classList.remove('active');
             navSkrining.classList.remove('active');
             navDashboard.classList.remove('active');
+            if (pageAdmin) pageAdmin.classList.add('hidden');
             
-            if (hash === '#dashboard') {
-                document.body.classList.remove('home-active');
-                pageDashboard.classList.remove('hidden');
-                navDashboard.classList.add('active');
-                if (typeof renderDashboard === 'function') {
-                    renderDashboard();
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            if (hash === '#dashboard' || hash === '#skrining' || hash === '#admin') {
+                if (window.isAuthReady && !window.currentUser) {
+                    window.location.hash = '#home';
+                    document.getElementById('login-modal').classList.remove('hidden');
+                    return;
                 }
-            } else if (hash === '#skrining') {
+                // Redirect if non-superadmin tries to access admin
+                if (window.isAuthReady && hash === '#admin' && window.currentUser && window.currentUser.role !== 'superadmin') {
+                    window.location.hash = '#dashboard';
+                    return;
+                }
+            }
+
+            if (hash === '#skrining') {
                 document.body.classList.remove('home-active');
                 pageSkrining.classList.remove('hidden');
-                navSkrining.classList.add('active');
+                document.getElementById('nav-skrining').classList.add('active');
+                
+                // RBAC: Lock jorong dropdown if regular admin
+                const jorongSelect = document.getElementById('jorong');
+                if (jorongSelect && window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong) {
+                    jorongSelect.value = window.currentUser.jorong;
+                    // Disable it so they can't change it, but keep it so it submits properly
+                    jorongSelect.style.pointerEvents = 'none';
+                    jorongSelect.style.background = '#e9ecef';
+                }
+
+            } else if (hash === '#dashboard') {
+                document.body.classList.remove('home-active');
+                pageDashboard.classList.remove('hidden');
+                document.getElementById('nav-dashboard').classList.add('active');
+                if (typeof renderDashboard === 'function') renderDashboard();
+            } else if (hash === '#admin' && pageAdmin) {
+                document.body.classList.remove('home-active');
+                pageAdmin.classList.remove('hidden');
+                const navAdmin = document.getElementById('nav-admin');
+                if (navAdmin) navAdmin.classList.add('active');
+                if (typeof renderAdminTable === 'function') renderAdminTable();
             } else {
                 // Default to home — hide navbar
                 document.body.classList.add('home-active');
                 pageHome.classList.remove('hidden');
-                navHome.classList.add('active');
+                document.getElementById('nav-home').classList.add('active');
             }
             window.scrollTo(0,0);
         }

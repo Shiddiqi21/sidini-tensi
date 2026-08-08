@@ -26,15 +26,34 @@ class HypertensionScreening {
         return { nilai: parseFloat(imt.toFixed(1)), kategori };
     }
 
-    // ===================== KLASIFIKASI TEKANAN DARAH (JNC 8 - Age-Adjusted) =====================
+    // ===================== KLASIFIKASI TEKANAN DARAH =====================
+    // Sumber: JNC 8 (Dewasa/Lansia) + Tabel Klasifikasi HT Anak (≥13 tahun)
     classifyBP() {
         const sys = parseInt(this.data.sistolik);
         const dia = parseInt(this.data.diastolik);
         const age = parseInt(this.data.umur) || 0;
         if (!sys || !dia) return { kode: 'unknown', label: 'Data Tidak Lengkap' };
 
-        // JNC 8: Untuk usia >= 60 tahun (tanpa diabetes/ginjal kronis),
-        // target/batas HT dinaikkan menjadi >= 150/90 mmHg
+        // ---- ANAK USIA < 13 TAHUN ----
+        // Klasifikasi persentil memerlukan data kurva pertumbuhan CDC/WHO.
+        // Sistem menyarankan konsultasi dokter anak.
+        if (age < 13) {
+            if (sys >= 140 || dia >= 90) return { kode: 'ht2', label: 'Hipertensi Tingkat 2 (Anak)' };
+            if (sys >= 130 || dia >= 80) return { kode: 'ht1', label: 'Hipertensi Tingkat 1 (Anak)' };
+            if (sys >= 120) return { kode: 'preht', label: 'Pre-hipertensi (Anak)' };
+            return { kode: 'normal', label: 'Normal (Anak)' };
+        }
+
+        // ---- REMAJA USIA 13-17 TAHUN ----
+        // Berdasarkan Tabel Klasifikasi HT Anak ≥13 Tahun
+        if (age < 18) {
+            if (sys >= 140 || dia >= 90) return { kode: 'ht2', label: 'Hipertensi Tingkat 2' };
+            if ((sys >= 130 && sys <= 139) || (dia >= 80 && dia <= 89)) return { kode: 'ht1', label: 'Hipertensi Tingkat 1' };
+            if (sys >= 120 && dia < 80) return { kode: 'preht', label: 'Pre-hipertensi' };
+            return { kode: 'normal', label: 'Normal' };
+        }
+
+        // ---- DEWASA (≥ 18 TAHUN) — JNC 8 Age-Adjusted ----
         const hasDiabetes = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Diabetes')) || this.data.komorbiditas === 'yes';
         const hasGinjal = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Ginjal'));
         const isElderlyRelaxed = (age >= 60 && !hasDiabetes && !hasGinjal);
@@ -47,7 +66,7 @@ class HypertensionScreening {
             if (sys >= 150 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
             if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
         } else {
-            // Usia < 60 atau punya DM/GGK: Batas HT1 = 140/90
+            // Usia 18-59 atau punya DM/GGK: Batas HT1 = 140/90
             if (sys >= 140 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
             if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
         }
@@ -196,9 +215,16 @@ class HypertensionScreening {
         const followUp = [];
 
         // --- Intervensi berdasarkan kondisi ---
-        if (imt.kategori.includes('Obesitas')) {
-            intervensi.push('Penurunan berat badan: Target penurunan 5-10% BB dalam 6 bulan pertama (Target BMI ideal 20-25 kg/m²).');
-        } else if (imt.kategori === 'Pre-Obese') {
+        if (imt.kategori.includes('Obesitas') || imt.kategori === 'Pre-Obese') {
+            const tinggiM = this.data.tinggiBadan / 100;
+            const bbIdeal = parseFloat((23 * tinggiM * tinggiM).toFixed(1)); // Target IMT 23 (batas atas normal Asia Pasifik)
+            const bbSekarang = this.data.beratBadan;
+            const selisih = parseFloat((bbSekarang - bbIdeal).toFixed(1));
+            if (selisih > 0) {
+                intervensi.push(`Penurunan berat badan: BB saat ini ${bbSekarang} kg, BB ideal ≤ ${bbIdeal} kg. Target turunkan ${selisih} kg secara bertahap (0.5-1 kg/minggu) dalam 6 bulan pertama.`);
+            } else {
+                intervensi.push('Jaga berat badan: Pertahankan berat badan pada rentang IMT normal (18.5-23 kg/m²).');
+            }
             intervensi.push('Jaga berat badan: Batasi porsi makan berlebih dan tingkatkan aktivitas fisik (Cegah Obesitas).');
         }
 

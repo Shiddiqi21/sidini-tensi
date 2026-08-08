@@ -228,6 +228,70 @@ document.addEventListener('DOMContentLoaded', () => {
     bbField.addEventListener('input', updateIMT);
     tbField.addEventListener('input', updateIMT);
 
+    // ===== 3x BP MEASUREMENT LOGIC =====
+    const extraBpSection = document.getElementById('extra-bp-section');
+    const sistolik1 = document.getElementById('sistolik');
+    const diastolik1 = document.getElementById('diastolik');
+    const sistolik2 = document.getElementById('sistolik2');
+    const diastolik2 = document.getElementById('diastolik2');
+    const sistolik3 = document.getElementById('sistolik3');
+    const diastolik3 = document.getElementById('diastolik3');
+    const avgBpDisplay = document.getElementById('avg-bp-display');
+    const avgBpValue = document.getElementById('avg-bp-value');
+
+    function checkShowExtraBP() {
+        const sys = parseFloat(sistolik1.value) || 0;
+        const dia = parseFloat(diastolik1.value) || 0;
+        const riwayatHTField = form.querySelector('input[name="riwayatHT"]:checked');
+        const hasRiwayatHT = riwayatHTField && riwayatHTField.value === 'ya';
+        
+        // Jika TIDAK punya riwayat HT dan tensi pengukuran 1 tinggi (>=130 atau >=80)
+        if (!hasRiwayatHT && (sys >= 130 || dia >= 80) && sys > 0 && dia > 0) {
+            extraBpSection.classList.remove('hidden');
+        } else {
+            extraBpSection.classList.add('hidden');
+            // Clear extra fields
+            if (sistolik2) sistolik2.value = '';
+            if (diastolik2) diastolik2.value = '';
+            if (sistolik3) sistolik3.value = '';
+            if (diastolik3) diastolik3.value = '';
+            avgBpDisplay.classList.add('hidden');
+        }
+    }
+
+    function updateAvgBP() {
+        const s1 = parseFloat(sistolik1.value) || 0;
+        const d1 = parseFloat(diastolik1.value) || 0;
+        const s2 = parseFloat(sistolik2.value) || 0;
+        const d2 = parseFloat(diastolik2.value) || 0;
+        const s3 = parseFloat(sistolik3.value) || 0;
+        const d3 = parseFloat(diastolik3.value) || 0;
+
+        const sysValues = [s1, s2, s3].filter(v => v > 0);
+        const diaValues = [d1, d2, d3].filter(v => v > 0);
+
+        if (sysValues.length >= 2 && diaValues.length >= 2) {
+            const avgSys = Math.round(sysValues.reduce((a, b) => a + b, 0) / sysValues.length);
+            const avgDia = Math.round(diaValues.reduce((a, b) => a + b, 0) / diaValues.length);
+            avgBpValue.textContent = `${avgSys}/${avgDia}`;
+            avgBpDisplay.classList.remove('hidden');
+        } else {
+            avgBpDisplay.classList.add('hidden');
+        }
+    }
+
+    // Event listeners for auto-show & average
+    sistolik1.addEventListener('input', () => { checkShowExtraBP(); updateAvgBP(); });
+    diastolik1.addEventListener('input', () => { checkShowExtraBP(); updateAvgBP(); });
+    if (sistolik2) sistolik2.addEventListener('input', updateAvgBP);
+    if (diastolik2) diastolik2.addEventListener('input', updateAvgBP);
+    if (sistolik3) sistolik3.addEventListener('input', updateAvgBP);
+    if (diastolik3) diastolik3.addEventListener('input', updateAvgBP);
+    // Riwayat HT radios
+    form.querySelectorAll('input[name="riwayatHT"]').forEach(r => {
+        r.addEventListener('change', checkShowExtraBP);
+    });
+
     // ===== FORM SUBMISSION =====
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -255,6 +319,30 @@ document.addEventListener('DOMContentLoaded', () => {
         data.umur = isBulan ? Math.floor(umurVal / 12) : umurVal;
         data.umurBulan = isBulan ? umurVal : (umurVal * 12);
 
+        // ===== RATA-RATA TENSI (3x Pengukuran) =====
+        const s1 = data.sistolik;
+        const d1 = data.diastolik;
+        const s2 = parseFloat(sistolik2?.value) || 0;
+        const d2 = parseFloat(diastolik2?.value) || 0;
+        const s3 = parseFloat(sistolik3?.value) || 0;
+        const d3 = parseFloat(diastolik3?.value) || 0;
+
+        const sysAll = [s1, s2, s3].filter(v => v > 0);
+        const diaAll = [d1, d2, d3].filter(v => v > 0);
+
+        // Simpan pengukuran individual
+        data.tensiPengukuran = [
+            { sistolik: s1, diastolik: d1 },
+            ...(s2 > 0 ? [{ sistolik: s2, diastolik: d2 }] : []),
+            ...(s3 > 0 ? [{ sistolik: s3, diastolik: d3 }] : [])
+        ];
+
+        // Jika ada >1 pengukuran, gunakan rata-rata untuk analisis
+        if (sysAll.length > 1) {
+            data.sistolik = Math.round(sysAll.reduce((a, b) => a + b, 0) / sysAll.length);
+            data.diastolik = Math.round(diaAll.reduce((a, b) => a + b, 0) / diaAll.length);
+        }
+
         // Edukasi checkboxes
         data.edukasi = {
             hipertensi: form.querySelector('input[name="edu_hipertensi"]').checked,
@@ -268,6 +356,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Run Expert System
         const screening = new HypertensionScreening(data);
         currentResult = screening.evaluate();
+
+        // ===== KATEGORI KASUS HT (Input Manual oleh Nakes) =====
+        currentResult.kategoriKasus = data.kategoriKasus || '-';
 
         renderResult(currentResult);
 
@@ -313,6 +404,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('res-risk-val').textContent = riskLabelText;
         resRisk.className = 'result-stat ' + (result.riskScore >= 9 ? 'danger' : result.riskScore >= 5 ? 'warning' : 'normal');
+
+        // Kategori Kasus
+        const resKategori = document.getElementById('res-kategori');
+        const resKategoriVal = document.getElementById('res-kategori-val');
+        if (result.kategoriKasus && result.kategoriKasus !== '-') {
+            resKategori.style.display = '';
+            resKategoriVal.textContent = `Kasus ${result.kategoriKasus}`;
+            resKategori.className = 'result-stat ' + (result.kategoriKasus === 'Baru' ? 'warning' : 'info');
+        } else {
+            resKategori.style.display = 'none';
+        }
 
         // Komplikasi
         const kompSection = document.getElementById('komplikasi-section');
@@ -395,6 +497,23 @@ document.addEventListener('DOMContentLoaded', () => {
         data.umur = isBulan ? Math.floor(umurVal / 12) : umurVal;
         data.umurBulan = isBulan ? umurVal : (umurVal * 12);
 
+        // Re-capture 3x BP average
+        const rs2 = parseFloat(document.getElementById('sistolik2')?.value) || 0;
+        const rd2 = parseFloat(document.getElementById('diastolik2')?.value) || 0;
+        const rs3 = parseFloat(document.getElementById('sistolik3')?.value) || 0;
+        const rd3 = parseFloat(document.getElementById('diastolik3')?.value) || 0;
+        data.tensiPengukuran = [
+            { sistolik: data.sistolik, diastolik: data.diastolik },
+            ...(rs2 > 0 ? [{ sistolik: rs2, diastolik: rd2 }] : []),
+            ...(rs3 > 0 ? [{ sistolik: rs3, diastolik: rd3 }] : [])
+        ];
+        const rSysAll = [data.sistolik, rs2, rs3].filter(v => v > 0);
+        const rDiaAll = [data.diastolik, rd2, rd3].filter(v => v > 0);
+        if (rSysAll.length > 1) {
+            data.sistolik = Math.round(rSysAll.reduce((a, b) => a + b, 0) / rSysAll.length);
+            data.diastolik = Math.round(rDiaAll.reduce((a, b) => a + b, 0) / rDiaAll.length);
+        }
+
         data.edukasi = {
             hipertensi: form.querySelector('input[name="edu_hipertensi"]').checked,
             dashDiet: form.querySelector('input[name="edu_dashDiet"]').checked,
@@ -470,14 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
             tinggiBadan: data.tinggiBadan,
             sistolik: data.sistolik,
             diastolik: data.diastolik,
+            tensiPengukuran: data.tensiPengukuran || [],
+            jenisKelamin: data.jenisKelamin,
             merokok: data.merokok,
             alkohol: data.alkohol,
             polaGaram: data.polaGaram,
             aktivitasFisik: data.aktivitasFisik,
             riwayatKeluarga: data.riwayatKeluarga,
-            komorbiditas: data.komorbiditas,
+            komorbiditas: data.komorbiditas || [],
             komplikasiHT: data.komplikasiHT || [],
             penyakitPenyerta: data.penyakitPenyerta || '',
+            obatAntihipertensi: data.obatAntihipertensi || '',
             stress: data.stress || [],
             riwayatHT: data.riwayatHT,
             minumObatHT: data.minumObatHT,
@@ -489,7 +611,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 riskScore: currentResult.riskScore,
                 komplikasi: currentResult.komplikasi,
                 komplikasiList: currentResult.komplikasiList,
-                rekomendasi: currentResult.rekomendasi
+                rekomendasi: currentResult.rekomendasi,
+                kategoriKasus: currentResult.kategoriKasus || '-'
             }
         };
 
@@ -569,21 +692,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Monitor Auth State
 if (typeof auth !== 'undefined' && auth) {
-    auth.onAuthStateChanged((user) => {
-        window.currentUser = user;
+    auth.onAuthStateChanged(async (user) => {
         
+        if (user) {
+            // Fetch role dari Firestore
+            if (typeof firestoreDB !== 'undefined' && firestoreDB) {
+                try {
+                    const doc = await firestoreDB.collection('users').doc(user.email).get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        window.currentUser = { ...user, role: data.role, jorong: data.jorong, dbPassword: data.password };
+                    } else {
+                        // Legacy fallback (superadmin default jika tidak ada di DB)
+                        window.currentUser = { ...user, role: 'superadmin' };
+                    }
+                } catch(e) {
+                    console.error("Error fetching user role", e);
+                    window.currentUser = { ...user, role: 'superadmin' };
+                }
+            } else {
+                window.currentUser = { ...user, role: 'superadmin' };
+            }
+        } else {
+            window.currentUser = null;
+        }
+
         // Cek auth pertama kali untuk router
         if (!window.isAuthReady) {
             window.isAuthReady = true;
             if (typeof handleRouting === 'function') handleRouting();
         }
+        
+        // Re-render dropdown jika user berubah
+        if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
 
         const btnLogout = document.getElementById('btn-logout');
+        const navAdmin = document.getElementById('nav-admin');
         
         if (user) {
             // User is logged in
             console.log('✅ User logged in:', user.email);
             if (btnLogout) btnLogout.classList.remove('hidden');
+            if (navAdmin && window.currentUser && window.currentUser.role === 'superadmin') {
+                navAdmin.classList.remove('hidden');
+            } else if (navAdmin) {
+                navAdmin.classList.add('hidden');
+            }
             
             // Sembunyikan modal login jika terbuka
             const loginModal = document.getElementById('login-modal');
@@ -593,10 +747,11 @@ if (typeof auth !== 'undefined' && auth) {
             // User is logged out
             console.log('🔒 User logged out');
             if (btnLogout) btnLogout.classList.add('hidden');
+            if (navAdmin) navAdmin.classList.add('hidden');
             
             // Kick to home jika di halaman protected
             const hash = window.location.hash || '#home';
-            if (hash === '#skrining' || hash === '#dashboard') {
+            if (hash === '#skrining' || hash === '#dashboard' || hash === '#admin') {
                 window.location.hash = '#home';
                 const loginModal = document.getElementById('login-modal');
                 if (loginModal) loginModal.classList.remove('hidden');
