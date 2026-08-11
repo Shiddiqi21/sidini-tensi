@@ -491,7 +491,7 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '', filt
     screenings.sort((a, b) => new Date(b.tanggalSkrining) - new Date(a.tanggalSkrining));
 
     // Filter
-    if (filterJorong && filterJorong !== 'Semua Jorong') screenings = screenings.filter(s => s.jorong === filterJorong);
+    if (filterJorong && filterJorong !== 'Semua Jorong') screenings = screenings.filter(s => (s.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         screenings = screenings.filter(s => {
@@ -1090,7 +1090,7 @@ function renderWargaTable() {
     let patients = PatientDB.getAll();
     
     if (filterJorong && filterJorong !== 'Semua Jorong') {
-        patients = patients.filter(p => p.jorong === filterJorong);
+        patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
 
     const searchQuery = document.getElementById('warga-search')?.value?.toLowerCase() || '';
@@ -1310,7 +1310,7 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '') {
         const p = patients.find(pat => pat.id === s.patientId);
         if (!p) return;
 
-        if (filterJorong && filterJorong !== 'Semua Jorong' && p.jorong !== filterJorong) return;
+        if (filterJorong && filterJorong !== 'Semua Jorong' && (p.jorong || '').toLowerCase() !== filterJorong.toLowerCase()) return;
 
         const data = {
             id: p.id,
@@ -1971,7 +1971,7 @@ window.exportHT = function() {
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
     let patients = PatientDB.getAll();
     if (filterJorong && filterJorong !== 'Semua Jorong') {
-        patients = patients.filter(p => p.jorong === filterJorong);
+        patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
@@ -2012,7 +2012,7 @@ window.exportRisk = function() {
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
     let patients = PatientDB.getAll();
     if (filterJorong && filterJorong !== 'Semua Jorong') {
-        patients = patients.filter(p => p.jorong === filterJorong);
+        patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
@@ -2148,7 +2148,7 @@ function renderTrenKasus(filterJorong = '', filterGender = '') {
     
     // Apply filters
     if (filterJorong && filterJorong !== '' && filterJorong !== 'Semua Jorong') {
-        allScreenings = allScreenings.filter(s => s.jorong === filterJorong);
+        allScreenings = allScreenings.filter(s => (s.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
     if (filterGender) {
         allScreenings = allScreenings.filter(s => {

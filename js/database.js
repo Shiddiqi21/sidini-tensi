@@ -391,7 +391,7 @@ const PatientDB = {
     getDemographicsStats(filterJorong = '', filterGender = '') {
         let patients = this.getAll();
         if (filterJorong && filterJorong !== 'Semua Jorong') {
-            patients = patients.filter(p => p.jorong === filterJorong);
+            patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
         }
         if (filterGender) {
             patients = patients.filter(p => p.jenisKelamin === filterGender);
