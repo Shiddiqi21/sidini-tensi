@@ -254,6 +254,14 @@ function renderDashboard() {
 
     const total = statsToUse.totalScreened !== undefined ? statsToUse.totalScreened : (statsToUse.total || 0);
     
+    // Total keseluruhan warga (semua pasien terdaftar, bukan hanya yang diskrining)
+    let allWarga = PatientDB.getAll();
+    if (currentJorong && currentJorong !== '' && currentJorong !== 'Semua Jorong') {
+        allWarga = allWarga.filter(p => (p.jorong || '').toLowerCase() === currentJorong.toLowerCase());
+    }
+    const totalWargaEl = document.getElementById('stat-total-warga');
+    if (totalWargaEl) totalWargaEl.textContent = allWarga.length;
+
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-sehat').textContent = (statsToUse.sehat || 0) + calcPercent(statsToUse.sehat || 0, total);
     document.getElementById('stat-terkontrol').textContent = (statsToUse.htTerkontrol || 0) + calcPercent(statsToUse.htTerkontrol || 0, total);
