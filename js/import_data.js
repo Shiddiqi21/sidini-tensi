@@ -3127,7 +3127,7 @@ if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && ty
     newPatients.forEach(p => {
         const exist = PatientDB.getById(p.id);
         if (!exist) {
-            PatientDB.savePatient(p);
+            PatientDB.add(p);
             importedPatients++;
         }
     });
@@ -3143,7 +3143,7 @@ if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && ty
                 umur, s.merokok, s.diabetes,
                 s.riwayatHT, s.riwayatStroke, s.riwayatJantung, s.riwayatGinjal
             );
-            ScreeningDB.saveScreening(s);
+            ScreeningDB.add(s);
             importedScreenings++;
         }
     });
