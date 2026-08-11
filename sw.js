@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sidini-tensi-v6';
+const CACHE_NAME = 'sidini-tensi-v7';
 const urlsToCache = [
   './',
   './index.html',
