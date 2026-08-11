@@ -3122,24 +3122,38 @@ const newScreenings = [
 
 window.addEventListener('load', function() {
     setTimeout(function() {
+        // Only run once
+        if (localStorage.getItem('import_rawang_done_v3') === 'true') {
+            console.log("Import already done, skipping.");
+            return;
+        }
+
         console.log("=== IMPORT SCRIPT STARTING ===");
-        console.log("PatientDB:", typeof PatientDB);
-        console.log("ScreeningDB:", typeof ScreeningDB);
-        console.log("HypertensionScreening:", typeof HypertensionScreening);
-        
-        let importedPatients = 0;
-        let importedScreenings = 0;
 
         try {
             if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') {
-                console.error("DATABASE NOT FOUND! Aborting import.");
-                alert("ERROR: Database tidak ditemukan. Buka Console (F12) untuk detail.");
+                console.error("DATABASE NOT FOUND!");
                 return;
             }
 
+            var importedPatients = 0;
+            var importedScreenings = 0;
+            var fixedJorong = 0;
+
+            // Step 1: Fix existing patients with wrong jorong casing
+            var allPatients = PatientDB.getAll();
+            allPatients.forEach(function(p) {
+                if (p.jorong && p.jorong.toUpperCase() === 'RAWANG BUNIAN' && p.jorong !== 'Rawang Bunian') {
+                    PatientDB.update(p.id, { jorong: 'Rawang Bunian' });
+                    fixedJorong++;
+                }
+            });
+            console.log("Fixed jorong casing:", fixedJorong);
+
+            // Step 2: Add new patients
             newPatients.forEach(function(p) {
                 try {
-                    const exist = PatientDB.getById(p.id);
+                    var exist = PatientDB.getById(p.id);
                     if (!exist) {
                         PatientDB.add(p);
                         importedPatients++;
@@ -3148,12 +3162,13 @@ window.addEventListener('load', function() {
                     console.error("Error adding patient:", p.nama, e);
                 }
             });
-            
             console.log("Patients imported:", importedPatients);
 
+            // Step 3: Add screenings
             newScreenings.forEach(function(s) {
                 try {
-                    const existingS = ScreeningDB.getByPatientId(s.patientId).find(function(xs) {
+                    var existingList = ScreeningDB.getByPatientId(s.patientId);
+                    var existingS = existingList.find(function(xs) {
                         return xs.tanggalSkrining === s.tanggalSkrining;
                     });
                     if (!existingS) {
@@ -3164,22 +3179,14 @@ window.addEventListener('load', function() {
                                     if (newPatients[i].id === s.patientId) { umur = newPatients[i].umur; break; }
                                 }
                                 var scr = new HypertensionScreening({
-                                    sistolik: s.sistolik,
-                                    diastolik: s.diastolik,
-                                    umur: umur,
-                                    tinggiBadan: 0,
-                                    beratBadan: 0,
-                                    merokok: s.merokok,
-                                    diabetes: s.diabetes,
-                                    riwayatHT: s.riwayatHT,
-                                    riwayatStroke: s.riwayatStroke,
-                                    riwayatJantung: s.riwayatJantung,
-                                    riwayatGinjal: s.riwayatGinjal
+                                    sistolik: s.sistolik, diastolik: s.diastolik, umur: umur,
+                                    tinggiBadan: 0, beratBadan: 0,
+                                    merokok: s.merokok, diabetes: s.diabetes,
+                                    riwayatHT: s.riwayatHT, riwayatStroke: s.riwayatStroke,
+                                    riwayatJantung: s.riwayatJantung, riwayatGinjal: s.riwayatGinjal
                                 });
                                 s.hasil = scr.evaluate();
-                            } catch(e2) {
-                                console.warn("Expert system error:", e2);
-                            }
+                            } catch(e2) { console.warn("Expert system error:", e2); }
                         }
                         ScreeningDB.add(s);
                         importedScreenings++;
@@ -3192,14 +3199,22 @@ window.addEventListener('load', function() {
             console.log("Screenings imported:", importedScreenings);
             console.log("=== IMPORT COMPLETE ===");
 
+            // Mark as done so it won't run again
+            localStorage.setItem('import_rawang_done_v3', 'true');
+
             if (typeof renderDashboard === 'function') {
                 renderDashboard();
             }
 
+            var msg = 'Impor selesai!\n';
+            msg += '- Jorong diperbaiki: ' + fixedJorong + '\n';
+            msg += '- Pasien baru: ' + importedPatients + '\n';
+            msg += '- Skrining baru: ' + importedScreenings;
+
             if (typeof Swal !== 'undefined') {
-                Swal.fire('Sukses', 'Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!', 'success');
+                Swal.fire('Sukses', msg.replace(/\n/g, '<br>'), 'success');
             } else {
-                alert('Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!');
+                alert(msg);
             }
         } catch(mainError) {
             console.error("=== IMPORT FAILED ===", mainError);
