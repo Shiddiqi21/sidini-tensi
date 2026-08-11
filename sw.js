@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sidini-tensi-v7';
+const CACHE_NAME = 'sidini-tensi-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const urlsToCache = [
   './assets/LogoAgam.png',
   './assets/LogoNagariKotoTangah.png',
   './assets/LogoPuskesmas.png',
+  './assets/wilayahkerja.jpeg',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://unpkg.com/@phosphor-icons/web',
   'https://unpkg.com/aos@next/dist/aos.css',
