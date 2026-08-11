@@ -9,7 +9,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 58,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -19,7 +19,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 50,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -29,7 +29,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 79,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -39,7 +39,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 57,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -49,7 +49,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 82,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -59,7 +59,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 80,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -69,7 +69,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 68,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -79,7 +79,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 49,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -89,7 +89,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 69,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -99,7 +99,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 75,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -109,7 +109,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 78,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -119,7 +119,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 90,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -129,7 +129,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 60,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -139,7 +139,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 60,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -149,7 +149,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 57,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -159,7 +159,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 76,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -169,7 +169,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 65,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -179,7 +179,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 70,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -189,7 +189,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 48,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -199,7 +199,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 52,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -209,7 +209,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 90,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -219,7 +219,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 51,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -229,7 +229,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 65,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -239,7 +239,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 54,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -249,7 +249,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 45,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -259,7 +259,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 64,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -269,7 +269,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 57,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -279,7 +279,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 82,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -289,7 +289,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 56,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -299,7 +299,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 68,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -309,7 +309,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 54,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -319,7 +319,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 83,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -329,7 +329,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 81,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -339,7 +339,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 66,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -349,7 +349,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 59,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -359,7 +359,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 66,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -369,7 +369,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 69,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -379,7 +379,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 75,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -389,7 +389,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 62,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -399,7 +399,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 28,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -409,7 +409,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 59,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -419,7 +419,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 52,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -429,7 +429,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 58,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -439,7 +439,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 31,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -449,7 +449,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 55,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -459,7 +459,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 79,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -469,7 +469,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 42,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -479,7 +479,7 @@ const newPatients = [
     "jenisKelamin": "female",
     "umur": 61,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   },
   {
@@ -489,7 +489,7 @@ const newPatients = [
     "jenisKelamin": "male",
     "umur": 66,
     "noHp": "",
-    "jorong": "RAWANG BUNIAN",
+    "jorong": "Rawang Bunian",
     "createdAt": "2026-01-01T00:00:00.000Z"
   }
 ];
