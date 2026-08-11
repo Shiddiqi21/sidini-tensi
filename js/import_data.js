@@ -3120,54 +3120,90 @@ const newScreenings = [
   }
 ];
 
-let importedPatients = 0;
-let importedScreenings = 0;
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        console.log("=== IMPORT SCRIPT STARTING ===");
+        console.log("PatientDB:", typeof PatientDB);
+        console.log("ScreeningDB:", typeof ScreeningDB);
+        console.log("HypertensionScreening:", typeof HypertensionScreening);
+        
+        let importedPatients = 0;
+        let importedScreenings = 0;
 
-if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && typeof HypertensionScreening !== 'undefined') {
-    newPatients.forEach(p => {
-        const exist = PatientDB.getById(p.id);
-        if (!exist) {
-            PatientDB.add(p);
-            importedPatients++;
-        }
-    });
-    
-    newScreenings.forEach(s => {
-        // Cek kalau udah ada skrining di tanggal ini
-        const existingS = ScreeningDB.getByPatientId(s.patientId).find(xs => xs.tanggalSkrining === s.tanggalSkrining);
-        if (!existingS) {
-            // Auto run expert system using HypertensionScreening class
-            let umur = newPatients.find(p => p.id === s.patientId)?.umur || 50;
-            try {
-                const screening = new HypertensionScreening({
-                    sistolik: s.sistolik,
-                    diastolik: s.diastolik,
-                    umur: umur,
-                    tinggiBadan: 0,
-                    beratBadan: 0,
-                    merokok: s.merokok,
-                    diabetes: s.diabetes,
-                    riwayatHT: s.riwayatHT,
-                    riwayatStroke: s.riwayatStroke,
-                    riwayatJantung: s.riwayatJantung,
-                    riwayatGinjal: s.riwayatGinjal
-                });
-                s.hasil = screening.evaluate();
-            } catch(e) {
-                console.warn("Expert system error for", s.patientId, e);
+        try {
+            if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') {
+                console.error("DATABASE NOT FOUND! Aborting import.");
+                alert("ERROR: Database tidak ditemukan. Buka Console (F12) untuk detail.");
+                return;
             }
-            ScreeningDB.add(s);
-            importedScreenings++;
+
+            newPatients.forEach(function(p) {
+                try {
+                    const exist = PatientDB.getById(p.id);
+                    if (!exist) {
+                        PatientDB.add(p);
+                        importedPatients++;
+                    }
+                } catch(e) {
+                    console.error("Error adding patient:", p.nama, e);
+                }
+            });
+            
+            console.log("Patients imported:", importedPatients);
+
+            newScreenings.forEach(function(s) {
+                try {
+                    const existingS = ScreeningDB.getByPatientId(s.patientId).find(function(xs) {
+                        return xs.tanggalSkrining === s.tanggalSkrining;
+                    });
+                    if (!existingS) {
+                        if (typeof HypertensionScreening !== 'undefined') {
+                            try {
+                                var umur = 50;
+                                for (var i = 0; i < newPatients.length; i++) {
+                                    if (newPatients[i].id === s.patientId) { umur = newPatients[i].umur; break; }
+                                }
+                                var scr = new HypertensionScreening({
+                                    sistolik: s.sistolik,
+                                    diastolik: s.diastolik,
+                                    umur: umur,
+                                    tinggiBadan: 0,
+                                    beratBadan: 0,
+                                    merokok: s.merokok,
+                                    diabetes: s.diabetes,
+                                    riwayatHT: s.riwayatHT,
+                                    riwayatStroke: s.riwayatStroke,
+                                    riwayatJantung: s.riwayatJantung,
+                                    riwayatGinjal: s.riwayatGinjal
+                                });
+                                s.hasil = scr.evaluate();
+                            } catch(e2) {
+                                console.warn("Expert system error:", e2);
+                            }
+                        }
+                        ScreeningDB.add(s);
+                        importedScreenings++;
+                    }
+                } catch(e) {
+                    console.error("Error adding screening:", s.patientId, e);
+                }
+            });
+
+            console.log("Screenings imported:", importedScreenings);
+            console.log("=== IMPORT COMPLETE ===");
+
+            if (typeof renderDashboard === 'function') {
+                renderDashboard();
+            }
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Sukses', 'Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!', 'success');
+            } else {
+                alert('Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!');
+            }
+        } catch(mainError) {
+            console.error("=== IMPORT FAILED ===", mainError);
+            alert("IMPORT GAGAL: " + mainError.message);
         }
-    });
-    
-    // Call Dashboard Render if on dashboard
-    if (typeof renderDashboard === 'function') {
-        renderDashboard();
-    }
-    
-    // Alert the user
-    Swal.fire('Sukses', 'Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!', 'success');
-} else {
-    console.error("Sistem Database tidak ditemukan. PatientDB:", typeof PatientDB, "ScreeningDB:", typeof ScreeningDB, "HypertensionScreening:", typeof HypertensionScreening);
-}
+    }, 2000);
+});
