@@ -403,12 +403,12 @@ img { max-width: 100%; height: auto; }
 
 /* ==== DASHBOARD STATS CARDS ==== */
 .stats-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;
     margin-bottom: 32px;
 }
 .stat-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 20px;
+    border-radius: var(--radius-lg); padding: 16px;
     box-shadow: var(--shadow); position: relative; overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -416,7 +416,7 @@ img { max-width: 100%; height: auto; }
 .stat-card[onclick]:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); border-color: var(--primary); }
 .stat-card::after {
     content: ''; position: absolute; top: 0; right: 0;
-    width: 80px; height: 80px; border-radius: 50%;
+    width: 60px; height: 60px; border-radius: 50%;
     transform: translate(30%, -30%); opacity: 0.1;
 }
 .stat-card.teal::after { background: var(--primary); }
@@ -426,9 +426,9 @@ img { max-width: 100%; height: auto; }
 .stat-card.purple::after { background: #8b5cf6; }
 
 .stat-card .stat-icon {
-    width: 40px; height: 40px; border-radius: 10px;
+    width: 32px; height: 32px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; margin-bottom: 12px;
+    font-size: 1.1rem; margin-bottom: 8px;
 }
 .stat-card.teal .stat-icon { background: var(--primary-fade); color: var(--primary); }
 .stat-card.green .stat-icon { background: var(--success-fade); color: var(--success); }
@@ -436,8 +436,8 @@ img { max-width: 100%; height: auto; }
 .stat-card.red .stat-icon { background: var(--danger-fade); color: var(--danger); }
 .stat-card.purple .stat-icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 
-.stat-card .stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
-.stat-card .stat-label { font-size: 0.95rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+.stat-card .stat-number { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.stat-card .stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
 
 /* ==== CHARTS ==== */
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
