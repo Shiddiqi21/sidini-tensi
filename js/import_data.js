@@ -3123,7 +3123,7 @@ const newScreenings = [
 let importedPatients = 0;
 let importedScreenings = 0;
 
-if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && typeof determineHTStatus !== 'undefined') {
+if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && typeof HypertensionScreening !== 'undefined') {
     newPatients.forEach(p => {
         const exist = PatientDB.getById(p.id);
         if (!exist) {
@@ -3136,13 +3136,26 @@ if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && ty
         // Cek kalau udah ada skrining di tanggal ini
         const existingS = ScreeningDB.getByPatientId(s.patientId).find(xs => xs.tanggalSkrining === s.tanggalSkrining);
         if (!existingS) {
-            // Auto run expert system to determine risk and status
+            // Auto run expert system using HypertensionScreening class
             let umur = newPatients.find(p => p.id === s.patientId)?.umur || 50;
-            s.hasil = determineHTStatus(
-                s.sistolik, s.diastolik, 
-                umur, s.merokok, s.diabetes,
-                s.riwayatHT, s.riwayatStroke, s.riwayatJantung, s.riwayatGinjal
-            );
+            try {
+                const screening = new HypertensionScreening({
+                    sistolik: s.sistolik,
+                    diastolik: s.diastolik,
+                    umur: umur,
+                    tinggiBadan: 0,
+                    beratBadan: 0,
+                    merokok: s.merokok,
+                    diabetes: s.diabetes,
+                    riwayatHT: s.riwayatHT,
+                    riwayatStroke: s.riwayatStroke,
+                    riwayatJantung: s.riwayatJantung,
+                    riwayatGinjal: s.riwayatGinjal
+                });
+                s.hasil = screening.evaluate();
+            } catch(e) {
+                console.warn("Expert system error for", s.patientId, e);
+            }
             ScreeningDB.add(s);
             importedScreenings++;
         }
@@ -3156,5 +3169,5 @@ if (typeof PatientDB !== 'undefined' && typeof ScreeningDB !== 'undefined' && ty
     // Alert the user
     Swal.fire('Sukses', 'Berhasil mengimpor ' + importedPatients + ' pasien baru dan ' + importedScreenings + ' riwayat tensi!', 'success');
 } else {
-    console.error("Sistem Database tidak ditemukan di halaman ini. Pastikan dijalankan di aplikasi SiDini.");
+    console.error("Sistem Database tidak ditemukan. PatientDB:", typeof PatientDB, "ScreeningDB:", typeof ScreeningDB, "HypertensionScreening:", typeof HypertensionScreening);
 }
