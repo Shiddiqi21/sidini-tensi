@@ -912,6 +912,9 @@ function handleExcelImport(e) {
                     alertMsg += `<b style="color: #d97706;">Peringatan: ${failedScreenings.length} baris dilewati</b> karena warga belum terdaftar:<br><small>${failedScreenings.join(', ')}</small>`;
                 }
                 if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
+                if (typeof populateBulanDropdown === 'function') populateBulanDropdown();
+                if (typeof renderDashboard === 'function') renderDashboard();
+                
                 Swal.fire({ title: 'Import Selesai', html: alertMsg, icon: failedScreenings.length > 0 ? 'warning' : 'success' });
 
             } else {
