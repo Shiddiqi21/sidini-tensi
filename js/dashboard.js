@@ -140,8 +140,20 @@ function populateBulanDropdown() {
     const months = new Set();
     
     screenings.forEach(s => {
-        if (s.tanggalSkrining) {
-            months.add(s.tanggalSkrining.substring(0, 7));
+        // Coba cari tanggal dari berbagai field
+        let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
+        if (!tgl) return; // Skip jika benar-benar tidak ada tanggal
+        
+        try {
+            const d = new Date(tgl);
+            if (!isNaN(d.getTime())) {
+                // Pastikan format YYYY-MM
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                months.add(`${year}-${month}`);
+            }
+        } catch (e) {
+            // Abaikan tanggal yang tidak bisa diparse
         }
     });
     
