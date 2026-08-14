@@ -135,17 +135,16 @@ function populateBulanDropdown() {
         if (typeof ScreeningDB === 'undefined') return;
         
         const currentVal = filterBulan.value;
-        filterBulan.innerHTML = '<option value="">Semua Bulan</option>';
+        filterBulan.innerHTML = '<option value="">Semua Waktu</option>';
         
         const screenings = ScreeningDB.getAll() || [];
-        const months = new Set();
+        const dates = new Set();
         
         screenings.forEach(s => {
             let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
             if (!tgl) return;
             
             try {
-                // Handle DD/MM/YYYY manually just in case
                 if (typeof tgl === 'string' && tgl.includes('/')) {
                     const p = tgl.split('/');
                     if (p.length === 3 && p[2].length === 4) {
@@ -156,25 +155,27 @@ function populateBulanDropdown() {
                 if (!isNaN(d.getTime())) {
                     const year = d.getFullYear();
                     const month = String(d.getMonth() + 1).padStart(2, '0');
-                    months.add(`${year}-${month}`);
+                    const day = String(d.getDate()).padStart(2, '0');
+                    dates.add(`${year}-${month}-${day}`);
                 }
             } catch (e) {
                 console.warn('Failed to parse date:', tgl);
             }
         });
         
-        const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
+        const sortedDates = Array.from(dates).sort((a, b) => b.localeCompare(a));
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
-        sortedMonths.forEach(m => {
-            const parts = m.split('-');
-            if (parts.length === 2) {
+        sortedDates.forEach(dateStr => {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
                 const year = parts[0];
                 const monthIdx = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
                 if (!isNaN(monthIdx) && monthIdx >= 0 && monthIdx < 12) {
                     const option = document.createElement('option');
-                    option.value = m;
-                    option.textContent = `${monthNames[monthIdx]} ${year}`;
+                    option.value = dateStr;
+                    option.textContent = `${day} ${monthNames[monthIdx]} ${year}`;
                     filterBulan.appendChild(option);
                 }
             }
@@ -540,7 +541,11 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '', filt
     // We only want to show patients who have at least one screening
     let allScreenings = ScreeningDB.getAll();
     if (filterBulan) {
-        allScreenings = allScreenings.filter(s => s.tanggalSkrining && s.tanggalSkrining.substring(0, 7) === filterBulan);
+        allScreenings = allScreenings.filter(s => {
+            let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
+            if (!tgl) return false;
+            return filterBulan.length === 10 ? tgl.substring(0, 10) === filterBulan : tgl.substring(0, 7) === filterBulan;
+        });
     }
     
     // Gender filter
@@ -1394,9 +1399,15 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
 
     let htList = [];
     let riskList = [];
-
+    
     Object.values(latestScreenings).forEach(s => {
-        if (filterBulan && s.tanggalSkrining && s.tanggalSkrining.substring(0, 7) !== filterBulan) return;
+        let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
+        if (filterBulan && tgl) {
+            const isMatch = filterBulan.length === 10 ? tgl.substring(0, 10) === filterBulan : tgl.substring(0, 7) === filterBulan;
+            if (!isMatch) return;
+        } else if (filterBulan && !tgl) {
+            return;
+        }
         
         const p = patients.find(pat => pat.id === s.patientId);
         if (!p) return;

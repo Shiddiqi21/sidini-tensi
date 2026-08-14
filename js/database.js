@@ -587,8 +587,15 @@ const ScreeningDB = {
 
         if (filterBulan) {
             screenings = screenings.filter(s => {
-                if (!s.tanggalSkrining) return false;
-                return s.tanggalSkrining.substring(0, 7) === filterBulan;
+                let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
+                if (!tgl) return false;
+                
+                // Jika filter adalah YYYY-MM-DD
+                if (filterBulan.length === 10) {
+                    return tgl.substring(0, 10) === filterBulan;
+                }
+                // Jika filter adalah YYYY-MM
+                return tgl.substring(0, 7) === filterBulan;
             });
         }
         

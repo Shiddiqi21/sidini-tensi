@@ -607,13 +607,13 @@
                 </div>
                 <div>
                     <div style="display:flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <select id="filter-bulan" class="form-select" style="width: auto; min-width: 150px; padding-top: 10px; padding-bottom: 10px;" title="Filter Bulan">
-                            <option value="">Semua Bulan</option>
+                        <select id="filter-bulan" class="form-select" style="width: auto; min-width: 150px; padding-top: 10px; padding-bottom: 10px;" title="Filter Bulan" onchange="renderDashboard();">
+                            <option value="">Semua Waktu</option>
                         </select>
-                        <select id="filter-jorong" class="form-select" style="width: auto; min-width: 200px; padding-top: 10px; padding-bottom: 10px;">
+                        <select id="filter-jorong" class="form-select" style="width: auto; min-width: 200px; padding-top: 10px; padding-bottom: 10px;" onchange="renderDashboard();">
                             <option value="">Semua Jorong</option>
                         </select>
-                        <select id="filter-gender" class="form-select" style="width: auto; min-width: 160px; padding-top: 10px; padding-bottom: 10px;" title="Filter Jenis Kelamin">
+                        <select id="filter-gender" class="form-select" style="width: auto; min-width: 160px; padding-top: 10px; padding-bottom: 10px;" title="Filter Jenis Kelamin" onchange="renderDashboard();">
                             <option value="">Semua Jenis Kelamin</option>
                             <option value="male">Laki-laki</option>
                             <option value="female">Perempuan</option>
