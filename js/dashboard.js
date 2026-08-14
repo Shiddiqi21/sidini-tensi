@@ -1208,7 +1208,7 @@ window.downloadSkriningTemplate = function() {
     // Sheet 1: Data Skrining
     const wsTemplate = XLSX.utils.aoa_to_sheet([
         ['No', 'NIK', 'Nama', 'Jenis Kelamin', 'Tanggal Lahir', 'Umur', 'Jorong / Alamat', 'Tanggal Skrining', 'Sistolik', 'Diastolik', 'BB (kg)', 'TB (cm)', 'Riwayat Hipertensi (Ya/Tidak)', 'Rutin Minum Obat HT (Ya/Tidak)', 'Komorbid (Ketik: Diabetes / Ginjal / Jantung)', 'Komplikasi (Ketik: Stroke / Ginjal / Mata / Jantung)', 'Penyakit Penyerta Lainnya', 'Obat Antihipertensi', 'Riwayat Keluarga / Genetik HT (Ya/Tidak)', 'Merokok (Aktif/Pasif/Tidak)', 'Konsumsi Garam Berlebih (Ya/Tidak)', 'Konsumsi Alkohol (Ya/Tidak)', 'Kurang Aktivitas Fisik (Ya/Tidak)', 'Faktor Stress'],
-        ['1', '1234567890123456', 'Jhon Doe', 'Laki-laki', '1980-01-01', '45', exampleJorong1, '2024-07-29', '140', '90', '70', '165', 'Ya', 'Tidak', 'Diabetes, Jantung', 'Mata', '-', 'Ya', 'Aktif', 'Ya', 'Tidak', 'Ya', 'Perekonomian, KDRT']
+        ['1', '1234567890123456', 'Jhon Doe', 'Laki-laki', '1980-01-01', '45', exampleJorong1, '2024-07-29', '140', '90', '70', '165', 'Ya', 'Tidak', 'Diabetes, Jantung', 'Mata', '-', 'Ya', 'Aktif', 'Ya', 'Tidak', 'Ya', 'Perekonomian, Keluarga']
     ]);
     
     // Sheet 2: Petunjuk
