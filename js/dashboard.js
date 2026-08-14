@@ -87,7 +87,12 @@ window.renderJorongDropdowns = function() {
         }
     }
 
-    const jorongSelects = [document.getElementById('jorong'), document.getElementById('tw-jorong'), document.getElementById('admin-jorong')];
+    const jorongSelects = [
+        document.getElementById('jorong'), 
+        document.getElementById('tw-jorong'), 
+        document.getElementById('sw-jorong'),
+        document.getElementById('admin-jorong')
+    ];
     jorongSelects.forEach(select => {
         if (select) {
             const currentVal = select.value;
@@ -2117,7 +2122,16 @@ document.addEventListener('click', function(e) {
 // ===================== EXPORT EXCEL BARU =====================
 window.exportWarga = function() {
     if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
-    const patients = PatientDB.getAll();
+    const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const filterGender = document.getElementById('filter-gender')?.value || '';
+    // Note: Warga doesn't strictly have 'bulan' unless we filter by createdAt. For simplicity, we filter by jorong and gender.
+    let patients = PatientDB.getAll();
+    if (filterJorong && filterJorong !== 'Semua Jorong') {
+        patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
+    }
+    if (filterGender) {
+        patients = patients.filter(p => p.jenisKelamin === filterGender);
+    }
     if (patients.length === 0) {
         showToast('Tidak ada data warga untuk diexport', 'warning');
         return;
@@ -2145,14 +2159,33 @@ window.exportHT = function() {
     if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
     let hts = [];
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const filterBulan = document.getElementById('filter-bulan')?.value || '';
+    const filterGender = document.getElementById('filter-gender')?.value || '';
+    
     let patients = PatientDB.getAll();
     if (filterJorong && filterJorong !== 'Semua Jorong') {
         patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
+    if (filterGender) {
+        patients = patients.filter(p => p.jenisKelamin === filterGender);
+    }
+    
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
-        if (latest && latest.hasil && (latest.hasil.statusHT === 'Tidak Terkontrol' || latest.hasil.statusHT === 'Terkontrol' || (latest.riwayatHT && latest.riwayatHT.toLowerCase() === 'ya'))) {
-            hts.push({ patient: p, screening: latest });
+        if (latest) {
+            let tgl = latest.tanggalSkrining || latest.createdAt || latest.waktuSkrining;
+            if (filterBulan && tgl) {
+                if (typeof tgl === 'string' && tgl.includes('/')) {
+                    const parts = tgl.split('/');
+                    if (parts.length === 3 && parts[2].length === 4) {
+                        tgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                }
+                if (!tgl.startsWith(filterBulan)) return;
+            }
+            if (latest.hasil && (latest.hasil.statusHT === 'Tidak Terkontrol' || latest.hasil.statusHT === 'Terkontrol' || (latest.riwayatHT && latest.riwayatHT.toLowerCase() === 'ya'))) {
+                hts.push({ patient: p, screening: latest });
+            }
         }
     });
 
@@ -2186,14 +2219,33 @@ window.exportRisk = function() {
     if (typeof XLSX === 'undefined' || typeof PatientDB === 'undefined') return;
     let risks = [];
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const filterBulan = document.getElementById('filter-bulan')?.value || '';
+    const filterGender = document.getElementById('filter-gender')?.value || '';
+    
     let patients = PatientDB.getAll();
     if (filterJorong && filterJorong !== 'Semua Jorong') {
         patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
     }
+    if (filterGender) {
+        patients = patients.filter(p => p.jenisKelamin === filterGender);
+    }
+    
     patients.forEach(p => {
         const latest = ScreeningDB.getLatestByPatient(p.id);
-        if (latest && latest.hasil && latest.hasil.riskScore >= 5) { // Sedang ke atas
-            risks.push({ patient: p, screening: latest });
+        if (latest) {
+            let tgl = latest.tanggalSkrining || latest.createdAt || latest.waktuSkrining;
+            if (filterBulan && tgl) {
+                if (typeof tgl === 'string' && tgl.includes('/')) {
+                    const parts = tgl.split('/');
+                    if (parts.length === 3 && parts[2].length === 4) {
+                        tgl = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                }
+                if (!tgl.startsWith(filterBulan)) return;
+            }
+            if (latest.hasil && latest.hasil.riskScore >= 5) { // Sedang ke atas
+                risks.push({ patient: p, screening: latest });
+            }
         }
     });
 
@@ -2206,28 +2258,11 @@ window.exportRisk = function() {
     risks.sort((a, b) => b.screening.hasil.riskScore - a.screening.hasil.riskScore);
 
     const exportData = risks.map((item, i) => {
-        let cvdRisk = '-';
-        const s = item.screening;
-        if (s.hasil?.komplikasi && s.hasil.komplikasi.length > 0) {
-            if (typeof s.hasil.komplikasi[0] === 'object' && s.hasil.komplikasi[0].level) {
-                cvdRisk = s.hasil.komplikasi.map(k => k.level).join(', ');
-            } else if (typeof s.hasil.komplikasi[0] === 'string') {
-                cvdRisk = s.hasil.komplikasi.join(', ');
-            }
-        }
-        if (s.hasil?.komplikasiList && s.hasil.komplikasiList.length > 0 && cvdRisk === '-') {
-            cvdRisk = s.hasil.komplikasiList.join(', ');
-        }
-
         return {
             'No': i + 1,
             'Nama': item.patient.nama || '-',
             'Jorong': item.patient.jorong || '-',
-            'Umur (Tahun)': item.patient.umur || 0,
-            'Skor Risiko': item.screening.hasil.riskScore,
-            'Tensi Terakhir': item.screening.sistolik + '/' + item.screening.diastolik,
-            'Kategori IMT': item.screening.hasil?.imt?.kategori || '-',
-            'Risiko Kardiovaskular': cvdRisk
+            'Skor Risiko': item.screening.hasil.riskScore
         };
     });
 

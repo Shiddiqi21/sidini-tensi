@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=12">
+    <link rel="stylesheet" href="css/style.css?v=13">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -262,9 +262,65 @@
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
                     <i class="ph-fill ph-info"></i> Ketik minimal 2 karakter. Atau jika warga belum terdaftar, klik tombol di bawah.
                 </p>
-                <button type="button" id="btn-warga-baru" class="btn btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+                <button type="button" id="btn-warga-baru" class="btn btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);" onclick="document.getElementById('modal-daftar-warga-skrining').classList.remove('hidden')">
                     <i class="ph-bold ph-plus"></i> Tambah Warga Baru
                 </button>
+            </div>
+        </div>
+
+        <!-- Modal Daftarkan Warga Baru (sebelum skrining) -->
+        <div id="modal-daftar-warga-skrining" class="modal-overlay hidden" style="z-index: 3000;">
+            <div class="modal-content" style="max-width: 560px;">
+                <div class="modal-header">
+                    <h3><i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Daftarkan Warga Baru</h3>
+                    <button class="modal-close" onclick="document.getElementById('modal-daftar-warga-skrining').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:16px;">
+                        <i class="ph-fill ph-info-circle"></i> Isi data dasar warga terlebih dahulu, lalu klik <b>Simpan & Mulai Skrining</b>.
+                    </p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>NIK <span class="required">*</span></label>
+                            <input type="text" id="sw-nik" class="form-input" placeholder="16 digit NIK" maxlength="16">
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Lengkap <span class="required">*</span></label>
+                            <input type="text" id="sw-nama" class="form-input" placeholder="Nama lengkap warga">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Lahir</label>
+                            <input type="date" id="sw-tanggalLahir" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Umur (Otomatis)</label>
+                            <input type="text" id="sw-umurDisplay" class="form-input" placeholder="Otomatis terisi" readonly style="background:var(--bg-tertiary);">
+                            <input type="hidden" id="sw-umur">
+                            <input type="hidden" id="sw-umurUnit" value="tahun">
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Kelamin <span class="required">*</span></label>
+                            <select id="sw-jk" class="form-select">
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Jorong <span class="required">*</span></label>
+                            <select id="sw-jorong" class="form-select">
+                                <option value="">Pilih Jorong...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button class="btn btn-outline" onclick="document.getElementById('modal-daftar-warga-skrining').classList.add('hidden')">
+                        <i class="ph-bold ph-x"></i> Batal
+                    </button>
+                    <button class="btn btn-primary" onclick="handleDaftarWargaLaluSkrining()">
+                        <i class="ph-bold ph-check"></i> Simpan & Mulai Skrining
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1273,12 +1329,12 @@
         </div>
     </div>
 
-    <script src="js/firebase-config.js?v=12"></script>
-    <script src="js/database.js?v=12"></script>
-    <script src="js/expertSystem.js?v=12"></script>
-    <script src="js/app.js?v=12"></script>
-    <script src="js/dashboard.js?v=12"></script>
-    <script src="js/admin.js?v=12"></script>
+    <script src="js/firebase-config.js?v=13"></script>
+    <script src="js/database.js?v=13"></script>
+    <script src="js/expertSystem.js?v=13"></script>
+    <script src="js/app.js?v=13"></script>
+    <script src="js/dashboard.js?v=13"></script>
+    <script src="js/admin.js?v=13"></script>
     
     <!-- SPA Router -->
     <script>

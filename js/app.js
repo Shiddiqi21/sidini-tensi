@@ -200,9 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ===== AUTO CALCULATE UMUR =====
-    if (tanggalLahirField) {
-        tanggalLahirField.addEventListener('change', () => {
-            const dob = new Date(tanggalLahirField.value);
+    function bindAutoCalcUmur(inputElement, umurFieldEl, unitFieldEl, displayFieldEl) {
+        if (!inputElement) return;
+        inputElement.addEventListener('change', () => {
+            const dob = new Date(inputElement.value);
             if (!isNaN(dob.getTime())) {
                 const today = new Date();
                 let ageYears = today.getFullYear() - dob.getFullYear();
@@ -215,17 +216,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (ageYears < 1) {
                     // Under 1 year, show months
-                    umurField.value = ageMonths;
-                    if (umurUnitField) umurUnitField.value = 'bulan';
-                    if (umurDisplayField) umurDisplayField.value = ageMonths + ' Bulan';
+                    if(umurFieldEl) umurFieldEl.value = ageMonths;
+                    if(unitFieldEl) unitFieldEl.value = 'bulan';
+                    if(displayFieldEl) displayFieldEl.value = ageMonths + ' Bulan';
                 } else {
-                    umurField.value = ageYears;
-                    if (umurUnitField) umurUnitField.value = 'tahun';
-                    if (umurDisplayField) umurDisplayField.value = ageYears + ' Tahun';
+                    if(umurFieldEl) umurFieldEl.value = ageYears;
+                    if(unitFieldEl) unitFieldEl.value = 'tahun';
+                    if(displayFieldEl) displayFieldEl.value = ageYears + ' Tahun';
                 }
             }
         });
     }
+
+    bindAutoCalcUmur(tanggalLahirField, umurField, umurUnitField, umurDisplayField);
+    bindAutoCalcUmur(
+        document.getElementById('sw-tanggalLahir'), 
+        document.getElementById('sw-umur'), 
+        document.getElementById('sw-umurUnit'), 
+        document.getElementById('sw-umurDisplay')
+    );
 
     // ===== LIVE IMT CALCULATION =====
     function updateIMT() {
@@ -898,4 +907,135 @@ window.handleLogout = async function() {
     } catch (err) {
         console.error("Logout Error:", err);
     }
+};
+
+// Handle Daftarkan Warga Baru dari Modal Skrining
+window.handleDaftarWargaLaluSkrining = function() {
+    const nik = document.getElementById('sw-nik')?.value?.trim();
+    const nama = document.getElementById('sw-nama')?.value?.trim();
+    const tanggalLahir = document.getElementById('sw-tanggalLahir')?.value;
+    const jk = document.getElementById('sw-jk')?.value || 'male';
+    const jorong = document.getElementById('sw-jorong')?.value;
+    const umurVal = parseInt(document.getElementById('sw-umur')?.value) || 0;
+    const umurUnit = document.getElementById('sw-umurUnit')?.value || 'tahun';
+
+    if (!nik || !nama || !jorong) {
+        if(typeof Swal !== 'undefined') {
+            Swal.fire('Peringatan', 'Harap isi NIK, Nama, dan Jorong terlebih dahulu.', 'warning');
+        } else {
+            alert('Harap isi NIK, Nama, dan Jorong terlebih dahulu.');
+        }
+        return;
+    }
+
+    if (nik.length !== 16) {
+        if(typeof Swal !== 'undefined') {
+            Swal.fire('Peringatan', 'NIK harus 16 digit.', 'warning');
+        } else {
+            alert('NIK harus 16 digit.');
+        }
+        return;
+    }
+
+    const existingPatient = PatientDB.getByNIK(nik);
+    if (existingPatient) {
+        if(typeof Swal !== 'undefined') {
+            Swal.fire('Gagal Menyimpan', `Warga dengan NIK <b>${nik}</b> sudah terdaftar di sistem atas nama <b>${existingPatient.nama}</b>.`, 'error');
+        } else {
+            alert('Warga dengan NIK tersebut sudah terdaftar.');
+        }
+        return;
+    }
+
+    const isBulan = umurUnit === 'bulan';
+    const umurTahun = isBulan ? Math.floor(umurVal / 12) : umurVal;
+    const totalBulan = isBulan ? umurVal : (umurVal * 12);
+
+    const newPatient = {
+        nik: nik,
+        nama: nama,
+        tanggalLahir: tanggalLahir,
+        umur: umurTahun,
+        umurBulan: totalBulan,
+        jenisKelamin: jk,
+        jorong: jorong
+    };
+
+    // Save to Memory/LocalStorage DB
+    PatientDB.add(newPatient);
+
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Data warga berhasil ditambahkan! Silakan lengkapi data skrining di bawah.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    // Close modal
+    document.getElementById('modal-daftar-warga-skrining').classList.add('hidden');
+    
+    const form = document.getElementById('screening-form');
+    // Reset form skrining just in case
+    form.reset();
+    
+    // Set patient as selected for screening
+    window.selectedPatient = PatientDB.getByNIK(nik);
+    
+    // Fill data diri in screening form
+    const nikField = document.getElementById('nik');
+    const namaField = document.getElementById('nama');
+    const tanggalLahirField = document.getElementById('tanggalLahir');
+    const umurDisplayField = document.getElementById('umurDisplay');
+    const umurField = document.getElementById('umur');
+    const umurUnitField = document.getElementById('umurUnit');
+    const jorongField = document.getElementById('jorong');
+
+    if (nikField) nikField.value = newPatient.nik;
+    if (namaField) namaField.value = newPatient.nama;
+    if (tanggalLahirField) tanggalLahirField.value = newPatient.tanggalLahir || '';
+    if (umurField) umurField.value = newPatient.umur;
+    if (umurDisplayField) {
+        umurDisplayField.value = newPatient.umurBulan > 0 && newPatient.umur === 0 
+            ? `${newPatient.umurBulan} Bulan` 
+            : `${newPatient.umur} Tahun`;
+    }
+    if (umurUnitField) umurUnitField.value = newPatient.umurBulan > 0 && newPatient.umur === 0 ? 'bulan' : 'tahun';
+    
+    if (jorongField) jorongField.value = newPatient.jorong;
+
+    // Set gender radio
+    const genderRadio = form.querySelector(`input[name="jenisKelamin"][value="${newPatient.jenisKelamin}"]`);
+    if (genderRadio) genderRadio.checked = true;
+
+    // Show screening form
+    form.classList.remove('hidden');
+    
+    // Clear search box
+    document.getElementById('patient-search').value = '';
+
+    // Lock data diri fields
+    const fieldsToLock = [nikField, namaField, tanggalLahirField, jorongField];
+    fieldsToLock.forEach(field => {
+        if (!field) return;
+        if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'date')) {
+            field.readOnly = true;
+        }
+        field.style.pointerEvents = 'none';
+        field.style.backgroundColor = 'var(--bg-tertiary)';
+    });
+    
+    const genderRadios = form.querySelectorAll('input[name="jenisKelamin"]');
+    genderRadios.forEach(radio => {
+        const label = radio.closest('.radio-card-label');
+        if (label) {
+            label.style.pointerEvents = 'none';
+            label.style.opacity = '0.7';
+        }
+    });
+
+    // Scroll to form
+    form.scrollIntoView({ behavior: 'smooth' });
 };
