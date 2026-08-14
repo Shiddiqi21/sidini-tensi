@@ -138,6 +138,7 @@ function populateBulanDropdown() {
         filterBulan.innerHTML = '<option value="">Semua Waktu</option>';
         
         const screenings = ScreeningDB.getAll() || [];
+        const months = new Set();
         const dates = new Set();
         
         screenings.forEach(s => {
@@ -156,6 +157,7 @@ function populateBulanDropdown() {
                     const year = d.getFullYear();
                     const month = String(d.getMonth() + 1).padStart(2, '0');
                     const day = String(d.getDate()).padStart(2, '0');
+                    months.add(`${year}-${month}`);
                     dates.add(`${year}-${month}-${day}`);
                 }
             } catch (e) {
@@ -163,23 +165,50 @@ function populateBulanDropdown() {
             }
         });
         
+        const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
         const sortedDates = Array.from(dates).sort((a, b) => b.localeCompare(a));
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
-        sortedDates.forEach(dateStr => {
-            const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                const year = parts[0];
-                const monthIdx = parseInt(parts[1], 10) - 1;
-                const day = parseInt(parts[2], 10);
-                if (!isNaN(monthIdx) && monthIdx >= 0 && monthIdx < 12) {
-                    const option = document.createElement('option');
-                    option.value = dateStr;
-                    option.textContent = `${day} ${monthNames[monthIdx]} ${year}`;
-                    filterBulan.appendChild(option);
+        // Add Months
+        if (sortedMonths.length > 0) {
+            const optgroupMonth = document.createElement('optgroup');
+            optgroupMonth.label = "Per Bulan";
+            sortedMonths.forEach(m => {
+                const parts = m.split('-');
+                if (parts.length === 2) {
+                    const year = parts[0];
+                    const monthIdx = parseInt(parts[1], 10) - 1;
+                    if (!isNaN(monthIdx)) {
+                        const option = document.createElement('option');
+                        option.value = m;
+                        option.textContent = `${monthNames[monthIdx]} ${year}`;
+                        optgroupMonth.appendChild(option);
+                    }
                 }
-            }
-        });
+            });
+            filterBulan.appendChild(optgroupMonth);
+        }
+
+        // Add Specific Dates
+        if (sortedDates.length > 0) {
+            const optgroupDate = document.createElement('optgroup');
+            optgroupDate.label = "Per Tanggal Spesifik";
+            sortedDates.forEach(dateStr => {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    const year = parts[0];
+                    const monthIdx = parseInt(parts[1], 10) - 1;
+                    const day = parseInt(parts[2], 10);
+                    if (!isNaN(monthIdx)) {
+                        const option = document.createElement('option');
+                        option.value = dateStr;
+                        option.textContent = `${day} ${monthNames[monthIdx]} ${year}`;
+                        optgroupDate.appendChild(option);
+                    }
+                }
+            });
+            filterBulan.appendChild(optgroupDate);
+        }
         
         if (currentVal) {
             const exists = Array.from(filterBulan.options).some(o => o.value === currentVal);
