@@ -169,25 +169,56 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.renderJorongDropdowns === 'function') window.renderJorongDropdowns();
     populateBulanDropdown();
 
+    // === Restore filter state from localStorage (Bug 6 fix) ===
+    const savedJorong = localStorage.getItem('filter_jorong');
+    const savedBulan = localStorage.getItem('filter_bulan');
+    const savedGender = localStorage.getItem('filter_gender');
+    const fJorong = document.getElementById('filter-jorong');
+    const fBulan = document.getElementById('filter-bulan');
+    const fGender = document.getElementById('filter-gender');
+    if (savedJorong && fJorong) {
+        // Check if option exists
+        const optExists = Array.from(fJorong.options).some(o => o.value === savedJorong);
+        if (optExists) fJorong.value = savedJorong;
+    }
+    if (savedBulan && fBulan) {
+        const optExists = Array.from(fBulan.options).some(o => o.value === savedBulan);
+        if (optExists) fBulan.value = savedBulan;
+    }
+    if (savedGender && fGender) fGender.value = savedGender;
+
     // Helper to safely add event listener (element might not exist)
     function safeOn(id, event, handler) {
         const el = document.getElementById(id);
         if (el) el.addEventListener(event, handler);
     }
 
+    // Helper to save filter state
+    function saveFilterState() {
+        const j = document.getElementById('filter-jorong');
+        const b = document.getElementById('filter-bulan');
+        const g = document.getElementById('filter-gender');
+        if (j) localStorage.setItem('filter_jorong', j.value);
+        if (b) localStorage.setItem('filter_bulan', b.value);
+        if (g) localStorage.setItem('filter_gender', g.value);
+    }
+
     // === Set up ALL event listeners FIRST (before any rendering) ===
     safeOn('filter-jorong', 'change', () => {
         window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+        saveFilterState();
         renderDashboard();
     });
 
     safeOn('filter-bulan', 'change', () => {
         window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+        saveFilterState();
         renderDashboard();
     });
 
     safeOn('filter-gender', 'change', () => {
         window.statePage = { 'warga': 1, 'skrining': 1, 'fu-ht': 1, 'fu-risk': 1 };
+        saveFilterState();
         renderDashboard();
     });
 
@@ -195,7 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.statePage['skrining'] = 1;
         const jorong = document.getElementById('filter-jorong');
         const bulan = document.getElementById('filter-bulan');
-        renderTable(jorong ? jorong.value : '', e.target.value, bulan ? bulan.value : '');
+        const gender = document.getElementById('filter-gender');
+        renderTable(jorong ? jorong.value : '', e.target.value, bulan ? bulan.value : '', gender ? gender.value : '');
     });
 
     safeOn('warga-search', 'input', () => { window.statePage['warga'] = 1; renderWargaTable(); });
@@ -259,6 +291,9 @@ function renderDashboard() {
     if (currentJorong && currentJorong !== '' && currentJorong !== 'Semua Jorong') {
         allWarga = allWarga.filter(p => (p.jorong || '').toLowerCase() === currentJorong.toLowerCase());
     }
+    if (currentGender) {
+        allWarga = allWarga.filter(p => p.jenisKelamin === currentGender);
+    }
     const totalWargaEl = document.getElementById('stat-total-warga');
     if (totalWargaEl) totalWargaEl.textContent = allWarga.length;
 
@@ -288,7 +323,7 @@ function renderDashboard() {
 
     // NEW render follow-up tables
     if (typeof renderFollowUpTables === 'function') {
-        renderFollowUpTables(currentJorong, currentBulan);
+        renderFollowUpTables(currentJorong, currentBulan, currentGender);
     }
 
     // NEW render Demografi
@@ -1088,6 +1123,7 @@ window.downloadSkriningTemplate = function() {
 
 function renderWargaTable() {
     const filterJorong = document.getElementById('filter-jorong')?.value || '';
+    const filterGender = document.getElementById('filter-gender')?.value || '';
     const tbody = document.getElementById('warga-table-body');
     if (!tbody) return;
     
@@ -1099,6 +1135,9 @@ function renderWargaTable() {
     
     if (filterJorong && filterJorong !== 'Semua Jorong') {
         patients = patients.filter(p => (p.jorong || '').toLowerCase() === filterJorong.toLowerCase());
+    }
+    if (filterGender) {
+        patients = patients.filter(p => p.jenisKelamin === filterGender);
     }
 
     const searchQuery = document.getElementById('warga-search')?.value?.toLowerCase() || '';
@@ -1290,8 +1329,13 @@ window.switchFollowUpTab = function(tabName) {
     }
 };
 
-window.renderFollowUpTables = function(filterJorong = '', filterBulan = '') {
+window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filterGender = '') {
     if (typeof PatientDB === 'undefined' || typeof ScreeningDB === 'undefined') return;
+
+    // Read filter values from DOM if not passed
+    if (!filterJorong) filterJorong = document.getElementById('filter-jorong')?.value || '';
+    if (!filterBulan) filterBulan = document.getElementById('filter-bulan')?.value || '';
+    if (!filterGender) filterGender = document.getElementById('filter-gender')?.value || '';
 
     // RBAC: Override jorong if regular admin, so Follow-Up only shows their own jorong
     if (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong) {
@@ -1319,6 +1363,7 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '') {
         if (!p) return;
 
         if (filterJorong && filterJorong !== 'Semua Jorong' && (p.jorong || '').toLowerCase() !== filterJorong.toLowerCase()) return;
+        if (filterGender && p.jenisKelamin !== filterGender) return;
 
         const data = {
             id: p.id,
@@ -1764,17 +1809,17 @@ window.updatePaginationUI = function(tableId, totalItems) {
 
 window.nextPage = function(tableId) {
     window.statePage[tableId]++;
-    if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('warga-search').value);
-    else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
-    else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
+    if(tableId === 'warga') renderWargaTable();
+    else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '', document.getElementById('filter-gender')?.value || '');
+    else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables();
 };
 
 window.prevPage = function(tableId) {
     if (window.statePage[tableId] > 1) {
         window.statePage[tableId]--;
-        if(tableId === 'warga') renderWargaTable(document.getElementById('filter-jorong').value, document.getElementById('warga-search').value);
-        else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '');
-        else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables(document.getElementById('filter-jorong').value, document.getElementById('filter-bulan')?.value || '');
+        if(tableId === 'warga') renderWargaTable();
+        else if(tableId === 'skrining') renderTable(document.getElementById('filter-jorong').value, document.getElementById('table-search').value, document.getElementById('filter-bulan')?.value || '', document.getElementById('filter-gender')?.value || '');
+        else if(tableId === 'fu-ht' || tableId === 'fu-risk') renderFollowUpTables();
     }
 };
 

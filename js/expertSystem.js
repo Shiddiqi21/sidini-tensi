@@ -35,41 +35,25 @@ class HypertensionScreening {
         if (!sys || !dia) return { kode: 'unknown', label: 'Data Tidak Lengkap' };
 
         // ---- ANAK USIA < 13 TAHUN ----
-        // Klasifikasi persentil memerlukan data kurva pertumbuhan CDC/WHO.
-        // Sistem menyarankan konsultasi dokter anak.
         if (age < 13) {
-            if (sys >= 140 || dia >= 90) return { kode: 'ht2', label: 'Hipertensi Tingkat 2 (Anak)' };
-            if (sys >= 130 || dia >= 80) return { kode: 'ht1', label: 'Hipertensi Tingkat 1 (Anak)' };
+            if (sys >= 140) return { kode: 'ht2', label: 'Hipertensi Tingkat 2 (Anak)' };
+            if (sys >= 130) return { kode: 'ht1', label: 'Hipertensi Tingkat 1 (Anak)' };
             if (sys >= 120) return { kode: 'preht', label: 'Pre-hipertensi (Anak)' };
             return { kode: 'normal', label: 'Normal (Anak)' };
         }
 
         // ---- REMAJA USIA 13-17 TAHUN ----
-        // Berdasarkan Tabel Klasifikasi HT Anak ≥13 Tahun
         if (age < 18) {
-            if (sys >= 140 || dia >= 90) return { kode: 'ht2', label: 'Hipertensi Tingkat 2' };
-            if ((sys >= 130 && sys <= 139) || (dia >= 80 && dia <= 89)) return { kode: 'ht1', label: 'Hipertensi Tingkat 1' };
-            if (sys >= 120 && dia < 80) return { kode: 'preht', label: 'Pre-hipertensi' };
+            if (sys >= 140) return { kode: 'ht2', label: 'Hipertensi Tingkat 2' };
+            if (sys >= 130) return { kode: 'ht1', label: 'Hipertensi Tingkat 1' };
+            if (sys >= 120) return { kode: 'preht', label: 'Pre-hipertensi' };
             return { kode: 'normal', label: 'Normal' };
         }
 
-        // ---- DEWASA (≥ 18 TAHUN) — JNC 8 Age-Adjusted ----
-        const hasDiabetes = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Diabetes')) || this.data.komorbiditas === 'yes';
-        const hasGinjal = (Array.isArray(this.data.komorbiditas) && this.data.komorbiditas.includes('Ginjal'));
-        const isElderlyRelaxed = (age >= 60 && !hasDiabetes && !hasGinjal);
-
-        // Tahap 2 selalu sama: >= 160/100
-        if (sys >= 160 || dia >= 100) return { kode: 'ht2', label: 'Hipertensi Tahap 2' };
-
-        if (isElderlyRelaxed) {
-            // Lansia (>=60, tanpa DM/GGK): Batas HT1 = 150/90
-            if (sys >= 150 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
-            if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
-        } else {
-            // Usia 18-59 atau punya DM/GGK: Batas HT1 = 140/90
-            if (sys >= 140 || dia >= 90) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
-            if (sys >= 120 || dia >= 80) return { kode: 'preht', label: 'Pre-hipertensi' };
-        }
+        // ---- DEWASA (≥ 18 TAHUN) — Klasifikasi berdasarkan Sistolik ----
+        if (sys >= 160) return { kode: 'ht2', label: 'Hipertensi Tahap 2' };
+        if (sys >= 140) return { kode: 'ht1', label: 'Hipertensi Tahap 1' };
+        if (sys >= 120) return { kode: 'preht', label: 'Pre-hipertensi' };
         return { kode: 'normal', label: 'Normal' };
     }
 

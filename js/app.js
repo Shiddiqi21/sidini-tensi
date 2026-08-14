@@ -82,7 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnWargaBaru) {
         btnWargaBaru.addEventListener('click', () => {
             form.reset();
+            toggleDataDiriLock(false);
+            patientIdField.value = '';
+            searchInput.value = '';
+            searchDropdown.classList.remove('open');
+            document.getElementById('result-panel').style.display = 'none';
             form.classList.remove('hidden');
+            // Reset IMT display
+            if (imtValueDisplay) imtValueDisplay.textContent = '—';
+            if (imtBadgeDisplay) {
+                imtBadgeDisplay.textContent = 'Isi BB & TB';
+                imtBadgeDisplay.className = 'imt-badge';
+            }
         });
     }
 
@@ -211,9 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
             let badgeClass = '';
 
             if (imt < 18.5) { kategori = 'Kurus'; badgeClass = 'kurus'; }
-            else if (imt < 25) { kategori = 'Normal'; badgeClass = 'normal'; }
-            else if (imt < 30) { kategori = 'Overweight'; badgeClass = 'overweight'; }
-            else { kategori = 'Obesitas'; badgeClass = 'obesitas'; }
+            else if (imt < 23) { kategori = 'Normal'; badgeClass = 'normal'; }
+            else if (imt < 25) { kategori = 'Pre-Obese'; badgeClass = 'overweight'; }
+            else if (imt < 30) { kategori = 'Obesitas Tipe 1'; badgeClass = 'obesitas'; }
+            else { kategori = 'Obesitas Tipe 2'; badgeClass = 'obesitas'; }
 
             imtValueDisplay.textContent = imtRounded;
             imtBadgeDisplay.textContent = kategori;
