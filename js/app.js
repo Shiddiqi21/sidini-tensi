@@ -274,8 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const riwayatHTField = form.querySelector('input[name="riwayatHT"]:checked');
         const hasRiwayatHT = riwayatHTField && riwayatHTField.value === 'ya';
         
-        // Jika TIDAK punya riwayat HT dan tensi pengukuran 1 tinggi (>=130 atau >=80)
-        if (!hasRiwayatHT && (sys >= 130 || dia >= 80) && sys > 0 && dia > 0) {
+        // Jika TIDAK punya riwayat HT dan tensi pengukuran 1 tinggi (Sistolik >= 140)
+        if (!hasRiwayatHT && sys >= 140 && dia > 0) {
             extraBpSection.classList.remove('hidden');
         } else {
             extraBpSection.classList.add('hidden');
@@ -325,20 +325,38 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Manual validation for hidden radio buttons (Jenis Kelamin)
-        const genderRadios = form.querySelectorAll('input[name="jenisKelamin"]:checked');
-        if (genderRadios.length === 0) {
-            if(typeof Swal !== 'undefined') {
+        // ===== VALIDASI MANUAL SEMUA FIELD WAJIB =====
+        const nikVal = document.getElementById('nik')?.value?.trim();
+        const namaVal = document.getElementById('nama')?.value?.trim();
+        const tglLahirVal = document.getElementById('tanggalLahir')?.value?.trim();
+        const jorongVal = document.getElementById('jorong')?.value?.trim();
+        const bbVal = parseFloat(document.getElementById('beratBadan')?.value) || 0;
+        const tbVal = parseFloat(document.getElementById('tinggiBadan')?.value) || 0;
+        const sysVal = parseFloat(document.getElementById('sistolik')?.value) || 0;
+        const diaVal = parseFloat(document.getElementById('diastolik')?.value) || 0;
+        const genderChecked = form.querySelectorAll('input[name="jenisKelamin"]:checked').length > 0;
+
+        const missing = [];
+        if (!nikVal) missing.push('NIK');
+        if (!namaVal) missing.push('Nama Lengkap');
+        if (!tglLahirVal) missing.push('Tanggal Lahir');
+        if (!genderChecked) missing.push('Jenis Kelamin');
+        if (!jorongVal) missing.push('Jorong');
+        if (!bbVal) missing.push('Berat Badan');
+        if (!tbVal) missing.push('Tinggi Badan');
+        if (!sysVal) missing.push('Tekanan Darah Sistolik');
+        if (!diaVal) missing.push('Tekanan Darah Diastolik');
+
+        if (missing.length > 0) {
+            if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Data Belum Lengkap',
-                    text: 'Mohon pilih Jenis Kelamin (Laki-laki / Perempuan) terlebih dahulu.'
+                    html: `Mohon lengkapi kolom berikut:<br><b>${missing.join(', ')}</b>`
                 });
             } else {
-                alert('Mohon pilih Jenis Kelamin terlebih dahulu.');
+                alert('Mohon lengkapi: ' + missing.join(', '));
             }
-            // Scroll to gender selection
-            document.getElementById('jenisKelamin')?.scrollIntoView({behavior: 'smooth', block: 'center'});
             return;
         }
 

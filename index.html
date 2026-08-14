@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=11">
+    <link rel="stylesheet" href="css/style.css?v=12">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -268,7 +268,7 @@
             </div>
         </div>
 
-        <form id="screening-form" class="hidden">
+        <form id="screening-form" class="hidden" novalidate>
 
             <!-- SECTION A: Data Diri -->
             <div class="card" style="margin-bottom: 24px;">
@@ -279,15 +279,15 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>NIK <span class="required">*</span></label>
-                        <input type="text" id="nik" name="nik" class="form-input" placeholder="16 digit NIK" required maxlength="16">
+                        <input type="text" id="nik" name="nik" class="form-input" placeholder="16 digit NIK" maxlength="16">
                     </div>
                     <div class="form-group">
                         <label>Nama Lengkap <span class="required">*</span></label>
-                        <input type="text" id="nama" name="nama" class="form-input" placeholder="Nama lengkap warga" required>
+                        <input type="text" id="nama" name="nama" class="form-input" placeholder="Nama lengkap warga">
                     </div>
                     <div class="form-group">
                         <label>Tanggal Lahir <span class="required">*</span></label>
-                        <input type="date" id="tanggalLahir" name="tanggalLahir" class="form-input" required>
+                        <input type="date" id="tanggalLahir" name="tanggalLahir" class="form-input">
                     </div>
                     <div class="form-group">
                         <label>Umur (Otomatis)</label>
@@ -304,7 +304,7 @@
                     </div>
                     <div class="form-group">
                         <label>Jorong <span class="required">*</span></label>
-                        <select id="jorong" name="jorong" class="form-select" required>
+                        <select id="jorong" name="jorong" class="form-select">
                             <option value="" disabled selected>Pilih Jorong...</option>
                         </select>
                     </div>
@@ -344,11 +344,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Berat Badan (kg) <span class="required">*</span></label>
-                        <input type="number" id="beratBadan" name="beratBadan" class="form-input" placeholder="Contoh: 65" required min="10" max="300" step="0.1">
+                        <input type="number" id="beratBadan" name="beratBadan" class="form-input" placeholder="Contoh: 65" min="10" max="300" step="0.1">
                     </div>
                     <div class="form-group">
                         <label>Tinggi Badan (cm) <span class="required">*</span></label>
-                        <input type="number" id="tinggiBadan" name="tinggiBadan" class="form-input" placeholder="Contoh: 160" required min="50" max="250" step="0.1">
+                        <input type="number" id="tinggiBadan" name="tinggiBadan" class="form-input" placeholder="Contoh: 160" min="50" max="250" step="0.1">
                     </div>
                     <div class="form-group full-width">
                         <label>Indeks Massa Tubuh (IMT) — Otomatis</label>
@@ -359,11 +359,11 @@
                     </div>
                     <div class="form-group">
                         <label>Tekanan Darah Sistolik (Atas) <span class="required">*</span></label>
-                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Pengukuran 1" required min="60" max="300">
+                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Pengukuran 1" min="60" max="300">
                     </div>
                     <div class="form-group">
                         <label>Tekanan Darah Diastolik (Bawah) <span class="required">*</span></label>
-                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Pengukuran 1" required min="30" max="200">
+                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Pengukuran 1" min="30" max="200">
                     </div>
 
                     <!-- Pengukuran 2 & 3 (muncul otomatis jika pasien baru & tensi tinggi) -->
@@ -1273,12 +1273,12 @@
         </div>
     </div>
 
-    <script src="js/firebase-config.js?v=11"></script>
-    <script src="js/database.js?v=11"></script>
-    <script src="js/expertSystem.js?v=11"></script>
-    <script src="js/app.js?v=11"></script>
-    <script src="js/dashboard.js?v=11"></script>
-    <script src="js/admin.js?v=11"></script>
+    <script src="js/firebase-config.js?v=12"></script>
+    <script src="js/database.js?v=12"></script>
+    <script src="js/expertSystem.js?v=12"></script>
+    <script src="js/app.js?v=12"></script>
+    <script src="js/dashboard.js?v=12"></script>
+    <script src="js/admin.js?v=12"></script>
     
     <!-- SPA Router -->
     <script>
