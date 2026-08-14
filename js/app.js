@@ -939,6 +939,24 @@ window.handleLogout = async function() {
     }
 };
 
+// Open modal and clear inputs
+window.openDaftarWargaModal = function() {
+    document.getElementById('sw-nik').value = '';
+    document.getElementById('sw-nama').value = '';
+    document.getElementById('sw-tanggalLahir').value = '';
+    document.getElementById('sw-jk').value = 'male';
+    document.getElementById('sw-jorong').value = '';
+    document.getElementById('sw-umur').value = '';
+    document.getElementById('sw-umurUnit').value = 'tahun';
+    
+    // Auto-select jorong if regular admin
+    if (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong) {
+        document.getElementById('sw-jorong').value = window.currentUser.jorong;
+    }
+    
+    document.getElementById('modal-daftar-warga-skrining').classList.remove('hidden');
+};
+
 // Handle Daftarkan Warga Baru dari Modal Skrining
 window.handleDaftarWargaLaluSkrining = function() {
     const nik = document.getElementById('sw-nik')?.value?.trim();
