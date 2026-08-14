@@ -164,9 +164,39 @@ document.addEventListener('DOMContentLoaded', () => {
             if (genderRadio) genderRadio.checked = true;
         }
 
+        // Update profile card display
+        updatePatientProfileCard(patient);
+
         // Lock fields
         toggleDataDiriLock(true);
         form.classList.remove('hidden');
+    }
+
+    function updatePatientProfileCard(patient) {
+        const dNama = document.getElementById('display-nama');
+        const dNik = document.getElementById('display-nik');
+        const dUmur = document.getElementById('display-umur');
+        const dJk = document.getElementById('display-jk');
+        const dJorong = document.getElementById('display-jorong');
+
+        if (dNama) dNama.textContent = patient.nama || '-';
+        if (dNik) dNik.textContent = patient.nik || '-';
+        
+        if (dUmur) {
+            if (typeof patient.umurBulan === 'number' && patient.umurBulan > 0 && patient.umur === 0) {
+                dUmur.textContent = patient.umurBulan + ' Bulan';
+            } else {
+                dUmur.textContent = (patient.umur || 0) + ' Tahun';
+            }
+        }
+        
+        if (dJk) {
+            dJk.innerHTML = patient.jenisKelamin === 'female' 
+                ? '<i class="ph-bold ph-gender-female"></i> Perempuan' 
+                : '<i class="ph-bold ph-gender-male"></i> Laki-laki';
+        }
+        
+        if (dJorong) dJorong.textContent = patient.jorong || '-';
     }
 
     function toggleDataDiriLock(isLocked) {
@@ -1009,6 +1039,23 @@ window.handleDaftarWargaLaluSkrining = function() {
     // Set gender radio
     const genderRadio = form.querySelector(`input[name="jenisKelamin"][value="${newPatient.jenisKelamin}"]`);
     if (genderRadio) genderRadio.checked = true;
+
+    // Update Profile Card
+    if (typeof updatePatientProfileCard === 'function') {
+        updatePatientProfileCard(newPatient);
+    } else {
+        const dNama = document.getElementById('display-nama');
+        const dNik = document.getElementById('display-nik');
+        const dUmur = document.getElementById('display-umur');
+        const dJk = document.getElementById('display-jk');
+        const dJorong = document.getElementById('display-jorong');
+
+        if (dNama) dNama.textContent = newPatient.nama || '-';
+        if (dNik) dNik.textContent = newPatient.nik || '-';
+        if (dUmur) dUmur.textContent = newPatient.umurBulan > 0 && newPatient.umur === 0 ? newPatient.umurBulan + ' Bulan' : newPatient.umur + ' Tahun';
+        if (dJk) dJk.innerHTML = newPatient.jenisKelamin === 'female' ? '<i class="ph-bold ph-gender-female"></i> Perempuan' : '<i class="ph-bold ph-gender-male"></i> Laki-laki';
+        if (dJorong) dJorong.textContent = newPatient.jorong || '-';
+    }
 
     // Show screening form
     form.classList.remove('hidden');
