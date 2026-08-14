@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // State
     let currentResult = null;
     let currentFormData = null;
+    let isAddingNewWarga = false;
 
     // ===== AUTOCOMPLETE SEARCH =====
     searchInput.addEventListener('input', () => {
@@ -82,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnWargaBaru) {
         btnWargaBaru.addEventListener('click', () => {
             console.log('Tambah Warga Baru clicked');
+            // Set flag BEFORE reset to prevent reset handler from hiding form
+            isAddingNewWarga = true;
             // Reset form
             form.reset();
             // Unlock data diri fields
@@ -708,8 +711,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Unlock fields
             toggleDataDiriLock(false);
             
-            // Hide form again
-            form.classList.add('hidden');
+            // Hide form again (but NOT if adding new warga)
+            if (isAddingNewWarga) {
+                isAddingNewWarga = false;
+            } else {
+                form.classList.add('hidden');
+            }
         }, 10);
     });
 });
