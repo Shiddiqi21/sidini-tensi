@@ -1120,6 +1120,22 @@ function handleExcelExport() {
     });
 
     const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Auto-adjust column widths
+    if (exportData.length > 0) {
+        const colWidths = Object.keys(exportData[0]).map(key => {
+            let maxLen = key.length;
+            exportData.forEach(row => {
+                const val = row[key];
+                if (val && String(val).length > maxLen) {
+                    maxLen = String(val).length;
+                }
+            });
+            return { wch: Math.min(maxLen + 2, 50) }; // Add padding, limit max width to 50
+        });
+        ws['!cols'] = colWidths;
+    }
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Data Skrining');
     XLSX.writeFile(wb, 'Data_Skrining_KotoTangah.xlsx');
