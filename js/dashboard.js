@@ -274,8 +274,20 @@ function renderDashboard() {
     const currentSearch = document.getElementById('table-search').value;
 
     let statsToUse = globalStats;
-    if (currentJorong && currentJorong !== '' && globalStats.perJorong && globalStats.perJorong[currentJorong]) {
-        statsToUse = globalStats.perJorong[currentJorong];
+    if (currentJorong && currentJorong !== '' && currentJorong !== 'Semua Jorong') {
+        if (globalStats.perJorong && globalStats.perJorong[currentJorong]) {
+            statsToUse = globalStats.perJorong[currentJorong];
+        } else {
+            // Jika jorong dipilih tapi tidak ada datanya, gunakan stats kosong (nol)
+            statsToUse = {
+                totalScreened: 0,
+                total: 0,
+                sehat: 0,
+                htTerkontrol: 0,
+                htTidakTerkontrol: 0,
+                faktorRisikoCount: { merokok: 0, alkohol: 0, obesitas: 0, aktivitasFisikKurang: 0, riwayatKeluarga: 0, stress: 0 }
+            };
+        }
     }
 
     // Helper to calculate percentage safely
