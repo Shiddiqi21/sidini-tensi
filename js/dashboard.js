@@ -129,52 +129,64 @@ window.statePage = {
 };
 
 function populateBulanDropdown() {
-    const filterBulan = document.getElementById('filter-bulan');
-    if (!filterBulan) return;
-    if (typeof ScreeningDB === 'undefined') return;
-    
-    const currentVal = filterBulan.value;
-    filterBulan.innerHTML = '<option value="">Semua Bulan</option>';
-    
-    const screenings = ScreeningDB.getAll();
-    const months = new Set();
-    
-    screenings.forEach(s => {
-        // Coba cari tanggal dari berbagai field
-        let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
-        if (!tgl) return; // Skip jika benar-benar tidak ada tanggal
+    try {
+        const filterBulan = document.getElementById('filter-bulan');
+        if (!filterBulan) return;
+        if (typeof ScreeningDB === 'undefined') return;
         
-        try {
-            const d = new Date(tgl);
-            if (!isNaN(d.getTime())) {
-                // Pastikan format YYYY-MM
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                months.add(`${year}-${month}`);
+        const currentVal = filterBulan.value;
+        filterBulan.innerHTML = '<option value="">Semua Bulan</option>';
+        
+        const screenings = ScreeningDB.getAll() || [];
+        const months = new Set();
+        
+        screenings.forEach(s => {
+            let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
+            if (!tgl) return;
+            
+            try {
+                // Handle DD/MM/YYYY manually just in case
+                if (typeof tgl === 'string' && tgl.includes('/')) {
+                    const p = tgl.split('/');
+                    if (p.length === 3 && p[2].length === 4) {
+                        tgl = `${p[2]}-${p[1]}-${p[0]}`;
+                    }
+                }
+                const d = new Date(tgl);
+                if (!isNaN(d.getTime())) {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    months.add(`${year}-${month}`);
+                }
+            } catch (e) {
+                console.warn('Failed to parse date:', tgl);
             }
-        } catch (e) {
-            // Abaikan tanggal yang tidak bisa diparse
-        }
-    });
-    
-    const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    
-    sortedMonths.forEach(m => {
-        const parts = m.split('-');
-        if (parts.length === 2) {
-            const year = parts[0];
-            const monthIdx = parseInt(parts[1], 10) - 1;
-            if (!isNaN(monthIdx) && monthIdx >= 0 && monthIdx < 12) {
-                const option = document.createElement('option');
-                option.value = m;
-                option.textContent = `${monthNames[monthIdx]} ${year}`;
-                filterBulan.appendChild(option);
+        });
+        
+        const sortedMonths = Array.from(months).sort((a, b) => b.localeCompare(a));
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        
+        sortedMonths.forEach(m => {
+            const parts = m.split('-');
+            if (parts.length === 2) {
+                const year = parts[0];
+                const monthIdx = parseInt(parts[1], 10) - 1;
+                if (!isNaN(monthIdx) && monthIdx >= 0 && monthIdx < 12) {
+                    const option = document.createElement('option');
+                    option.value = m;
+                    option.textContent = `${monthNames[monthIdx]} ${year}`;
+                    filterBulan.appendChild(option);
+                }
             }
+        });
+        
+        if (currentVal) {
+            const exists = Array.from(filterBulan.options).some(o => o.value === currentVal);
+            if (exists) filterBulan.value = currentVal;
         }
-    });
-    
-    if (currentVal) filterBulan.value = currentVal;
+    } catch(err) {
+        console.error("Error in populateBulanDropdown:", err);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
