@@ -81,20 +81,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnWargaBaru) {
         btnWargaBaru.addEventListener('click', () => {
+            console.log('Tambah Warga Baru clicked');
+            // Reset form
             form.reset();
+            // Unlock data diri fields
             toggleDataDiriLock(false);
-            patientIdField.value = '';
-            searchInput.value = '';
-            searchDropdown.classList.remove('open');
-            document.getElementById('result-panel').style.display = 'none';
+            // Clear patient state
+            if (patientIdField) patientIdField.value = '';
+            if (searchInput) searchInput.value = '';
+            if (searchDropdown) searchDropdown.classList.remove('open');
+            // Hide result panel
+            if (resultPanel) {
+                resultPanel.style.display = 'none';
+                resultPanel.classList.add('hidden');
+            }
+            // Show form
             form.classList.remove('hidden');
+            form.style.display = '';
             // Reset IMT display
             if (imtValueDisplay) imtValueDisplay.textContent = '—';
             if (imtBadgeDisplay) {
                 imtBadgeDisplay.textContent = 'Isi BB & TB';
                 imtBadgeDisplay.className = 'imt-badge';
             }
+            // Scroll form into view
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
+    } else {
+        console.error('btn-warga-baru element NOT FOUND');
     }
 
     function fillPatientData(patient) {
