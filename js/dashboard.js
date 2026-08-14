@@ -1106,7 +1106,14 @@ function handleExcelExport() {
             'Klasifikasi TD': s.hasil?.klasifikasiTD || '-',
             'Status HT (Sistem)': s.hasil?.statusHT || '-',
             'Kategori Kasus': s.hasil?.kategoriKasus || '-',
-            'Risiko CVD (WHO)': (s.hasil?.komplikasiList || s.hasil?.komplikasi || []).join(', ') || '-',
+            'Risiko CVD (WHO)': (() => {
+                if (s.hasil?.komplikasi && Array.isArray(s.hasil.komplikasi) && s.hasil.komplikasi.length > 0) {
+                    if (typeof s.hasil.komplikasi[0] === 'object' && s.hasil.komplikasi[0].level) {
+                        return s.hasil.komplikasi.map(k => k.level).join(', ');
+                    }
+                }
+                return (s.hasil?.komplikasiList || []).join(', ') || '-';
+            })(),
             'Skor Risiko': (s.hasil?.riskScore !== undefined && s.hasil?.riskScore !== null) ? s.hasil.riskScore : 0,
             'Edukasi Diberikan': eduExportStr
         };
