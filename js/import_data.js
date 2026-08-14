@@ -3122,10 +3122,14 @@ const newScreenings = [
 
 window.addEventListener('load', function() {
     setTimeout(function() {
-        // Only run once
-        if (localStorage.getItem('import_rawang_done_v3') === 'true') {
-            console.log("Import already done, skipping.");
-            return;
+        // Only run once safely
+        try {
+            if (localStorage.getItem('import_rawang_done_v3') === 'true') {
+                console.log("Import already done, skipping.");
+                return;
+            }
+        } catch (e) {
+            console.warn("localStorage disabled or corrupted, import might run on every reload.");
         }
 
         console.log("=== IMPORT SCRIPT STARTING ===");
@@ -3200,7 +3204,11 @@ window.addEventListener('load', function() {
             console.log("=== IMPORT COMPLETE ===");
 
             // Mark as done so it won't run again
-            localStorage.setItem('import_rawang_done_v3', 'true');
+            try {
+                localStorage.setItem('import_rawang_done_v3', 'true');
+            } catch (e) {
+                console.warn("Could not save import status to localStorage");
+            }
 
             if (typeof renderDashboard === 'function') {
                 renderDashboard();

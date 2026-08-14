@@ -224,22 +224,25 @@ document.addEventListener('DOMContentLoaded', () => {
     populateBulanDropdown();
 
     // === Restore filter state from localStorage (Bug 6 fix) ===
-    const savedJorong = localStorage.getItem('filter_jorong');
-    const savedBulan = localStorage.getItem('filter_bulan');
-    const savedGender = localStorage.getItem('filter_gender');
-    const fJorong = document.getElementById('filter-jorong');
-    const fBulan = document.getElementById('filter-bulan');
-    const fGender = document.getElementById('filter-gender');
-    if (savedJorong && fJorong) {
-        // Check if option exists
-        const optExists = Array.from(fJorong.options).some(o => o.value === savedJorong);
-        if (optExists) fJorong.value = savedJorong;
+    try {
+        const savedJorong = localStorage.getItem('filter_jorong');
+        const savedBulan = localStorage.getItem('filter_bulan');
+        const savedGender = localStorage.getItem('filter_gender');
+        const fJorong = document.getElementById('filter-jorong');
+        const fBulan = document.getElementById('filter-bulan');
+        const fGender = document.getElementById('filter-gender');
+        if (savedJorong && fJorong) {
+            const optExists = Array.from(fJorong.options).some(o => o.value === savedJorong);
+            if (optExists) fJorong.value = savedJorong;
+        }
+        if (savedBulan && fBulan) {
+            const optExists = Array.from(fBulan.options).some(o => o.value === savedBulan);
+            if (optExists) fBulan.value = savedBulan;
+        }
+        if (savedGender && fGender) fGender.value = savedGender;
+    } catch (e) {
+        console.warn("localStorage is disabled or corrupted, skipping filter restore.");
     }
-    if (savedBulan && fBulan) {
-        const optExists = Array.from(fBulan.options).some(o => o.value === savedBulan);
-        if (optExists) fBulan.value = savedBulan;
-    }
-    if (savedGender && fGender) fGender.value = savedGender;
 
     // Helper to safely add event listener (element might not exist)
     function safeOn(id, event, handler) {
@@ -249,12 +252,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to save filter state
     function saveFilterState() {
-        const j = document.getElementById('filter-jorong');
-        const b = document.getElementById('filter-bulan');
-        const g = document.getElementById('filter-gender');
-        if (j) localStorage.setItem('filter_jorong', j.value);
-        if (b) localStorage.setItem('filter_bulan', b.value);
-        if (g) localStorage.setItem('filter_gender', g.value);
+        try {
+            const j = document.getElementById('filter-jorong');
+            const b = document.getElementById('filter-bulan');
+            const g = document.getElementById('filter-gender');
+            if (j) localStorage.setItem('filter_jorong', j.value);
+            if (b) localStorage.setItem('filter_bulan', b.value);
+            if (g) localStorage.setItem('filter_gender', g.value);
+        } catch (e) {
+            console.warn("localStorage is disabled or corrupted, cannot save filter state.");
+        }
     }
 
     // === Set up ALL event listeners FIRST (before any rendering) ===
