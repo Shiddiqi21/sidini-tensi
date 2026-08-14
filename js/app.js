@@ -325,6 +325,23 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        // Manual validation for hidden radio buttons (Jenis Kelamin)
+        const genderRadios = form.querySelectorAll('input[name="jenisKelamin"]:checked');
+        if (genderRadios.length === 0) {
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Data Belum Lengkap',
+                    text: 'Mohon pilih Jenis Kelamin (Laki-laki / Perempuan) terlebih dahulu.'
+                });
+            } else {
+                alert('Mohon pilih Jenis Kelamin terlebih dahulu.');
+            }
+            // Scroll to gender selection
+            document.getElementById('jenisKelamin')?.scrollIntoView({behavior: 'smooth', block: 'center'});
+            return;
+        }
+
         const formData = new FormData(form);
         const data = {};
 
