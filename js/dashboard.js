@@ -580,6 +580,14 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '', filt
         allScreenings = allScreenings.filter(s => {
             let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
             if (!tgl) return false;
+            
+            if (typeof tgl === 'string' && tgl.includes('/')) {
+                const p = tgl.split('/');
+                if (p.length === 3 && p[2].length === 4) {
+                    tgl = `${p[2]}-${p[1]}-${p[0]}`;
+                }
+            }
+            
             return filterBulan.length === 10 ? tgl.substring(0, 10) === filterBulan : tgl.substring(0, 7) === filterBulan;
         });
     }
@@ -1439,6 +1447,12 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
     Object.values(latestScreenings).forEach(s => {
         let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
         if (filterBulan && tgl) {
+            if (typeof tgl === 'string' && tgl.includes('/')) {
+                const p = tgl.split('/');
+                if (p.length === 3 && p[2].length === 4) {
+                    tgl = `${p[2]}-${p[1]}-${p[0]}`;
+                }
+            }
             const isMatch = filterBulan.length === 10 ? tgl.substring(0, 10) === filterBulan : tgl.substring(0, 7) === filterBulan;
             if (!isMatch) return;
         } else if (filterBulan && !tgl) {
@@ -2497,7 +2511,13 @@ window.showListModal = function(type) {
     // Apply bulan filter
     if (currentBulan) {
         allScreenings = allScreenings.filter(s => {
-            const tgl = s.tanggalSkrining || s.tanggal || s.createdAt || '';
+            let tgl = s.tanggalSkrining || s.tanggal || s.createdAt || '';
+            if (typeof tgl === 'string' && tgl.includes('/')) {
+                const p = tgl.split('/');
+                if (p.length === 3 && p[2].length === 4) {
+                    tgl = `${p[2]}-${p[1]}-${p[0]}`;
+                }
+            }
             return tgl.startsWith(currentBulan);
         });
     }

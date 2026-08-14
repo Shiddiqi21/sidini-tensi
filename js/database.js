@@ -590,6 +590,13 @@ const ScreeningDB = {
                 let tgl = s.tanggalSkrining || s.createdAt || s.waktuSkrining;
                 if (!tgl) return false;
                 
+                if (typeof tgl === 'string' && tgl.includes('/')) {
+                    const p = tgl.split('/');
+                    if (p.length === 3 && p[2].length === 4) {
+                        tgl = `${p[2]}-${p[1]}-${p[0]}`;
+                    }
+                }
+                
                 // Jika filter adalah YYYY-MM-DD
                 if (filterBulan.length === 10) {
                     return tgl.substring(0, 10) === filterBulan;
