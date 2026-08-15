@@ -142,7 +142,16 @@ function populateBulanDropdown() {
         const currentVal = filterBulan.value;
         filterBulan.innerHTML = '<option value="">Semua Waktu</option>';
         
-        const screenings = ScreeningDB.getAll() || [];
+        let screenings = ScreeningDB.getAll() || [];
+        
+        // Filter out dates that don't belong to admin's jorong
+        const myJorong = (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.jorong) ? window.currentUser.jorong : null;
+        if (myJorong) {
+            screenings = screenings.filter(s => {
+                const patient = typeof PatientDB !== 'undefined' ? PatientDB.get(s.patientId || s.patient_id) : null;
+                return patient && patient.jorong === myJorong;
+            });
+        }
         const months = new Set();
         const dates = new Set();
         
