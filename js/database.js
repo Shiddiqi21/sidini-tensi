@@ -82,7 +82,7 @@ const _memoryDB = {
 })();
 
 function getFromStorage(key) {
-    return JSON.parse(JSON.stringify(_memoryDB[key] || []));
+    return _memoryDB[key] || [];
 }
 
 function saveToStorage(key, data) {

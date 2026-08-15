@@ -1542,9 +1542,9 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
         if (paginatedHt.length === 0) {
             tbodyHt.innerHTML = '<tr><td colspan="5" style="text-align:center;">Tidak ada pasien hipertensi.</td></tr>';
         } else {
-            paginatedHt.forEach(item => {
+            const htmlRows = paginatedHt.map(item => {
                 const badgeClass = item.statusHT === 'Terkontrol' ? 'terkontrol' : 'tidak-terkontrol';
-                tbodyHt.innerHTML += `
+                return `
                     <tr>
                         <td><b>${item.nama}</b></td>
                         <td>${item.jorong || '-'}</td>
@@ -1555,7 +1555,8 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
                         </td>
                     </tr>
                 `;
-            });
+            }).join('');
+            tbodyHt.innerHTML = htmlRows;
         }
     }
 
@@ -1571,13 +1572,13 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
         if (paginatedRisk.length === 0) {
             tbodyRisk.innerHTML = '<tr><td colspan="5" style="text-align:center;">Tidak ada data.</td></tr>';
         } else {
-            paginatedRisk.forEach(item => {
+            const htmlRows = paginatedRisk.map(item => {
                 let riskColor = 'normal';
                 if (item.riskScore >= 20) riskColor = 'tidak-terkontrol'; // Tinggi
                 else if (item.riskScore >= 10) riskColor = 'warning'; // Sedang
                 else riskColor = 'terkontrol'; // Rendah
 
-                tbodyRisk.innerHTML += `
+                return `
                     <tr>
                         <td><b>${item.nama}</b></td>
                         <td>${item.jorong || '-'}</td>
@@ -1588,7 +1589,8 @@ window.renderFollowUpTables = function(filterJorong = '', filterBulan = '', filt
                         </td>
                     </tr>
                 `;
-            });
+            }).join('');
+            tbodyRisk.innerHTML = htmlRows;
         }
     }
 };
@@ -1619,7 +1621,7 @@ window.openFollowUpModal = function(patientId) {
     if (sortedFUs.length === 0) {
         historyContainer.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem; text-align:center;">Belum ada riwayat follow-up.</p>';
     } else {
-        sortedFUs.forEach(fu => {
+        const htmlContent = sortedFUs.map(fu => {
             const dateStr = new Date(fu.tanggal).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
             
             let contentHtml = '';
@@ -1636,8 +1638,8 @@ window.openFollowUpModal = function(patientId) {
                 contentHtml = fu.catatan || '';
             }
 
-            historyContainer.innerHTML += `
-                <div style="background: var(--bg); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+            return `
+                <div style="background: var(--bg); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
                     <div style="flex: 1;">
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</div>
                         <div style="color: var(--text); font-size: 0.95rem; line-height: 1.5;">${contentHtml}</div>
@@ -1652,7 +1654,8 @@ window.openFollowUpModal = function(patientId) {
                     </div>
                 </div>
             `;
-        });
+        }).join('');
+        historyContainer.innerHTML = htmlContent;
     }
 
     const modal = document.getElementById('followup-modal');
@@ -1899,7 +1902,7 @@ window.showCategoryModal = function(categoryKey, categoryLabel) {
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Tidak ada warga di kategori ini.</td></tr>';
     } else {
-        filtered.forEach((p, idx) => {
+        const htmlRows = filtered.map((p, idx) => {
             let umurText = `${p.umur || 0} thn`;
             if (typeof p.umurBulan === 'number') {
                 const y = Math.floor(p.umurBulan / 12);
@@ -1909,7 +1912,7 @@ window.showCategoryModal = function(categoryKey, categoryLabel) {
                 else umurText = `${y} thn`;
             }
 
-            tbody.innerHTML += `
+            return `
                 <tr>
                     <td>${idx + 1}</td>
                     <td><b>${p.nama}</b><br><small style="color:var(--text-muted)">NIK: ${p.nik}</small></td>
@@ -1917,7 +1920,8 @@ window.showCategoryModal = function(categoryKey, categoryLabel) {
                     <td>${umurText}</td>
                 </tr>
             `;
-        });
+        }).join('');
+        tbody.innerHTML = htmlRows;
     }
 
     document.getElementById('category-modal').classList.remove('hidden');
