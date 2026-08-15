@@ -905,7 +905,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Alert sukses
                 if(typeof Swal !== 'undefined'){
-                    Swal.fire({ icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
                 }
                 
                 document.getElementById('login-modal').classList.add('hidden');
@@ -945,7 +949,11 @@ window.handleLogout = async function() {
     try {
         await auth.signOut();
         if(typeof Swal !== 'undefined'){
-            Swal.fire({ icon: 'success', title: 'Berhasil Keluar', timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Berhasil Keluar', timer: 1500, showConfirmButton: false }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            window.location.reload();
         }
     } catch (err) {
         console.error("Logout Error:", err);
