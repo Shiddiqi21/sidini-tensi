@@ -19,7 +19,7 @@ class HypertensionScreening {
         let kategori = '';
         if (imt < 18.5) kategori = 'Kurus';
         else if (imt < 23) kategori = 'Normal';
-        else if (imt < 25) kategori = 'Pre-Obese';
+        else if (imt < 25) kategori = 'Gemuk';
         else if (imt < 30) kategori = 'Obesitas Tipe 1';
         else kategori = 'Obesitas Tipe 2';
 
@@ -91,7 +91,7 @@ class HypertensionScreening {
         // IMT
         if (imt.kategori === 'Obesitas Tipe 2') score += 3;
         else if (imt.kategori === 'Obesitas Tipe 1') score += 2;
-        else if (imt.kategori === 'Pre-Obese') score += 1;
+        else if (imt.kategori === 'Gemuk') score += 1;
 
         // Tekanan Darah
         if (bpClass.kode === 'ht2') score += 4;
@@ -199,7 +199,7 @@ class HypertensionScreening {
         const followUp = [];
 
         // --- Intervensi berdasarkan kondisi ---
-        if (imt.kategori.includes('Obesitas') || imt.kategori === 'Pre-Obese') {
+        if (imt.kategori.includes('Obesitas') || imt.kategori === 'Gemuk') {
             const tinggiM = this.data.tinggiBadan / 100;
             const bbIdeal = parseFloat((23 * tinggiM * tinggiM).toFixed(1)); // Target IMT 23 (batas atas normal Asia Pasifik)
             const bbSekarang = this.data.beratBadan;

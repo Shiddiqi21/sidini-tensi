@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (imt < 18.5) { kategori = 'Kurus'; badgeClass = 'kurus'; }
             else if (imt < 23) { kategori = 'Normal'; badgeClass = 'normal'; }
-            else if (imt < 25) { kategori = 'Pre-Obese'; badgeClass = 'overweight'; }
+            else if (imt < 25) { kategori = 'Gemuk'; badgeClass = 'overweight'; }
             else if (imt < 30) { kategori = 'Obesitas Tipe 1'; badgeClass = 'obesitas'; }
             else { kategori = 'Obesitas Tipe 2'; badgeClass = 'obesitas'; }
 
@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getImtStatClass(kategori) {
         if (kategori.includes('Obesitas')) return 'danger';
-        if (kategori === 'Pre-Obese') return 'warning';
+        if (kategori === 'Gemuk') return 'warning';
         if (kategori === 'Kurus') return 'info';
         return 'normal';
     }

@@ -716,7 +716,7 @@ function renderTable(filterJorong = '', searchQuery = '', filterBulan = '', filt
                 let imtClass = 'status-badge';
                 if (imtKat.includes('normal')) imtClass += ' normal';
                 else if (imtKat.includes('obesitas')) imtClass += ' danger';
-                else if (imtKat.includes('pre-obese') || imtKat.includes('overweight')) imtClass += ' warning';
+                else if (imtKat.includes('gemuk') || imtKat.includes('overweight')) imtClass += ' warning';
                 else imtClass += ' info';
 
                 // Tensi
