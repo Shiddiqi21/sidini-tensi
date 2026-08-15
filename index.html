@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=21">
+    <link rel="stylesheet" href="css/style.css?v=22">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -111,15 +111,19 @@
                     <p>Peta wilayah kerja Nagari Koto Tangah.</p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto;">
-                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: white; transition: transform 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <img src="assets/wilayahkerjakapau.png" alt="Wilayah Kerja Puskesmas Kapau" style="width: 100%; height: auto; display: block; border-bottom: 2px solid var(--primary-fade);">
-                        <div style="padding: 16px; text-align: center; color: var(--primary); font-weight: 700; font-size: 1.1rem;">
+                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: white; transition: transform 0.3s ease; display: flex; flex-direction: column;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; background: white; border-bottom: 2px solid var(--primary-fade); padding: 10px;">
+                            <img src="assets/wilayahkerjakapau.png" alt="Wilayah Kerja Puskesmas Kapau" style="width: 100%; max-height: 280px; object-fit: contain; display: block;">
+                        </div>
+                        <div style="padding: 16px; text-align: center; color: var(--primary); font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">
                             <i class="ph-bold ph-map-pin"></i> Wilayah Kerja Pusk. Kapau
                         </div>
                     </div>
-                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: white; transition: transform 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <img src="assets/Wilayahkerjapakankamih.png" alt="Wilayah Kerja Puskesmas Pakan Kamih" style="width: 100%; height: auto; display: block; border-bottom: 2px solid var(--primary-fade);">
-                        <div style="padding: 16px; text-align: center; color: var(--primary); font-weight: 700; font-size: 1.1rem;">
+                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: white; transition: transform 0.3s ease; display: flex; flex-direction: column;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; background: white; border-bottom: 2px solid var(--primary-fade); padding: 10px;">
+                            <img src="assets/Wilayahkerjapakankamih.png" alt="Wilayah Kerja Puskesmas Pakan Kamih" style="width: 100%; max-height: 280px; object-fit: contain; display: block;">
+                        </div>
+                        <div style="padding: 16px; text-align: center; color: var(--primary); font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">
                             <i class="ph-bold ph-map-pin"></i> Wilayah Kerja Pusk. Pakan Kamih
                         </div>
                     </div>
@@ -1338,12 +1342,12 @@
         </div>
     </div>
 
-    <script src="js/firebase-config.js?v=21"></script>
-    <script src="js/database.js?v=21"></script>
-    <script src="js/expertSystem.js?v=21"></script>
-    <script src="js/app.js?v=21"></script>
-    <script src="js/dashboard.js?v=21"></script>
-    <script src="js/admin.js?v=21"></script>
+    <script src="js/firebase-config.js?v=22"></script>
+    <script src="js/database.js?v=22"></script>
+    <script src="js/expertSystem.js?v=22"></script>
+    <script src="js/app.js?v=22"></script>
+    <script src="js/dashboard.js?v=22"></script>
+    <script src="js/admin.js?v=22"></script>
     
     <!-- SPA Router -->
     <script>
