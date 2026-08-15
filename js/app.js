@@ -751,12 +751,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmButtonColor: '#2563eb'
                 }).then(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    const searchInput = document.getElementById('patient-search');
+                    if(searchInput) searchInput.focus();
                 });
             } else {
                 document.getElementById('success-modal-name').textContent = data.nama;
                 document.getElementById('success-modal-count').textContent = `ke-${totalSkrining}`;
                 const modal = document.getElementById('success-modal');
                 if (modal) modal.classList.remove('hidden');
+                
+                // Add event listener to close modal button to scroll and focus
+                const closeBtn = modal.querySelector('.modal-close') || modal.querySelector('.btn-primary');
+                if (closeBtn) {
+                    closeBtn.onclick = function() {
+                        modal.classList.add('hidden');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        const searchInput = document.getElementById('patient-search');
+                        if(searchInput) searchInput.focus();
+                    };
+                }
             }
         }, 500);
     });

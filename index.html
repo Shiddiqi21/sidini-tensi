@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=16">
+    <link rel="stylesheet" href="css/style.css?v=17">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -269,7 +269,7 @@
         </div>
 
         <!-- Modal Daftarkan Warga Baru (sebelum skrining) -->
-        <div id="modal-daftar-warga-skrining" class="modal-overlay hidden" style="z-index: 3000;">
+        <div id="modal-daftar-warga-skrining" class="modal hidden" style="z-index: 3000;">
             <div class="modal-content" style="max-width: 560px;">
                 <div class="modal-header">
                     <h3><i class="ph-fill ph-user-plus" style="color:var(--primary)"></i> Daftarkan Warga Baru</h3>
@@ -325,6 +325,9 @@
         </div>
 
         <form id="screening-form" class="hidden" novalidate>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                <button type="reset" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);"><i class="ph-bold ph-eraser"></i> Reset Form</button>
+            </div>
 
             <!-- SECTION A: Data Diri -->
             <div class="card" style="margin-bottom: 24px;">
@@ -554,7 +557,6 @@
 
             <!-- FORM ACTIONS -->
             <div class="btn-group no-print" style="justify-content: flex-end;">
-                <button type="reset" class="btn btn-outline"><i class="ph-bold ph-eraser"></i> Reset Form</button>
                 <button type="submit" class="btn btn-primary btn-lg"><i class="ph-bold ph-stethoscope"></i> Proses Skrining</button>
             </div>
         </form>
@@ -1325,12 +1327,12 @@
         </div>
     </div>
 
-    <script src="js/firebase-config.js?v=16"></script>
-    <script src="js/database.js?v=16"></script>
-    <script src="js/expertSystem.js?v=16"></script>
-    <script src="js/app.js?v=16"></script>
-    <script src="js/dashboard.js?v=16"></script>
-    <script src="js/admin.js?v=16"></script>
+    <script src="js/firebase-config.js?v=17"></script>
+    <script src="js/database.js?v=17"></script>
+    <script src="js/expertSystem.js?v=17"></script>
+    <script src="js/app.js?v=17"></script>
+    <script src="js/dashboard.js?v=17"></script>
+    <script src="js/admin.js?v=17"></script>
     
     <!-- SPA Router -->
     <script>
