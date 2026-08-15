@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=14">
+    <link rel="stylesheet" href="css/style.css?v=15">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -362,6 +362,11 @@
                     </select>
                 </div>
 
+            <!-- SECTION B: Riwayat & Gaya Hidup -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3><i class="ph-fill ph-heartbeat"></i> B. Riwayat Medis & Gaya Hidup</h3>
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Komorbid (Diabetes/Ginjal/Jantung)</label>
@@ -388,77 +393,7 @@
                         <label>Obat Antihipertensi yang Dikonsumsi (Ketik jika ada)</label>
                         <input type="text" id="obatAntihipertensi" name="obatAntihipertensi" class="form-input" placeholder="Contoh: Amlodipine 5mg, Captopril, dsb. Kosongkan jika tidak ada">
                     </div>
-                </div>
-            </div>
-
-            <!-- SECTION B: Pengukuran Fisik -->
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <h3><i class="ph-fill ph-ruler"></i> B. Pengukuran Fisik & Tekanan Darah</h3>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Berat Badan (kg) <span class="required">*</span></label>
-                        <input type="number" id="beratBadan" name="beratBadan" class="form-input" placeholder="Contoh: 65" min="10" max="300" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Tinggi Badan (cm) <span class="required">*</span></label>
-                        <input type="number" id="tinggiBadan" name="tinggiBadan" class="form-input" placeholder="Contoh: 160" min="50" max="250" step="0.1">
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Indeks Massa Tubuh (IMT) — Otomatis</label>
-                        <div class="imt-display">
-                            <span class="imt-value" id="imt-value">—</span>
-                            <span class="imt-badge" id="imt-badge">Isi BB & TB</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Tekanan Darah Sistolik (Atas) <span class="required">*</span></label>
-                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Pengukuran 1" min="60" max="300">
-                    </div>
-                    <div class="form-group">
-                        <label>Tekanan Darah Diastolik (Bawah) <span class="required">*</span></label>
-                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Pengukuran 1" min="30" max="200">
-                    </div>
-
-                    <!-- Pengukuran 2 & 3 (muncul otomatis jika pasien baru & tensi tinggi) -->
-                    <div id="extra-bp-section" class="hidden" style="grid-column: 1 / -1;">
-                        <div class="alert alert-warning" style="margin-bottom: 12px;">
-                            <i class="ph-bold ph-warning-circle"></i>
-                            <span><b>Tensi tinggi terdeteksi pada pasien tanpa riwayat HT.</b> Lakukan 2 pengukuran tambahan untuk mendapatkan rata-rata yang akurat.</span>
-                        </div>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Sistolik Pengukuran 2</label>
-                                <input type="number" id="sistolik2" name="sistolik2" class="form-input" placeholder="Pengukuran 2" min="60" max="300">
-                            </div>
-                            <div class="form-group">
-                                <label>Diastolik Pengukuran 2</label>
-                                <input type="number" id="diastolik2" name="diastolik2" class="form-input" placeholder="Pengukuran 2" min="30" max="200">
-                            </div>
-                            <div class="form-group">
-                                <label>Sistolik Pengukuran 3</label>
-                                <input type="number" id="sistolik3" name="sistolik3" class="form-input" placeholder="Pengukuran 3" min="60" max="300">
-                            </div>
-                            <div class="form-group">
-                                <label>Diastolik Pengukuran 3</label>
-                                <input type="number" id="diastolik3" name="diastolik3" class="form-input" placeholder="Pengukuran 3" min="30" max="200">
-                            </div>
-                        </div>
-                        <div id="avg-bp-display" class="hidden" style="padding: 10px 14px; background: var(--primary-fade); border-radius: 8px; margin-top: 8px; font-size: 0.95rem;">
-                            <i class="ph-bold ph-calculator" style="color: var(--primary);"></i>
-                            <b>Rata-rata Tensi:</b> <span id="avg-bp-value">—/—</span> mmHg
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION C: Riwayat & Gaya Hidup -->
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <h3><i class="ph-fill ph-heartbeat"></i> C. Riwayat Medis & Gaya Hidup</h3>
-                </div>
-                <div class="form-grid">
+                    
                     <div class="form-group">
                         <label>Riwayat Hipertensi Sebelumnya?</label>
                         <div class="radio-row">
@@ -528,6 +463,68 @@
                             <label class="checkbox-label"><input type="checkbox" name="stress" value="Keluarga"> Keluarga</label>
                             <label class="checkbox-label"><input type="checkbox" name="stress" value="Kesehatan"> Kesehatan</label>
                             <label class="checkbox-label"><input type="checkbox" name="stress" value="Sosial"> Sosial</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION C: Pengukuran Fisik -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3><i class="ph-fill ph-ruler"></i> C. Pengukuran Fisik & Tekanan Darah</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Berat Badan (kg) <span class="required">*</span></label>
+                        <input type="number" id="beratBadan" name="beratBadan" class="form-input" placeholder="Contoh: 65" min="10" max="300" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Tinggi Badan (cm) <span class="required">*</span></label>
+                        <input type="number" id="tinggiBadan" name="tinggiBadan" class="form-input" placeholder="Contoh: 160" min="50" max="250" step="0.1">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Indeks Massa Tubuh (IMT) — Otomatis</label>
+                        <div class="imt-display">
+                            <span class="imt-value" id="imt-value">—</span>
+                            <span class="imt-badge" id="imt-badge">Isi BB & TB</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tekanan Darah Sistolik (Atas) <span class="required">*</span></label>
+                        <input type="number" id="sistolik" name="sistolik" class="form-input" placeholder="Pengukuran 1" min="60" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label>Tekanan Darah Diastolik (Bawah) <span class="required">*</span></label>
+                        <input type="number" id="diastolik" name="diastolik" class="form-input" placeholder="Pengukuran 1" min="30" max="200">
+                    </div>
+
+                    <!-- Pengukuran 2 & 3 (muncul otomatis jika pasien baru & tensi tinggi) -->
+                    <div id="extra-bp-section" class="hidden" style="grid-column: 1 / -1;">
+                        <div class="alert alert-warning" style="margin-bottom: 12px;">
+                            <i class="ph-bold ph-warning-circle"></i>
+                            <span><b>Tensi tinggi terdeteksi pada pasien tanpa riwayat HT.</b> Lakukan 2 pengukuran tambahan untuk mendapatkan rata-rata yang akurat.</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Sistolik Pengukuran 2</label>
+                                <input type="number" id="sistolik2" name="sistolik2" class="form-input" placeholder="Pengukuran 2" min="60" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolik Pengukuran 2</label>
+                                <input type="number" id="diastolik2" name="diastolik2" class="form-input" placeholder="Pengukuran 2" min="30" max="200">
+                            </div>
+                            <div class="form-group">
+                                <label>Sistolik Pengukuran 3</label>
+                                <input type="number" id="sistolik3" name="sistolik3" class="form-input" placeholder="Pengukuran 3" min="60" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolik Pengukuran 3</label>
+                                <input type="number" id="diastolik3" name="diastolik3" class="form-input" placeholder="Pengukuran 3" min="30" max="200">
+                            </div>
+                        </div>
+                        <div id="avg-bp-display" class="hidden" style="padding: 10px 14px; background: var(--primary-fade); border-radius: 8px; margin-top: 8px; font-size: 0.95rem;">
+                            <i class="ph-bold ph-calculator" style="color: var(--primary);"></i>
+                            <b>Rata-rata Tensi:</b> <span id="avg-bp-value">—/—</span> mmHg
                         </div>
                     </div>
                 </div>
@@ -1328,12 +1325,12 @@
         </div>
     </div>
 
-    <script src="js/firebase-config.js?v=14"></script>
-    <script src="js/database.js?v=14"></script>
-    <script src="js/expertSystem.js?v=14"></script>
-    <script src="js/app.js?v=14"></script>
-    <script src="js/dashboard.js?v=14"></script>
-    <script src="js/admin.js?v=14"></script>
+    <script src="js/firebase-config.js?v=15"></script>
+    <script src="js/database.js?v=15"></script>
+    <script src="js/expertSystem.js?v=15"></script>
+    <script src="js/app.js?v=15"></script>
+    <script src="js/dashboard.js?v=15"></script>
+    <script src="js/admin.js?v=15"></script>
     
     <!-- SPA Router -->
     <script>
