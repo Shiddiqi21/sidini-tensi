@@ -779,17 +779,42 @@ function loadDummyData() {
 
 // ===================== FIRESTORE INITIAL SYNC =====================
 async function syncFromFirestore() {
+    // Tampilkan overlay loading agar di HP/iPad user tahu sedang memuat cloud
+    const overlay = document.createElement('div');
+    overlay.id = 'cloud-sync-overlay';
+    overlay.style.cssText = [
+        'position:fixed', 'top:0', 'left:0', 'width:100%', 'height:100%',
+        'background:rgba(255,255,255,0.92)', 'z-index:99999',
+        'display:flex', 'flex-direction:column',
+        'align-items:center', 'justify-content:center', 'gap:16px'
+    ].join(';');
+    overlay.innerHTML = `
+        <div style="width:48px;height:48px;border:5px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <p style="font-family:Arial,sans-serif;font-size:1rem;color:#374151;margin:0;">Memuat data dari cloud...</p>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    `;
+    // Hanya tampilkan overlay jika localStorage kosong (perangkat baru/HP)
+    const isLocalEmpty = (_memoryDB[DB_KEYS.PATIENTS] || []).length === 0;
+    if (isLocalEmpty) document.body.appendChild(overlay);
+
     const loaded = await FirestoreSync.loadAll();
 
+    // Hapus overlay setelah selesai
+    const existingOverlay = document.getElementById('cloud-sync-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
     if (loaded && _memoryDB[DB_KEYS.PATIENTS].length === 0) {
-        // Firestore kosong — do not load dummy data anymore
-        console.log('☁️ Firestore empty, no longer loading dummy data automatically.');
+        console.log('☁️ Firestore empty, no dummy data loaded.');
     }
-    // Beritahu seluruh UI untuk re-render
+
+    // Simpan ke localStorage sebagai cache untuk kunjungan berikutnya
+    try {
+        localStorage.setItem(DB_KEYS.PATIENTS, JSON.stringify(_memoryDB[DB_KEYS.PATIENTS] || []));
+        localStorage.setItem(DB_KEYS.SCREENINGS, JSON.stringify(_memoryDB[DB_KEYS.SCREENINGS] || []));
+    } catch(e) { /* ignore quota error */ }
+
+    // Beritahu seluruh UI untuk re-render (dashboard + skrining + search)
     document.dispatchEvent(new Event('firestore-ready'));
-    
-    // Disable auto dummy data loading to prevent any duplication loops
-    // setTimeout(loadDummyData, 500);
 }
 
 // Auto-load is now moved inside DOMContentLoaded
@@ -856,5 +881,7 @@ async function syncFromFirestore() {
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Jalankan sync Firestore setelah DOM siap
+    // Prioritas: localStorage (instan) → lalu Firestore cloud (refresh UI setelahnya)
     syncFromFirestore();
 });

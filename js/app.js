@@ -1125,3 +1125,29 @@ window.handleDaftarWargaLaluSkrining = function() {
     // Scroll to form
     form.scrollIntoView({ behavior: 'smooth' });
 };
+
+// ===== FIRESTORE READY: Refresh search & form setelah cloud data dimuat =====
+// Ini memastikan HP/iPad yang tidak punya localStorage langsung
+// mendapatkan data begitu Firestore selesai sync
+document.addEventListener('firestore-ready', () => {
+    // Reset search dropdown agar user bisa cari data baru
+    const searchInput = document.getElementById('patient-search');
+    const searchDropdown = document.getElementById('search-dropdown');
+    if (searchInput && searchInput.value.length >= 2) {
+        // Trigger ulang pencarian jika user sudah ketik sesuatu
+        const results = PatientDB.search(searchInput.value.trim());
+        if (results.length === 0) {
+            searchDropdown.innerHTML = '<div class="search-dropdown-empty">Warga tidak ditemukan.</div>';
+        } else {
+            searchDropdown.innerHTML = results.map(p => `
+                <div class="search-dropdown-item" data-id="${p.id}">
+                    <div class="item-name">${p.nama}</div>
+                    <div class="item-meta">NIK: ${p.nik} · ${p.jorong || '-'} · ${p.umur || '-'} tahun</div>
+                </div>
+            `).join('');
+        }
+        searchDropdown.classList.add('open');
+    }
+    console.log('✅ app.js: firestore-ready received, search ready.');
+});
+
