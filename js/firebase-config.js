@@ -24,8 +24,18 @@ try {
 
         // Enable offline persistence (hanya jika bukan file:// karena IndexedDB diblokir browser di lokal)
         if (window.location.protocol !== 'file:') {
-            firestoreDB.enablePersistence({ synchronizeTabs: true }).catch(err => {
-                console.warn('Firestore persistence warning:', err.code);
+            // Enable offline persistence — gunakan experimentalForceOwningTab
+            // agar tidak crash di Safari iOS / multi-tab mobile
+            firestoreDB.enablePersistence({ experimentalForceOwningTab: true }).catch(err => {
+                if (err.code === 'failed-precondition') {
+                    // Beberapa tab terbuka — nonaktifkan persistence, tetap online
+                    console.warn('Firestore persistence dinonaktifkan (multi-tab).');
+                } else if (err.code === 'unimplemented') {
+                    // Browser tidak mendukung (Safari lama / mode private)
+                    console.warn('Firestore persistence tidak didukung browser ini.');
+                } else {
+                    console.warn('Firestore persistence warning:', err.code);
+                }
             });
         } else {
             console.warn('⚠️ Menjalankan via file:// — Offline persistence dinonaktifkan untuk mencegah crash.');
