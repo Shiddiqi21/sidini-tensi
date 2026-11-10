@@ -862,6 +862,13 @@ if (typeof auth !== 'undefined' && auth) {
             // Sembunyikan modal login jika terbuka
             const loginModal = document.getElementById('login-modal');
             if (loginModal) loginModal.classList.add('hidden');
+
+            // Sync Firestore SETELAH auth dikonfirmasi
+            // Ini memastikan Firestore rules terpenuhi (user sudah login)
+            if (typeof syncFromFirestore === 'function' && !window._firestoreSyncDone) {
+                window._firestoreSyncDone = true;
+                syncFromFirestore();
+            }
             
         } else {
             // User is logged out

@@ -883,8 +883,7 @@ async function syncFromFirestore() {
     }, 4000); // Wait for Firestore initial sync to finish
 })();
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Jalankan sync Firestore setelah DOM siap
-    // Prioritas: localStorage (instan) → lalu Firestore cloud (refresh UI setelahnya)
-    syncFromFirestore();
-});
+// syncFromFirestore sekarang dipanggil dari app.js SETELAH auth dikonfirmasi
+// sehingga Firestore rules selalu terpenuhi (user sudah login)
+// Fungsi ini tetap diekspor sebagai global agar bisa dipanggil dari mana saja
+
