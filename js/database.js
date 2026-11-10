@@ -779,43 +779,46 @@ function loadDummyData() {
 
 // ===================== FIRESTORE INITIAL SYNC =====================
 async function syncFromFirestore() {
-    // Tampilkan overlay loading agar di HP/iPad user tahu sedang memuat cloud
+    // Selalu tampilkan loading saat pertama buka — Firestore adalah sumber kebenaran utama
     const overlay = document.createElement('div');
     overlay.id = 'cloud-sync-overlay';
-    overlay.style.cssText = [
-        'position:fixed', 'top:0', 'left:0', 'width:100%', 'height:100%',
-        'background:rgba(255,255,255,0.92)', 'z-index:99999',
-        'display:flex', 'flex-direction:column',
-        'align-items:center', 'justify-content:center', 'gap:16px'
-    ].join(';');
-    overlay.innerHTML = `
-        <div style="width:48px;height:48px;border:5px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-        <p style="font-family:Arial,sans-serif;font-size:1rem;color:#374151;margin:0;">Memuat data dari cloud...</p>
-        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-    `;
-    // Hanya tampilkan overlay jika localStorage kosong (perangkat baru/HP)
-    const isLocalEmpty = (_memoryDB[DB_KEYS.PATIENTS] || []).length === 0;
-    if (isLocalEmpty) document.body.appendChild(overlay);
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;' +
+        'background:rgba(255,255,255,0.95);z-index:99999;' +
+        'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.innerHTML =
+        '<div style="width:52px;height:52px;border:5px solid #e5e7eb;border-top-color:#2563eb;' +
+        'border-radius:50%;animation:cloud-spin 0.8s linear infinite;"></div>' +
+        '<p style="font-family:Arial,sans-serif;font-size:1rem;color:#374151;margin:0;font-weight:600;">Memuat data...</p>' +
+        '<p style="font-family:Arial,sans-serif;font-size:0.85rem;color:#6b7280;margin:0;">Menyinkronkan dengan server</p>' +
+        '<style>@keyframes cloud-spin{to{transform:rotate(360deg)}}</style>';
 
+    // Tambahkan ke body — tunggu DOM siap dulu
+    if (document.body) {
+        document.body.appendChild(overlay);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => document.body.appendChild(overlay));
+    }
+
+    // Muat dari Firestore (sumber kebenaran utama untuk semua perangkat)
     const loaded = await FirestoreSync.loadAll();
 
-    // Hapus overlay setelah selesai
+    // Simpan ke localStorage sebagai cache cepat untuk kunjungan selanjutnya
+    if (loaded) {
+        try {
+            localStorage.setItem(DB_KEYS.PATIENTS,   JSON.stringify(_memoryDB[DB_KEYS.PATIENTS]   || []));
+            localStorage.setItem(DB_KEYS.SCREENINGS, JSON.stringify(_memoryDB[DB_KEYS.SCREENINGS] || []));
+        } catch(e) { /* ignore storage quota */ }
+    }
+
+    // Hapus overlay
     const existingOverlay = document.getElementById('cloud-sync-overlay');
     if (existingOverlay) existingOverlay.remove();
 
-    if (loaded && _memoryDB[DB_KEYS.PATIENTS].length === 0) {
-        console.log('☁️ Firestore empty, no dummy data loaded.');
-    }
-
-    // Simpan ke localStorage sebagai cache untuk kunjungan berikutnya
-    try {
-        localStorage.setItem(DB_KEYS.PATIENTS, JSON.stringify(_memoryDB[DB_KEYS.PATIENTS] || []));
-        localStorage.setItem(DB_KEYS.SCREENINGS, JSON.stringify(_memoryDB[DB_KEYS.SCREENINGS] || []));
-    } catch(e) { /* ignore quota error */ }
-
-    // Beritahu seluruh UI untuk re-render (dashboard + skrining + search)
+    // Beritahu seluruh UI untuk re-render
     document.dispatchEvent(new Event('firestore-ready'));
+    console.log(`✅ Sync selesai: ${(_memoryDB[DB_KEYS.PATIENTS]||[]).length} pasien, ${(_memoryDB[DB_KEYS.SCREENINGS]||[]).length} skrining`);
 }
+
 
 // Auto-load is now moved inside DOMContentLoaded
 
