@@ -102,7 +102,10 @@ const FirestoreSync = {
 
     // Load semua data dari Firestore ke memory
     async loadAll() {
-        if (!this.db) return false;
+        if (!this.db) {
+            alert('[DEBUG] Firestore db is NULL - Firebase tidak terhubung');
+            return false;
+        }
         try {
             const pSnap = await this.db.collection('patients').get();
             const patients = [];
@@ -121,13 +124,19 @@ const FirestoreSync = {
                 localStorage.setItem(DB_KEYS.SCREENINGS, JSON.stringify(screenings));
             } catch (e) { /* ignore */ }
 
+            // DEBUG SEMENTARA — tampilkan hasil di HP
+            alert(`[DEBUG] Berhasil!\nPasien: ${patients.length}\nSkrining: ${screenings.length}`);
+
             console.log(`☁️ Firestore loaded: ${patients.length} patients, ${screenings.length} screenings`);
             return true;
         } catch (e) {
+            // DEBUG SEMENTARA — tampilkan error di HP
+            alert(`[DEBUG] Firestore GAGAL:\n${e.code || ''}\n${e.message || e}`);
             console.warn('Firestore load failed:', e);
             return false;
         }
     },
+
 
     // Simpan 1 patient ke Firestore
     savePatient(patient) {
