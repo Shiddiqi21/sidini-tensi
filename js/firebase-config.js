@@ -22,26 +22,11 @@ try {
         firestoreDB = firebase.firestore();
         auth = firebase.auth();
 
-        // Enable offline persistence (hanya jika bukan file:// karena IndexedDB diblokir browser di lokal)
-        if (window.location.protocol !== 'file:') {
-            // Enable offline persistence — gunakan experimentalForceOwningTab
-            // agar tidak crash di Safari iOS / multi-tab mobile
-            firestoreDB.enablePersistence({ experimentalForceOwningTab: true }).catch(err => {
-                if (err.code === 'failed-precondition') {
-                    // Beberapa tab terbuka — nonaktifkan persistence, tetap online
-                    console.warn('Firestore persistence dinonaktifkan (multi-tab).');
-                } else if (err.code === 'unimplemented') {
-                    // Browser tidak mendukung (Safari lama / mode private)
-                    console.warn('Firestore persistence tidak didukung browser ini.');
-                } else {
-                    console.warn('Firestore persistence warning:', err.code);
-                }
-            });
-        } else {
-            console.warn('⚠️ Menjalankan via file:// — Offline persistence dinonaktifkan untuk mencegah crash.');
-        }
-
-        console.log('🔥 Firebase initialized successfully!');
+        // Nonaktifkan Firestore offline persistence sepenuhnya.
+        // Persistence menyebabkan crash di Safari iOS, mode Pribadi, dan multi-tab.
+        // Caching data ditangani oleh localStorage (lebih ringan dan kompatibel semua browser).
+        // Firestore akan tetap bekerja secara online di semua perangkat.
+        console.log('🔥 Firebase initialized (online-only mode, no persistence).');
     } else {
         console.warn('⚠️ Firebase SDK not loaded. Running in offline mode.');
     }
@@ -50,3 +35,4 @@ try {
     firestoreDB = null;
     auth = null;
 }
+
